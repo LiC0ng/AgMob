@@ -1,0 +1,53 @@
+AgMob Workspace
+===============
+
+Overview
+--------
+
+ - A Kotlin application
+
+ - HTTP API server to communicate with Driver
+
+ - WebSocket server for text-based chat and screen markings, and also
+   as a signaling server for WebRTC
+
+ - STUN/TURN server for WebRTC
+
+ - Option: Database to store session informations: Session ID,
+   text-based chat posts, and screen markings
+
+
+HTTP API server
+---------------
+
+ - POST /api/session/create  Create a session.  Returns the URL that
+   Driver should share with their team.
+
+ - DELETE /api/session/{session-id}  Destroy a session.
+
+
+WebSocket server
+----------------
+
+ - Each connection must be authenticated with the session ID
+
+ - Works as the signaling server for WebRTC
+
+ - Option: Text-based chat
+
+ - Option: Screen markings
+
+
+STUN/TURN server for WebRTC
+---------------------------
+
+ - coturn (https://github.com/coturn/coturn)
+
+   * Included in Ubuntu's default package repository.
+
+ - XXX: Do we need TURN?
+
+   * If we need it, do we have to re-generate credentials for each
+     session for security?
+
+   * If we don't, maybe Google's public STUN server can be used?
