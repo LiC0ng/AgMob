@@ -3,6 +3,7 @@ package club.itsp.elang.agmob.workspace
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.content.default
+import io.ktor.http.content.files
 import io.ktor.http.content.static
 import io.ktor.http.content.staticRootFolder
 import io.ktor.response.respondText
@@ -38,8 +39,9 @@ fun main(args: Array<String>) {
             }
         }
         routing {
-            static("navigator"){
+            static {
                 staticRootFolder = File("../navigator")
+                files("./")
                 default("index.html")
             }
         }
