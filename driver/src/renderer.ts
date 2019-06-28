@@ -9,6 +9,7 @@ const websocketStartButton = document.querySelector("#websocket_create_button");
 const websocketCloseButton = document.querySelector("#websocket_close_button");
 
 let uuid;
+let socketUrl: string;
 
 
 driverStartButton.addEventListener("click", () => {
@@ -17,25 +18,33 @@ driverStartButton.addEventListener("click", () => {
     xhr.send();
     xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status === 200) {
-            uuid = xhr.responseText;
+            uuid = JSON.parse(xhr.responseText);
             // tslint:disable-next-line:no-console
             console.log(uuid);
+            socketUrl = `ws://localhost:8080/api/session/${uuid.id}/driver`
+
         }
     };
 });
 
 let connection: WebSocket;
-const socketUrl = "wss://echo.websocket.org";
+let navigatorSdp: string;
 
 websocketStartButton.addEventListener("click", () => {
-    console.log("!");
+    console.log("start websocket");
     connection = new WebSocket(socketUrl);
     connection.onopen = (e) => {
-        connection.send("hoge");
+
     };
     connection.onmessage = (e) => {
         // tslint:disable-next-line:no-console
         console.log(e.data);
+        navigatorSdp = JSON.parse(e.data).payload;
+        let sendObject = {
+            "kind": "sdp",
+            "payload": "sdpsdpsdpsdpsdp"
+        }
+        connection.send(JSON.stringify(sendObject));
     };
     connection.onerror = (e) => {
         console.log(e);
