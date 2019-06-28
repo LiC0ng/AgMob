@@ -30,6 +30,7 @@ driverStartButton.addEventListener("click", () => {
 
 let connection: WebSocket;
 let navigatorSdp: string;
+let driverSdp: RTCSessionDescriptionInit;
 
 
 websocketStartButton.addEventListener("click", () => {
@@ -41,12 +42,20 @@ websocketStartButton.addEventListener("click", () => {
     connection.onmessage = (e) => {
         // tslint:disable-next-line:no-console
         console.log(e.data);
+        const peer = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
         navigatorSdp = JSON.parse(e.data).payload;
-        let sendObject = {
-            "kind": "sdp",
-            "payload": "sdpsdpsdpsdpsdp"
-        }
-        connection.send(JSON.stringify(sendObject));
+        driverSdp = new RTCSessionDescription({type: "offer", sdp: navigatorSdp});
+        peer.setRemoteDescription(driverSdp).then(() => {
+            peer.createAnswer().then((sdp) => {
+                peer.setLocalDescription(sdp).then(() => {
+                    const sendObject = {
+                        kind: "sdp",
+                        payload: driverSdp.sdp,
+                    }
+                    connection.send(JSON.stringify(sendObject));
+                });
+            });
+        });
     };
     connection.onerror = (e) => {
         console.log(e);
@@ -65,7 +74,7 @@ websocketCloseButton.addEventListener("click", () => {
 // @ts-ignore
 peerCreateButton.addEventListener("click", () => {
     // @ts-ignore
-    const peer = new RTCPeerConnection({ iceServers: [{ url: "stun:stun.l.google.com:19302" }] });
+    const peer = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
     console.log(peer);
 })
 
