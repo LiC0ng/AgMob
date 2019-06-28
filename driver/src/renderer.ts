@@ -7,6 +7,7 @@ import {log} from "util";
 const driverStartButton = document.querySelector("#driver_start_button");
 const websocketStartButton = document.querySelector("#websocket_create_button");
 const websocketCloseButton = document.querySelector("#websocket_close_button");
+const peerCreateButton = document.querySelector("#peer_create_button");
 
 let uuid;
 let socketUrl: string;
@@ -29,6 +30,7 @@ driverStartButton.addEventListener("click", () => {
 
 let connection: WebSocket;
 let navigatorSdp: string;
+
 
 websocketStartButton.addEventListener("click", () => {
     console.log("start websocket");
@@ -58,3 +60,12 @@ websocketStartButton.addEventListener("click", () => {
 websocketCloseButton.addEventListener("click", () => {
     connection.close();
 });
+
+// const RTCPeerConnection , RTCPeerConnection || webkitRTCPeerConnection || mozRTCPeerConnection;
+// @ts-ignore
+peerCreateButton.addEventListener("click", () => {
+    // @ts-ignore
+    const peer = new RTCPeerConnection({ iceServers: [{ url: "stun:stun.l.google.com:19302" }] });
+    console.log(peer);
+})
+
