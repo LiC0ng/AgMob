@@ -41,7 +41,7 @@ websocketStartButton.addEventListener("click", () => {
     };
     connection.onmessage = (e) => {
         // tslint:disable-next-line:no-console
-        console.log(e.data);
+        console.log(JSON.parse(e.data));
         const peer = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
         navigatorSdp = JSON.parse(e.data).payload;
         driverSdp = new RTCSessionDescription({type: "offer", sdp: navigatorSdp});
@@ -50,8 +50,9 @@ websocketStartButton.addEventListener("click", () => {
                 peer.setLocalDescription(sdp).then(() => {
                     const sendObject = {
                         kind: "sdp",
-                        payload: driverSdp.sdp,
+                        payload: sdp.sdp,
                     }
+                    console.log(sendObject);
                     connection.send(JSON.stringify(sendObject));
                 });
             });
