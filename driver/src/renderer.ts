@@ -22,7 +22,7 @@ driverStartButton.addEventListener("click", () => {
             uuid = JSON.parse(xhr.responseText);
             // tslint:disable-next-line:no-console
             console.log(uuid);
-            socketUrl = `ws://localhost:8080/api/session/${uuid.id}/driver`
+            socketUrl = `ws://localhost:8080/api/session/${uuid.id}/driver`;
 
         }
     };
@@ -31,18 +31,35 @@ driverStartButton.addEventListener("click", () => {
 let connection: WebSocket;
 let navigatorSdp: string;
 let driverSdp: RTCSessionDescriptionInit;
+let localStream: any;
 
+// @ts-ignore
+const defaultConstraints = {
+    audio: false,
+    video: {
+        mandatory: {
+            chromeMediaSource: "screen",
+            maxFrameRate: 25,
+            maxHeight: screen.availHeight,
+            maxWidth: screen.availWidth,
+        },
+    },
+};
 
 websocketStartButton.addEventListener("click", () => {
     console.log("start websocket");
     connection = new WebSocket(socketUrl);
     connection.onopen = (e) => {
-
     };
     connection.onmessage = (e) => {
         // tslint:disable-next-line:no-console
         console.log(JSON.parse(e.data));
         const peer = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+        // @ts-ignore
+        navigator.getUserMedia(defaultConstraints, (videoMedia) => {
+            peer.addStream(videoMedia);
+            // tslint:disable-next-line:no-empty
+        }, () => {});
         navigatorSdp = JSON.parse(e.data).payload;
         driverSdp = new RTCSessionDescription({type: "offer", sdp: navigatorSdp});
         peer.setRemoteDescription(driverSdp).then(() => {
@@ -52,12 +69,13 @@ websocketStartButton.addEventListener("click", () => {
                     const sendObject = {
                         kind: "sdp",
                         payload: sdp.sdp,
-                    }
+                    };
                     console.log(sendObject);
                     connection.send(JSON.stringify(sendObject));
                 });
             });
         });
+
     };
     connection.onerror = (e) => {
         console.log(e);
@@ -78,5 +96,5 @@ peerCreateButton.addEventListener("click", () => {
     // @ts-ignore
     const peer = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
     console.log(peer);
-})
+});
 
