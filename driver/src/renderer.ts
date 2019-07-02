@@ -48,6 +48,7 @@ websocketStartButton.addEventListener("click", () => {
         peer.setRemoteDescription(driverSdp).then(() => {
             peer.createAnswer().then((sdp) => {
                 peer.setLocalDescription(sdp).then(() => {
+                    console.log(sdp);
                     const sendObject = {
                         kind: "sdp",
                         payload: sdp.sdp,
