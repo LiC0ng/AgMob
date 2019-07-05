@@ -3,6 +3,7 @@
 // All of the Node.js APIs are available in this process.
 
 import {log} from "util";
+import dialog = Electron.dialog;
 
 const driverStartButton = document.querySelector("#driver_start_button");
 const websocketStartButton = document.querySelector("#websocket_create_button");
@@ -31,7 +32,9 @@ driverStartButton.addEventListener("click", () => {
 let connection: WebSocket;
 let navigatorSdp: string;
 let driverSdp: RTCSessionDescriptionInit;
-let localStream: any;
+const peerList: any = {};
+const pcConfig = {iceServers: [{urls: "stun:stun.webrtc.ecl.ntt.com:3478"}]};
+
 
 // @ts-ignore
 const defaultConstraints = {
@@ -52,29 +55,51 @@ websocketStartButton.addEventListener("click", () => {
     connection.onopen = (e) => {
     };
     connection.onmessage = (e) => {
-        // tslint:disable-next-line:no-console
-        console.log(JSON.parse(e.data));
-        const peer = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
-        // @ts-ignore
-        navigator.getUserMedia(defaultConstraints, (videoMedia) => {
-            peer.addStream(videoMedia);
-            // tslint:disable-next-line:no-empty
-        }, () => {});
-        navigatorSdp = JSON.parse(e.data).payload;
-        driverSdp = new RTCSessionDescription({type: "offer", sdp: navigatorSdp});
-        peer.setRemoteDescription(driverSdp).then(() => {
-            peer.createAnswer().then((sdp) => {
-                peer.setLocalDescription(sdp).then(() => {
-                    console.log(sdp);
+        const obj = JSON.parse(e.data);
+        if (obj.kind === "reqest_sdp") {
+            const peer = new RTCPeerConnection(pcConfig);
+            const navigator_id = obj.navigator_id;
+
+            peer.ontrack = (ev) => {
+                console.log(ev);
+            }
+
+            peer.onicecandidate = (ev) => {
+                if (ev.candidate){
+                    console.log(ev);
+                }else{
+                    const sdp = peer.localDescription
                     const sendObject = {
                         kind: "sdp",
-                        payload: sdp.sdp,
-                    };
-                    console.log(sendObject);
+                        payload: JSON.stringify(sdp),
+                        navigator_id: navigator_id,
+                    }
                     connection.send(JSON.stringify(sendObject));
-                });
+                }
+            }
+
+            peer.onnegotiationneeded = async () => {
+                try {
+                    const offer = await peer.createOffer();
+                    await peer.setLocalDescription(offer);
+                    const sdp = peer.localDescription
+                    const sendObject = {
+                        kind: "sdp",
+                        payload: JSON.stringify(sdp),
+                        navigator_id: navigator_id,
+                    }
+                    connection.send(JSON.stringify(sendObject));
+                } catch(err){
+                    console.error(err);
+                }
+            }
+            navigator.mediaDevices.getUserMedia({video: true, audio: false}).then((stream) => {
+                stream.getTracks().forEach((track) => {peer.addTrack(track); });
             });
-        });
+            peerList[obj.navigator_id] = peer;
+        }else if(obj.kind === "sdp"){
+
+        }
 
     };
     connection.onerror = (e) => {
