@@ -56,7 +56,8 @@ websocketStartButton.addEventListener("click", () => {
     };
     connection.onmessage = (e) => {
         const obj = JSON.parse(e.data);
-        if (obj.kind === "reqest_sdp") {
+        console.log(obj);
+        if (obj.kind === "request_sdp") {
             const peer = new RTCPeerConnection(pcConfig);
             const navigator_id = obj.navigator_id;
 
