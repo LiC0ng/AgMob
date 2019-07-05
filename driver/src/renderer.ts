@@ -62,43 +62,45 @@ websocketStartButton.addEventListener("click", () => {
 
             peer.ontrack = (ev) => {
                 console.log(ev);
-            }
+            };
 
             peer.onicecandidate = (ev) => {
                 if (ev.candidate){
                     console.log(ev);
                 }else{
-                    const sdp = peer.localDescription
+                    const sdp = peer.localDescription;
                     const sendObject = {
                         kind: "sdp",
                         payload: JSON.stringify(sdp),
                         navigator_id: navigator_id,
-                    }
+                    };
                     connection.send(JSON.stringify(sendObject));
                 }
-            }
+            };
 
             peer.onnegotiationneeded = async () => {
                 try {
                     const offer = await peer.createOffer();
                     await peer.setLocalDescription(offer);
-                    const sdp = peer.localDescription
+                    const sdp = peer.localDescription;
                     const sendObject = {
                         kind: "sdp",
                         payload: JSON.stringify(sdp),
                         navigator_id: navigator_id,
-                    }
+                    };
                     connection.send(JSON.stringify(sendObject));
                 } catch(err){
                     console.error(err);
                 }
-            }
+            };
             navigator.mediaDevices.getUserMedia({video: true, audio: false}).then((stream) => {
                 stream.getTracks().forEach((track) => {peer.addTrack(track); });
             });
             peerList[obj.navigator_id] = peer;
         }else if(obj.kind === "sdp"){
-
+            const peer = peerList[obj.navigator_id];
+            const sdp = JSON.parse(obj.payload);
+            peer.setRemoteDescription(sdp);
         }
 
     };
