@@ -4,6 +4,8 @@
 
 import {log} from "util";
 import dialog = Electron.dialog;
+const { desktopCapturer } = require('electron')
+
 
 const driverStartButton = document.querySelector("#driver_start_button");
 const websocketStartButton = document.querySelector("#websocket_create_button");
@@ -93,16 +95,21 @@ websocketStartButton.addEventListener("click", () => {
                     console.error(err);
                 }
             };
-            navigator.mediaDevices.getUserMedia({video: true, audio: false}).then((stream) => {
-                console.log(stream);
-                let element = document.getElementById("agmob-self-viewer") as any;
-                element.srcObject = stream;
-                element.play();
+
+            const screenShareingConstrainrs = {
+                mandatory: {
+                    chromeMediaSource: "desktop",
+                },
+            } as any;
+            navigator.mediaDevices.getUserMedia({
+                video: screenShareingConstrainrs,
+            }).then((stream) => {
                 stream.getTracks().forEach((track) => {
                     console.log(track);
                     peer.addTrack(track, stream);
                 });
-            });
+            })
+
             peerList[obj.navigator_id] = peer;
         }else if(obj.kind === "sdp"){
             const peer = peerList[obj.navigator_id];
