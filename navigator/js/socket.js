@@ -1,5 +1,6 @@
 let peer;
 const pcConfig = {iceServers: [{urls: "stun:stun.webrtc.ecl.ntt.com:3478"}]};
+let video = document.getElementById("local_video");
 
 
 function sendWebsocket() {
@@ -11,6 +12,7 @@ function sendWebsocket() {
       peer = new RTCPeerConnection(pcConfig);
       peer.ontrack = evt => {
         console.log('-- peer.ontrack()');
+        playVideo(video, evt.streams[0]);
       };
 
       // ICE Candidateを収集したときのイベント
@@ -63,5 +65,15 @@ async function setAnswer(sessionDescription) {
     console.log('setRemoteDescription(answer) succsess in promise');
   } catch(err){
     console.error('setRemoteDescription(answer) ERROR: ', err);
+  }
+}
+
+// Videoの再生を開始する
+async function playVideo(element, stream) {
+  element.srcObject = stream;
+  try {
+      await element.play();
+  } catch(erro) {
+      console.log('error auto play:' + error);
   }
 }
