@@ -26,9 +26,8 @@ import kotlin.collections.HashMap
 
 class Session {
     val id = UUID.randomUUID().toString()
-    private var driver = DriverConnection(this)
-    private val navigators = HashMap<Int, NavigatorConnection>()
-    private var navigatorAwaitingSdpFromDriverFixme: NavigatorConnection? = null // XXX
+    val driver = DriverConnection(this)
+    val navigators = HashMap<Int, NavigatorConnection>()
 
     fun addNavigator(wss: WebSocketServerSession): NavigatorConnection {
         val conn = NavigatorConnection(this)
@@ -40,33 +39,36 @@ class Session {
     fun setDriverWebSocketSession(wss: WebSocketServerSession) {
         driver.wsSession = wss
     }
-
-    suspend fun receiveSdpFromNavigator(navConn: NavigatorConnection, sdp: String) {
-        // THIS IS BAD. FIXME
-        navigatorAwaitingSdpFromDriverFixme = navConn
-        driver.wsSession?.send(WebSocketMessage("sdp", sdp).toJson())
-    }
-
-    suspend fun receiveSdpFromDriver(sdp: String) {
-        navigatorAwaitingSdpFromDriverFixme?.wsSession?.send(WebSocketMessage("sdp", sdp).toJson())
-    }
 }
 
 class DriverConnection(val session: Session) {
     var wsSession: WebSocketServerSession? = null
+
+    suspend fun requestSdp(navConn: NavigatorConnection, message: WebSocketMessage) {
+        wsSession?.send(WebSocketMessage("request_sdp", message.payload, navConn.id).toJson())
+    }
+
+    suspend fun receiveAnswerSdp(navConn: NavigatorConnection, message: WebSocketMessage) {
+        wsSession?.send(WebSocketMessage("sdp", message.payload, message.navigator_id).toJson())
+    }
 }
 
 class NavigatorConnection(val session: Session) {
     val id = idBase++
     var wsSession: WebSocketServerSession? = null
 
+    suspend fun receiveOfferSdp(message: WebSocketMessage) {
+        wsSession?.send(WebSocketMessage("sdp", message.payload).toJson())
+    }
+
     companion object {
         private var idBase = 0
     }
 }
 
+// FIXME: navigator_id smells bad
 @Serializable
-data class WebSocketMessage(val kind: String, val payload: String) {
+data class WebSocketMessage(val kind: String, val payload: String, val navigator_id: Int = -1) {
     fun toJson(): String = Json.stringify(serializer(), this)
 
     companion object {
@@ -119,7 +121,8 @@ fun main(args: Array<String>) {
                     }
                     val msg = WebSocketMessage.parseJson(frame.readText())
                     when (msg.kind) {
-                        "sdp" -> sess.receiveSdpFromNavigator(conn, msg.payload)
+                        "request_sdp" -> sess.driver.requestSdp(conn, msg)
+                        "sdp" -> sess.driver.receiveAnswerSdp(conn, msg)
                         else -> {
                             log.info("invalid websocket message from navigator")
                         }
@@ -142,7 +145,10 @@ fun main(args: Array<String>) {
                     }
                     val msg = WebSocketMessage.parseJson(frame.readText())
                     when (msg.kind) {
-                        "sdp" -> sess.receiveSdpFromDriver(msg.payload)
+                        "sdp" -> {
+                            val navConn = sess.navigators[msg.navigator_id]
+                            navConn.receiveOfferSdp(msg)
+                        }
                         else -> {
                             log.info("invalid websocket message from navigator")
                         }
