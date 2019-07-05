@@ -147,7 +147,7 @@ fun main(args: Array<String>) {
                     when (msg.kind) {
                         "sdp" -> {
                             val navConn = sess.navigators[msg.navigator_id]
-                            navConn.receiveOfferSdp(msg)
+                            navConn?.receiveOfferSdp(msg)
                         }
                         else -> {
                             log.info("invalid websocket message from navigator")
