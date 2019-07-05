@@ -1,6 +1,6 @@
 let peer;
 const pcConfig = {iceServers: [{urls: "stun:stun.webrtc.ecl.ntt.com:3478"}]};
-let video = document.getElementById("local_video");
+let video = document.getElementById("agmob-screen-viewer");
 
 
 function sendWebsocket() {
@@ -12,6 +12,8 @@ function sendWebsocket() {
       peer = new RTCPeerConnection(pcConfig);
       peer.ontrack = evt => {
         console.log('-- peer.ontrack()');
+        console.log(evt.track)
+        console.log(evt.streams);
         playVideo(video, evt.streams[0]);
       };
 
@@ -40,7 +42,7 @@ function sendWebsocket() {
         console.log(evt.data);
         const sdp = JSON.parse(evt.data);
 
-        peerConnection.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
+        peer.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
           console.log('setRemoteDescription(answer) succsess in promise');
         })
     };
@@ -72,7 +74,9 @@ async function setAnswer(sessionDescription) {
 async function playVideo(element, stream) {
   element.srcObject = stream;
   try {
-      await element.play();
+      console.log(element);
+      element.play();
+      console.log(element);
   } catch(erro) {
       console.log('error auto play:' + error);
   }

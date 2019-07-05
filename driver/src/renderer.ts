@@ -95,7 +95,10 @@ websocketStartButton.addEventListener("click", () => {
             };
             navigator.mediaDevices.getUserMedia({video: true, audio: false}).then((stream) => {
                 console.log(stream);
-                stream.getTracks().forEach((track) => {peer.addTrack(track); });
+                stream.getTracks().forEach((track) => {
+                    console.log(track);
+                    peer.addTrack(track, stream);
+                });
             });
             peerList[obj.navigator_id] = peer;
         }else if(obj.kind === "sdp"){
