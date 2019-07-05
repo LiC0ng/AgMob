@@ -49,7 +49,7 @@ class DriverConnection(val session: Session) {
     }
 
     suspend fun receiveAnswerSdp(navConn: NavigatorConnection, message: WebSocketMessage) {
-        wsSession?.send(WebSocketMessage("sdp", message.payload, message.navigator_id).toJson())
+        wsSession?.send(WebSocketMessage("sdp", message.payload, navConn.id).toJson())
     }
 }
 
