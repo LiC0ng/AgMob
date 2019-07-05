@@ -1,6 +1,5 @@
+require('~/webrtc')
 let peer;
-const pcConfig = {iceServers: [{urls: "stun:stun.webrtc.ecl.ntt.com:3478"}]};
-
 
 
 function sendWebsocket() {
@@ -9,7 +8,7 @@ function sendWebsocket() {
     var ws = new WebSocket(url);
 
     ws.onopen = function() {
-      peer = new RTCPeerConnection(pcConfig)
+      peer = new prepareNewConnection(true);
       peer.ontrack = evt => {
         console.log('-- peer.ontrack()');
       };
@@ -39,7 +38,7 @@ function sendWebsocket() {
         console.log(evt.data);
         const sdp = JSON.parse(evt.data);
 
-        peer.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
+        peerConnection.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
           console.log('setRemoteDescription(answer) succsess in promise');
         })
     };
