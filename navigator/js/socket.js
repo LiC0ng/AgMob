@@ -14,6 +14,7 @@ function sendWebsocket() {
         console.log('-- peer.ontrack()');
         console.log(evt.track)
         console.log(evt.streams);
+        evt.streams[0].addTrack(evt.track);
         playVideo(video, evt.streams[0]);
       };
 
@@ -44,6 +45,16 @@ function sendWebsocket() {
 
         peer.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
           console.log('setRemoteDescription(answer) succsess in promise');
+          peer.createAnswer().then((answer) => {
+            peer.setLocalDescription(answer).then(() => {
+              const sdp = peer.localDescription;
+              const sendObject = {
+                "kind": "sdp",
+                "payload": JSON.stringify(sdp)
+              };
+              ws.send(JSON.stringify(sendObject));
+            })
+          })
         })
     };
 

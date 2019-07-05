@@ -95,6 +95,9 @@ websocketStartButton.addEventListener("click", () => {
             };
             navigator.mediaDevices.getUserMedia({video: true, audio: false}).then((stream) => {
                 console.log(stream);
+                let element = document.getElementById("agmob-self-viewer") as any;
+                element.srcObject = stream;
+                element.play();
                 stream.getTracks().forEach((track) => {
                     console.log(track);
                     peer.addTrack(track, stream);
