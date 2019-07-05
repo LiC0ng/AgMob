@@ -94,6 +94,7 @@ websocketStartButton.addEventListener("click", () => {
                 }
             };
             navigator.mediaDevices.getUserMedia({video: true, audio: false}).then((stream) => {
+                console.log(stream);
                 stream.getTracks().forEach((track) => {peer.addTrack(track); });
             });
             peerList[obj.navigator_id] = peer;
