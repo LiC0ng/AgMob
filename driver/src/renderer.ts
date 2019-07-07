@@ -35,7 +35,7 @@ let connection: WebSocket;
 let navigatorSdp: string;
 let driverSdp: RTCSessionDescriptionInit;
 const peerList: any = {};
-const pcConfig = {iceServers: [{urls: "stun:stun.webrtc.ecl.ntt.com:3478"}]};
+const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 
 
 // @ts-ignore
@@ -84,13 +84,13 @@ websocketStartButton.addEventListener("click", () => {
                 try {
                     const offer = await peer.createOffer();
                     await peer.setLocalDescription(offer);
-                    const sdp = peer.localDescription;
-                    const sendObject = {
-                        kind: "sdp",
-                        payload: JSON.stringify(sdp),
-                        navigator_id: navigator_id,
-                    };
-                    connection.send(JSON.stringify(sendObject));
+                    // const sdp = peer.localDescription;
+                    // const sendObject = {
+                    //     kind: "sdp",
+                    //     payload: JSON.stringify(sdp),
+                    //     navigator_id: navigator_id,
+                    // };
+                    // connection.send(JSON.stringify(sendObject));
                 } catch(err){
                     console.error(err);
                 }

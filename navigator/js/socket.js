@@ -1,5 +1,5 @@
 let peer;
-const pcConfig = {iceServers: [{urls: "stun:stun.webrtc.ecl.ntt.com:3478"}]};
+const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 let video = document.getElementById("agmob-screen-viewer");
 
 
@@ -47,12 +47,12 @@ function sendWebsocket() {
           console.log('setRemoteDescription(answer) succsess in promise');
           peer.createAnswer().then((answer) => {
             peer.setLocalDescription(answer).then(() => {
-              const sdp = peer.localDescription;
-              const sendObject = {
-                "kind": "sdp",
-                "payload": JSON.stringify(sdp)
-              };
-              ws.send(JSON.stringify(sendObject));
+              // const sdp = peer.localDescription;
+              // const sendObject = {
+              //   "kind": "sdp",
+              //   "payload": JSON.stringify(sdp)
+              // };
+              // ws.send(JSON.stringify(sendObject));
             })
           })
         })
@@ -85,9 +85,7 @@ async function setAnswer(sessionDescription) {
 async function playVideo(element, stream) {
   element.srcObject = stream;
   try {
-      console.log(element);
-      element.play();
-      console.log(element);
+      await element.play();
   } catch(erro) {
       console.log('error auto play:' + error);
   }
