@@ -263,7 +263,3 @@ textarea {
     page-break-after: avoid;
   }
 }
-
-#description{
-  margin-block-end: -3em;
-}
