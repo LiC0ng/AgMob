@@ -72,6 +72,8 @@ export default class App extends React.Component<Props, State> {
     alert("")
   };
 
+  handleFocus = (event: any) => event.target.select();
+
   private connectWebsocket() {
     if (this.state.connection !== undefined) {
       console.log("websocket already connected");
@@ -160,8 +162,10 @@ export default class App extends React.Component<Props, State> {
             <a className="App-link" href="#" onClick={this.handleStop}>
               Stop
             </a>}
-            <input style={{ width: "100%"}} value={sessionId} />
-            <input style={{ width: "100%"}} value={navigatorUrl} />
+            <input style={{ width: "100%"}} value={sessionId}
+                   onFocus={this.handleFocus} />
+            <input style={{ width: "100%"}} value={navigatorUrl}
+                   onFocus={this.handleFocus} />
             <video style={{ width: "400px", height: "300px", border: "2px white" }} autoPlay={true}
                    ref={this.setVideoRef} />
           </header>
