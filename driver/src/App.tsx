@@ -12,17 +12,18 @@ interface State {
   uuid: any | undefined; // FIXME: any
   peerList: any;
   connection?: WebSocket;
-  stream?: MediaStream;
 }
 
 export default class App extends React.Component<Props, State> {
+  private readonly videoRef = React.createRef<HTMLVideoElement>();
+
   constructor(props: Props) {
     super(props);
 
     this.state = {
       uuid: undefined,
       peerList: {},
-    }
+    };
   }
 
   handleStart = (event: any) => {
@@ -105,6 +106,8 @@ export default class App extends React.Component<Props, State> {
         navigator.mediaDevices.getUserMedia({
           video: screenShareingConstrainrs,
         }).then((stream) => {
+          if (this.videoRef.current)
+            this.videoRef.current.srcObject = stream;
           stream.getTracks().forEach((track) => {
             console.log(track);
             peer.addTrack(track, stream);
@@ -143,8 +146,8 @@ export default class App extends React.Component<Props, State> {
             </a>}
             <input style={{ width: "100%"}} value={sessionId} />
             <input style={{ width: "100%"}} value={navigatorUrl} />
-            {this.state.stream &&
-            <video id="agmob-self-viewer" ref={(v: any) => v.srcObject = this.state.stream} />}
+            <video style={{ width: "100%", border: "2px white" }} id="agmob-self-viewer"
+                   ref={this.videoRef} />
           </header>
         </div>
     );
