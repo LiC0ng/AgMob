@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 const WORKSPACE_BASE_ADDRESS = "160.16.213.209:8080";
@@ -33,13 +32,13 @@ export default class App extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const screenShareingConstrainrs = {
+    const screenSharingConstraints = {
       mandatory: {
         chromeMediaSource: "desktop",
       },
-    } as any;
+    };
     navigator.mediaDevices.getUserMedia({
-      video: screenShareingConstrainrs,
+      video: screenSharingConstraints as any,
     }).then((stream) => {
       this.stream = stream;
       if (this.videoRef)
