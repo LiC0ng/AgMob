@@ -264,3 +264,6 @@ textarea {
   }
 }
 
+#description{
+  margin-block-end: -3em;
+}
