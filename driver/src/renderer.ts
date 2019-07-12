@@ -6,6 +6,7 @@ import {log} from "util";
 import dialog = Electron.dialog;
 const { desktopCapturer } = require('electron')
 
+const WORKSPACE_BASE_ADDRESS = "160.16.213.209:8080/";
 
 const driverStartButton = document.querySelector("#driver_start_button");
 const websocketStartButton = document.querySelector("#websocket_create_button");
@@ -18,14 +19,14 @@ let socketUrl: string;
 
 driverStartButton.addEventListener("click", () => {
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://localhost:8080/api/session");
+    xhr.open("POST", `http://${WORKSPACE_BASE_ADDRESS}/api/session`);
     xhr.send();
     xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status === 200) {
             uuid = JSON.parse(xhr.responseText);
             // tslint:disable-next-line:no-console
             console.log(uuid);
-            socketUrl = `ws://localhost:8080/api/session/${uuid.id}/driver`;
+            socketUrl = `ws://${WORKSPACE_BASE_ADDRESS}/api/session/${uuid.id}/driver`;
 
         }
     };
