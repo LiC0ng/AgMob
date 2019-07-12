@@ -15,7 +15,13 @@ interface State {
 }
 
 export default class App extends React.Component<Props, State> {
-  private readonly videoRef = React.createRef<HTMLVideoElement>();
+  private stream?: MediaStream;
+  private videoRef?: HTMLVideoElement;
+  private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
+    if (this.stream)
+      videoRef.srcObject = this.stream;
+    this.videoRef = videoRef;
+  };
 
   constructor(props: Props) {
     super(props);
@@ -24,6 +30,26 @@ export default class App extends React.Component<Props, State> {
       uuid: undefined,
       peerList: {},
     };
+  }
+
+  componentDidMount() {
+    const screenShareingConstrainrs = {
+      mandatory: {
+        chromeMediaSource: "desktop",
+      },
+    } as any;
+    navigator.mediaDevices.getUserMedia({
+      video: screenShareingConstrainrs,
+    }).then((stream) => {
+      this.stream = stream;
+      if (this.videoRef)
+        this.videoRef.srcObject = stream;
+      stream.getTracks().forEach((track) => {
+        console.log(track);
+        Object.values(this.state.peerList).forEach(peer =>
+            (peer as RTCPeerConnection).addTrack(track, stream));
+      });
+    });
   }
 
   handleStart = (event: any) => {
@@ -49,6 +75,7 @@ export default class App extends React.Component<Props, State> {
   private connectWebsocket() {
     if (this.state.connection !== undefined) {
       console.log("websocket already connected");
+      return;
     }
 
     const socketUrl = `ws://${WORKSPACE_BASE_ADDRESS}/api/session/${this.state.uuid!.id}/driver`;
@@ -97,22 +124,11 @@ export default class App extends React.Component<Props, State> {
             console.error(err);
           }
         };
-
-        const screenShareingConstrainrs = {
-          mandatory: {
-            chromeMediaSource: "desktop",
-          },
-        } as any;
-        navigator.mediaDevices.getUserMedia({
-          video: screenShareingConstrainrs,
-        }).then((stream) => {
-          if (this.videoRef.current)
-            this.videoRef.current.srcObject = stream;
-          stream.getTracks().forEach((track) => {
+        if (this.stream)
+          this.stream.getTracks().forEach((track) => {
             console.log(track);
-            peer.addTrack(track, stream);
+            peer.addTrack(track, this.stream!);
           });
-        })
 
         this.setState({ peerList: {...this.state.peerList, [obj.navigator_id]: peer }});
       }else if(obj.kind === "sdp"){
@@ -147,7 +163,7 @@ export default class App extends React.Component<Props, State> {
             <input style={{ width: "100%"}} value={sessionId} />
             <input style={{ width: "100%"}} value={navigatorUrl} />
             <video style={{ width: "400px", height: "300px", border: "2px white" }} autoPlay={true}
-                   ref={this.videoRef} />
+                   ref={this.setVideoRef} />
           </header>
         </div>
     );
