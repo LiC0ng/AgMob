@@ -146,7 +146,7 @@ export default class App extends React.Component<Props, State> {
             </a>}
             <input style={{ width: "100%"}} value={sessionId} />
             <input style={{ width: "100%"}} value={navigatorUrl} />
-            <video style={{ width: "100%", border: "2px white" }} id="agmob-self-viewer"
+            <video style={{ width: "400px", height: "300px", border: "2px white" }} autoPlay={true}
                    ref={this.videoRef} />
           </header>
         </div>
