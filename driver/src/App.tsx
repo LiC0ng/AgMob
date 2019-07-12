@@ -51,6 +51,7 @@ export default class App extends React.Component<Props, State> {
   }
 
   handleStart = (event: any) => {
+    console.log("Start button pressed");
     event.preventDefault();
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `http://${WORKSPACE_BASE_ADDRESS}/api/session`);
@@ -155,21 +156,30 @@ export default class App extends React.Component<Props, State> {
     const navigatorUrl = `http://${WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
     return (
         <div className="App">
-          <header className="App-header">
-            {!this.state.sessionId ?
-            <a className="App-link" href="#" onClick={this.handleStart}>
-              Start
-            </a> :
-            <a className="App-link" href="#" onClick={this.handleStop}>
-              Stop
-            </a>}
-            <input style={{ width: "100%"}} value={this.state.sessionId}
+          {!this.state.sessionId ?
+          <a className="App-link" href="#" onClick={this.handleStart}>
+            Start
+          </a> :
+          <a className="App-link" href="#" onClick={this.handleStop}>
+            Stop
+          </a>}
+          <div>
+            <label htmlFor="sessionIdText">Session ID</label>
+            <input id="sessionIdText" value={this.state.sessionId}
                    onFocus={this.handleFocus} />
-            <input style={{ width: "100%"}} value={navigatorUrl}
+          </div>
+          <div>
+            <label htmlFor="navigatorUrlText">Navigator URL</label>
+            <input id="navigatorUrlText" value={navigatorUrl}
                    onFocus={this.handleFocus} />
-            <video style={{ width: "400px", height: "300px", border: "2px white" }} autoPlay={true}
+          </div>
+          <div>
+            <video style={{ width: "80%" }} autoPlay={true}
                    ref={this.setVideoRef} />
-          </header>
+          </div>
+          <div>
+            Connected to {Object.keys(this.state.peerList).length} navigator(s).
+          </div>
         </div>
     );
   }
