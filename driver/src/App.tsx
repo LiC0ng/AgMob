@@ -8,7 +8,7 @@ interface Props {
 }
 
 interface State {
-  uuid: any | undefined; // FIXME: any
+  sessionId?: string;
   peerList: any;
   connection?: WebSocket;
 }
@@ -26,7 +26,6 @@ export default class App extends React.Component<Props, State> {
     super(props);
 
     this.state = {
-      uuid: undefined,
       peerList: {},
     };
   }
@@ -58,10 +57,10 @@ export default class App extends React.Component<Props, State> {
     xhr.send();
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4 && xhr.status === 200) {
-        const uuid = JSON.parse(xhr.responseText);
-        // tslint:disable-next-line:no-console
-        console.log(uuid);
-        this.setState({ uuid }, this.connectWebsocket);
+        const obj = JSON.parse(xhr.responseText);
+        console.log("POST /api/session =>");
+        console.log(obj);
+        this.setState({ sessionId: obj.id }, this.connectWebsocket);
       }
     };
   };
@@ -74,12 +73,16 @@ export default class App extends React.Component<Props, State> {
   handleFocus = (event: any) => event.target.select();
 
   private connectWebsocket() {
+    if (!this.state.sessionId) {
+      console.log("[BUG] session id not set");
+      return;
+    }
     if (this.state.connection !== undefined) {
       console.log("websocket already connected");
       return;
     }
 
-    const socketUrl = `ws://${WORKSPACE_BASE_ADDRESS}/api/session/${this.state.uuid!.id}/driver`;
+    const socketUrl = `ws://${WORKSPACE_BASE_ADDRESS}/api/session/${this.state.sessionId}/driver`;
     console.log("start websocket");
     const connection = new WebSocket(socketUrl);
 
@@ -149,19 +152,18 @@ export default class App extends React.Component<Props, State> {
   }
 
   render() {
-    const sessionId = this.state.uuid ? this.state.uuid.id : null;
-    const navigatorUrl = `http://${WORKSPACE_BASE_ADDRESS}/session/${sessionId}`;
+    const navigatorUrl = `http://${WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
     return (
         <div className="App">
           <header className="App-header">
-            {!sessionId ?
+            {!this.state.sessionId ?
             <a className="App-link" href="#" onClick={this.handleStart}>
               Start
             </a> :
             <a className="App-link" href="#" onClick={this.handleStop}>
               Stop
             </a>}
-            <input style={{ width: "100%"}} value={sessionId}
+            <input style={{ width: "100%"}} value={this.state.sessionId}
                    onFocus={this.handleFocus} />
             <input style={{ width: "100%"}} value={navigatorUrl}
                    onFocus={this.handleFocus} />
