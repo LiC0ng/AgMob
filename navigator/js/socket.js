@@ -1,18 +1,19 @@
 let peer;
+const domain = "160.16.213.209";
 const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 let video = document.getElementById("agmob-screen-viewer");
 
 
 function sendWebsocket() {
     var id = document.getElementById("session-id").value;
-    var url = "ws://localhost:8080/api/session/" + id + "/navigator";
+    var url = "ws://" + domain + ":8080/api/session/" + id + "/navigator";
     var ws = new WebSocket(url);
 
     ws.onopen = function() {
       peer = new RTCPeerConnection(pcConfig);
       peer.ontrack = evt => {
         console.log('-- peer.ontrack()');
-        console.log(evt.track)
+        console.log(evt.track);
         console.log(evt.streams);
         evt.streams[0].addTrack(evt.track);
         playVideo(video, evt.streams[0]);
@@ -44,7 +45,7 @@ function sendWebsocket() {
         const sdp = JSON.parse(evt.data);
 
         peer.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
-          console.log('setRemoteDescription(answer) succsess in promise');
+          console.log('setRemoteDescription(answer) success in promise');
           peer.createAnswer().then((answer) => {
             peer.setLocalDescription(answer).then(() => {
               // const sdp = peer.localDescription;
@@ -75,7 +76,7 @@ async function setAnswer(sessionDescription) {
   }
   try{
     await peerConnection.setRemoteDescription(sessionDescription);
-    console.log('setRemoteDescription(answer) succsess in promise');
+    console.log('setRemoteDescription(answer) success in promise');
   } catch(err){
     console.error('setRemoteDescription(answer) ERROR: ', err);
   }
@@ -86,7 +87,7 @@ async function playVideo(element, stream) {
   element.srcObject = stream;
   try {
       await element.play();
-  } catch(erro) {
-      console.log('error auto play:' + error);
+  } catch(err) {
+      console.log('error auto play:' + err);
   }
 }
