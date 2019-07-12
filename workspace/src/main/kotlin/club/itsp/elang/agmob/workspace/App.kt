@@ -68,7 +68,7 @@ class NavigatorConnection(val session: Session) {
 
 // FIXME: navigator_id smells bad
 @Serializable
-data class WebSocketMessage(val kind: String, val payload: String, val navigator_id: Int = -1) {
+data class WebSocketMessage(val kind: String, val payload: String, val navigator_id: Int = -1){
     fun toJson(): String = Json.stringify(serializer(), this)
 
     companion object {
