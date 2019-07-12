@@ -2,26 +2,45 @@
   "name": "electron-quick-start-typescript",
   "version": "1.0.0",
   "description": "A minimal Electron application written with Typescript",
+  "homepage": "./",
+  "main": "src/electron-starter.js",
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
-    "lint": "tslint -c tslint.json -p tsconfig.json",
-    "start": "npm run build && electron ./dist/main.js"
+    "start-react-scripts": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "electron": "node_modules/.bin/electron .",
+    "start": "nf start -p 3000"
   },
-  "repository": "https://github.com/electron/electron-quick-start-typescript",
-  "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo",
-    "typescript"
-  ],
   "author": "GitHub",
   "license": "CC0-1.0",
+  "dependencies": {
+    "@types/node": "12.0.8",
+    "@types/react": "16.8.20",
+    "@types/react-dom": "16.8.4",
+    "foreman": "^3.0.1",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "^3.0.1",
+    "typescript": "^3.5.2"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
   "devDependencies": {
     "electron": "^5.0.3",
-    "tslint": "^5.18.0",
-    "typescript": "^3.5.2"
+    "tslint": "^5.18.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
