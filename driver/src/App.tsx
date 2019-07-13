@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 
-const WORKSPACE_BASE_ADDRESS = "160.16.213.209:8080";
+const WORKSPACE_BASE_ADDRESS = "160.16.213.209:80";
 const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 
 interface Props {
