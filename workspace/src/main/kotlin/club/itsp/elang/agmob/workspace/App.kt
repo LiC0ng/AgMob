@@ -79,7 +79,7 @@ data class WebSocketMessage(val kind: String, val payload: String, val navigator
 fun main(args: Array<String>) {
     val sessions = HashMap<String, Session>()
 
-    embeddedServer(Netty, 8080) {
+    embeddedServer(Netty, 80) {
         install(WebSockets)
 
         routing {
