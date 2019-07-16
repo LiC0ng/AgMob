@@ -10,7 +10,10 @@ import io.ktor.http.content.default
 import io.ktor.http.content.files
 import io.ktor.http.content.static
 import io.ktor.http.content.staticRootFolder
+import io.ktor.response.respond
+import io.ktor.response.respondFile
 import io.ktor.response.respondText
+import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
@@ -87,6 +90,14 @@ fun main(args: Array<String>) {
                 val sess = Session()
                 sessions[sess.id] = sess
                 call.respondText("{\"id\":\"${sess.id}\"}", ContentType.Application.Json)
+            }
+
+            get("/download/windows") {
+                val file = File("/agmob/AdMob/package/agmob-driver Setup 1.0.0.exe")
+                if(file.exists()) {
+                    call.respondFile(file)
+                }
+                else call.respond(HttpStatusCode.NotFound)
             }
 
             // FIXME: This will be removed
