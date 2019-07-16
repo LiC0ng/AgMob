@@ -93,7 +93,9 @@ fun main(args: Array<String>) {
             }
 
             get("/download/windows") {
-                val file = File("/agmob/AdMob/package/agmob-driver Setup 1.0.0.exe")
+                log.debug("access")
+                val file = File("/agmob/AgMob/package/agmob-driver Setup 1.0.0.exe")
+                log.debug("download")
                 if(file.exists()) {
                     call.respondFile(file)
                 }
