@@ -156,7 +156,7 @@ fun main(args: Array<String>) {
                 }
             }
 
-            static {
+            static ("/"){
                 staticRootFolder = File("../navigator")
                 files("./")
                 default("index.html")

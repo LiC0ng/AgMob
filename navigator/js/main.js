@@ -1,6 +1,6 @@
 function get_session(){
   const xhr = new XMLHttpRequest();
-  let url = "http://localhost:8080/session";
+  let url = "http://localhost:80/session";
   let param = document.getElementById("session-id").value;
   xhr.open("GET", url+"/"+param);
   xhr.send();
