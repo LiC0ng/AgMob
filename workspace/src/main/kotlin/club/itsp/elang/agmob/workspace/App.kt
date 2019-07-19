@@ -92,9 +92,32 @@ fun main(args: Array<String>) {
                 call.respondText("{\"id\":\"${sess.id}\"}", ContentType.Application.Json)
             }
 
-            get("/download/windows") {
+            // download windows package
+            get("/download/agmob-driver-1.0.0.exe") {
                 log.debug("access")
                 val file = File("/agmob/AgMob/package/agmob-driver Setup 1.0.0.exe")
+                log.debug("download")
+                if(file.exists()) {
+                    call.respondFile(file)
+                }
+                else call.respond(HttpStatusCode.NotFound)
+            }
+
+            // download linux package
+            get("/download/agmob-driver-1.0.0.AppImage") {
+                log.debug("access")
+                val file = File("/agmob/AgMob/package/agmob-driver-1.0.0.AppImage")
+                log.debug("download")
+                if(file.exists()) {
+                    call.respondFile(file)
+                }
+                else call.respond(HttpStatusCode.NotFound)
+            }
+
+            // download mac package
+            get("/download/agmob-driver-1.0.0.dmg") {
+                log.debug("access")
+                val file = File("/agmob/AgMob/package/agmob-driver-1.0.0.dmg")
                 log.debug("download")
                 if(file.exists()) {
                     call.respondFile(file)
