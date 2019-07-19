@@ -63,6 +63,7 @@ a {
     list-style-type: none;
     margin: auto;
     padding: 0;
+    float: right;
 }
 
 li {
