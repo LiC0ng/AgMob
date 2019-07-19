@@ -6,10 +6,7 @@ import io.ktor.application.log
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.cio.websocket.*
-import io.ktor.http.content.default
-import io.ktor.http.content.files
-import io.ktor.http.content.static
-import io.ktor.http.content.staticRootFolder
+import io.ktor.http.content.*
 import io.ktor.response.respond
 import io.ktor.response.respondFile
 import io.ktor.response.respondText
@@ -173,12 +170,6 @@ fun main(args: Array<String>) {
                         }
                     }
                 }
-            }
-
-            static ("/"){
-                staticRootFolder = File("../navigator")
-                files("./")
-                default("index.html")
             }
         }
     }.start(wait = true)
