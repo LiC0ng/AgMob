@@ -90,7 +90,7 @@ fun main(args: Array<String>) {
             }
 
             // download windows package
-            get("/download/agmob-driver-1.0.0.exe") {
+            get("/download/agmob-driver Setup 1.0.0.exe") {
                 log.debug("access")
                 val file = File("/agmob/AgMob/package/agmob-driver Setup 1.0.0.exe")
                 log.debug("download")
