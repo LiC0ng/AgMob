@@ -6,7 +6,7 @@ let video = document.getElementById("agmob-screen-viewer");
 
 
 function sendWebsocket() {
-    var id = document.getElementById("session-id").value;
+    const id = getSessionId();
     var url = `ws://${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/session/${id}/navigator`;
     var ws = new WebSocket(url);
 
@@ -70,18 +70,8 @@ function sendWebsocket() {
     };
 }
 
-// Answer側のSDPをセットする場合
-async function setAnswer(sessionDescription) {
-  if (! peerConnection) {
-    console.error('peerConnection NOT exist!');
-    return;
-  }
-  try{
-    await peerConnection.setRemoteDescription(sessionDescription);
-    console.log('setRemoteDescription(answer) success in promise');
-  } catch(err){
-    console.error('setRemoteDescription(answer) ERROR: ', err);
-  }
+function getSessionId() {
+  return location.pathname.match(/\/session\/([a-z0-9-]+)/)[1];
 }
 
 // Videoの再生を開始する
@@ -93,3 +83,5 @@ async function playVideo(element, stream) {
       console.log('error auto play:' + err);
   }
 }
+
+sendWebsocket();
