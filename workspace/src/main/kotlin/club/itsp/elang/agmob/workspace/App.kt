@@ -125,23 +125,6 @@ fun main(args: Array<String>) {
                 else call.respond(HttpStatusCode.NotFound)
             }
 
-            // FIXME: This will be removed
-            webSocket("/api/session/{id}/echo") {
-                val sess = sessions[call.parameters["id"]]
-                if (sess == null) {
-                    call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
-                    return@webSocket
-                }
-
-                for (frame in incoming) {
-                    if (frame !is Frame.Text) {
-                        close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "FIXME: invalid frame"))
-                        continue
-                    }
-                    outgoing.send(frame)
-                }
-            }
-
             webSocket("/api/session/{id}/navigator") {
                 val sess = sessions[call.parameters["id"]]
                 if (sess == null) {
