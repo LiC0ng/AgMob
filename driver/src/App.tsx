@@ -166,11 +166,6 @@ export default class App extends React.Component<Props, State> {
             Stop
           </a>}
           <div>
-            <label htmlFor="sessionIdText">Session ID</label>
-            <input id="sessionIdText" value={this.state.sessionId}
-                   onFocus={this.handleFocus} />
-          </div>
-          <div>
             <label htmlFor="navigatorUrlText">Navigator URL</label>
             <input id="navigatorUrlText" value={navigatorUrl}
                    onFocus={this.handleFocus} />
