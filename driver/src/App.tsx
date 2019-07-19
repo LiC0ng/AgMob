@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
-const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "160.16.213.209";
+const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://agmob-do-not-use-for-production.rhe.jp";
 const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 
 interface Props {
@@ -84,7 +84,7 @@ export default class App extends React.Component<Props, State> {
       return;
     }
 
-    const socketUrl = `ws://${WORKSPACE_WEBSOCKET_BASE_ADDRESS}` +
+    const socketUrl = `${WORKSPACE_WEBSOCKET_BASE_ADDRESS}` +
                   `/api/session/${this.state.sessionId}/driver`;
     const connection = new WebSocket(socketUrl);
 

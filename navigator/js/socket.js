@@ -1,6 +1,6 @@
 let peer;
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
-const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "160.16.213.209";
+const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://agmob-do-not-use-for-production.rhe.jp";
 const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 let video = document.getElementById("agmob-screen-viewer");
 let stream;
@@ -8,7 +8,7 @@ let stream;
 
 function sendWebsocket() {
     const id = getSessionId();
-    var url = `ws://${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/session/${id}/navigator`;
+    var url = `${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/session/${id}/navigator`;
     var ws = new WebSocket(url);
 
     ws.onopen = function() {
