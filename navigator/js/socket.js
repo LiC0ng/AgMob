@@ -1,16 +1,17 @@
 let peer;
-const WORKSPACE_BASE_ADDRESS = "160.16.213.209";
-const WORKSPACE_BASE_PORT = "80"
+const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
+const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "160.16.213.209";
 const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 let video = document.getElementById("agmob-screen-viewer");
 
 
 function sendWebsocket() {
     var id = document.getElementById("session-id").value;
-    var url = `ws://${WORKSPACE_BASE_ADDRESS}:${WORKSPACE_BASE_PORT}/api/session/${id}/navigator`;
+    var url = `ws://${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/session/${id}/navigator`;
     var ws = new WebSocket(url);
 
     ws.onopen = function() {
+      console.log("WebSocket connected");
       peer = new RTCPeerConnection(pcConfig);
       peer.ontrack = evt => {
         console.log('-- peer.ontrack()');

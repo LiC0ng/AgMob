@@ -1,7 +1,8 @@
 import React from 'react';
 import './App.css';
 
-const WORKSPACE_BASE_ADDRESS = "160.16.213.209:80";
+const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
+const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "160.16.213.209";
 const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 
 interface Props {
@@ -54,7 +55,7 @@ export default class App extends React.Component<Props, State> {
     console.log("Start button pressed");
     event.preventDefault();
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `http://${WORKSPACE_BASE_ADDRESS}/api/session`);
+    xhr.open("POST", `${WORKSPACE_BASE_ADDRESS}/api/session`);
     xhr.send();
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4 && xhr.status === 200) {
@@ -83,11 +84,12 @@ export default class App extends React.Component<Props, State> {
       return;
     }
 
-    const socketUrl = `ws://${WORKSPACE_BASE_ADDRESS}/api/session/${this.state.sessionId}/driver`;
-    console.log("start websocket");
+    const socketUrl = `ws://${WORKSPACE_WEBSOCKET_BASE_ADDRESS}` +
+                  `/api/session/${this.state.sessionId}/driver`;
     const connection = new WebSocket(socketUrl);
 
     connection.onopen = (e) => {
+      console.log("WebSocket connected");
       this.setState({ connection });
     };
     connection.onmessage = (e) => {
@@ -153,7 +155,7 @@ export default class App extends React.Component<Props, State> {
   }
 
   render() {
-    const navigatorUrl = `http://${WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
+    const navigatorUrl = `${WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
     return (
         <div className="App">
           {!this.state.sessionId ?
