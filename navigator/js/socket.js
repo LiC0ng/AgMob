@@ -3,6 +3,7 @@ const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "160.16.213.209";
 const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 let video = document.getElementById("agmob-screen-viewer");
+let stream;
 
 
 function sendWebsocket() {
@@ -18,6 +19,7 @@ function sendWebsocket() {
         console.log(evt.track);
         console.log(evt.streams);
         evt.streams[0].addTrack(evt.track);
+        stream = evt.streams[0];
         playVideo(video, evt.streams[0]);
       };
 
