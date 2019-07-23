@@ -1,5 +1,13 @@
 import React from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Link,
+  RouteComponentProps
+} from "react-router-dom";
 import './App.css';
+
 
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
@@ -154,30 +162,71 @@ export default class App extends React.Component<Props, State> {
     };
   }
 
-  render() {
-    const navigatorUrl = `${WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
+  top(){
     return (
-        <div className="App">
-          {!this.state.sessionId ?
-          <a className="App-link" href="#" onClick={this.handleStart}>
-            Start
-          </a> :
-          <a className="App-link" href="#" onClick={this.handleStop}>
-            Stop
-          </a>}
-          <div>
-            <label htmlFor="navigatorUrlText">Navigator URL</label>
-            <input id="navigatorUrlText" value={navigatorUrl}
-                   onFocus={this.handleFocus} />
-          </div>
-          <div>
-            <video style={{ width: "80%" }} autoPlay={true}
-                   ref={this.setVideoRef} />
-          </div>
-          <div>
-            Connected to {Object.keys(this.state.peerList).length} navigator(s).
-          </div>
+        <div>
+          <h1>top</h1>
+
+          <a href="/new_workspace">new workspace</a>
+          <a href="/new_driver">new driver</a>
         </div>
+    );
+  }
+
+  newWorkspace(){
+    return <div>
+      <h1>newWorkspace</h1>
+    </div>
+  }
+
+  driver(){
+    return <div>driver</div>
+  }
+
+  newDriver(){
+    return <div>newDriver</div>
+  }
+
+  endDriver(){
+    return <div>endDriver</div>
+  }
+
+  render() {
+    // const navigatorUrl = `${WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
+    // return (
+    //     <div className="App">
+    //       {!this.state.sessionId ?
+    //       <a className="App-link" href="#" onClick={this.handleStart}>
+    //         Start
+    //       </a> :
+    //       <a className="App-link" href="#" onClick={this.handleStop}>
+    //         Stop
+    //       </a>}
+    //       <div>
+    //         <label htmlFor="navigatorUrlText">Navigator URL</label>
+    //         <input id="navigatorUrlText" value={navigatorUrl}
+    //                onFocus={this.handleFocus} />
+    //       </div>
+    //       <div>
+    //         <video style={{ width: "80%" }} autoPlay={true}
+    //                ref={this.setVideoRef} />
+    //       </div>
+    //       <div>
+    //         Connected to {Object.keys(this.state.peerList).length} navigator(s).
+    //       </div>
+    //     </div>
+    // );
+    return (
+        <Router>
+        <div>
+          <Switch>
+            <Route exact={true} path="/">{this.top()}</Route>
+            <Route path="/new_workspace/">{this.newWorkspace()}</Route>
+            <Route path="/new_driver/">{this.newDriver()}</Route>
+
+          </Switch>
+        </div>
+        </Router>
     );
   }
 }
