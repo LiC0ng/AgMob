@@ -1,6 +1,6 @@
 let peer;
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
-const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://agmob-do-not-use-for-production.rhe.jp";
+const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
 const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 let video = document.getElementById("agmob-screen-viewer");
 let stream;
