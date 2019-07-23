@@ -4,7 +4,7 @@
     <list default="true" id="d3c4e711-1be3-46bf-8acf-18dedcf44956" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../driver/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../driver/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../driver/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../driver/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../driver/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../driver/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../driver/src/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../driver/src/index.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -142,16 +142,15 @@
       <workItem from="1563169295629" duration="241000" />
       <workItem from="1563251077136" duration="1643000" />
       <workItem from="1563514100987" duration="1634000" />
-      <workItem from="1563863677099" duration="1255000" />
+      <workItem from="1563863677099" duration="1497000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="25999000" />
+    <option name="totallyTimeSpent" value="26241000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24697208" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
