@@ -1,56 +1,42 @@
 import React from "react";
-
-interface IProps {
-    startTimeInSeconds: number;
-    startTimeInMinutes: number;
-}
+import { Button } from "react-bootstrap";
 
 interface IState {
-    timeRemainingInSeconds: number;
-    timeRemainingInMinutes: number;
+    inputValue: number;
 }
 
-export default class TimerCountdown extends React.Component<IProps, IState> {
+export default class TimerCountdown extends React.Component<any, IState> {
 
-    private timer: any;
-
-    public constructor(props: IProps) {
+    public constructor(props: any) {
         super(props);
         this.state = {
-            timeRemainingInMinutes: props.startTimeInMinutes,
-            timeRemainingInSeconds: props.startTimeInSeconds,
+            inputValue: 0,
         };
+        this.clickSetHandle = this.clickSetHandle.bind(this);
     }
 
-    public startTimerCountdownHandler() {
-        if (this.state.timeRemainingInSeconds > 0) {
-            this.setState({
-                timeRemainingInSeconds: this.state.timeRemainingInSeconds - 1,
-            });
-        } else if (this.state.timeRemainingInMinutes > 0 && this.state.timeRemainingInSeconds <= 0) {
-            this.setState({
-                timeRemainingInMinutes: this.state.timeRemainingInMinutes - 1,
-                timeRemainingInSeconds: 59,
-            });
-        } else {
-            clearInterval(this.timer!);
-
-        }
+    public handleGetInputValue = (e: any) => {
+        this.setState({
+            inputValue: e.target.value,
+        });
     }
 
-    public componentDidMount()  {
-        this.timer = setInterval(() => {
-            this.startTimerCountdownHandler();
-        }, 1000);
+    public clickSetHandle() {
+        this.props.history.push({pathname: "/start_page", state: {startTimeInMinutes: this.state.inputValue}});
     }
-
-
     public render() {
         return (
             <div className="timer-countdown">
-                {this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}
+                <h3>Input your desired time</h3>
+                <input
+                    type="number"
+                    min="0"
+                    onChange={this.handleGetInputValue.bind(this)}
+                />
+                <Button onClick={ this.clickSetHandle }>Set</Button>
             </div>
         );
     }
 }
+
 
