@@ -6,7 +6,9 @@ import io.ktor.application.log
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.cio.websocket.*
+import io.ktor.request.receiveText
 import io.ktor.response.respondText
+import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
@@ -15,13 +17,20 @@ import io.ktor.websocket.WebSocketServerSession
 import io.ktor.websocket.WebSockets
 import io.ktor.websocket.webSocket
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
 import java.util.*
 import kotlin.collections.HashMap
 
-class Session {
+@Serializable
+data class SessionConfiguration(val interval: Int)
+
+@Serializable
+class Session(val config: SessionConfiguration) {
     val id = UUID.randomUUID().toString()
+    @Transient
     val driver = DriverConnection(this)
+    @Transient
     val navigators = HashMap<Int, NavigatorConnection>()
 
     fun addNavigator(wss: WebSocketServerSession): NavigatorConnection {
@@ -34,6 +43,7 @@ class Session {
     fun setDriverWebSocketSession(wss: WebSocketServerSession) {
         driver.wsSession = wss
     }
+
 }
 
 class DriverConnection(val session: Session) {
@@ -63,7 +73,7 @@ class NavigatorConnection(val session: Session) {
 
 // FIXME: navigator_id smells bad
 @Serializable
-data class WebSocketMessage(val kind: String, val payload: String, val navigator_id: Int = -1){
+data class WebSocketMessage(val kind: String, val payload: String, val navigator_id: Int = -1) {
     fun toJson(): String = Json.stringify(serializer(), this)
 
     companion object {
@@ -79,11 +89,24 @@ fun main(args: Array<String>) {
 
         routing {
             post("/api/session") {
-                val sess = Session()
+                val configText = call.receiveText()
+                // FIXME: Once driver supports it, this 'if' must be removed
+                val sess = Session(if (configText.isNotBlank())
+                    Json.parse(SessionConfiguration.serializer(), configText)
+                else
+                    SessionConfiguration(10 * 60))
                 sessions[sess.id] = sess
-                call.respondText("{\"id\":\"${sess.id}\"}", ContentType.Application.Json)
+                call.respondText(Json.stringify(Session.serializer(), sess), ContentType.Application.Json)
             }
 
+            get("/api/session/{id}") {
+                val sess = sessions[call.parameters["id"]]
+                if (sess == null) {
+                    call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
+                    return@get
+                }
+                call.respondText(Json.stringify(Session.serializer(), sess), ContentType.Application.Json)
+            }
 
             webSocket("/api/session/{id}/navigator") {
                 val sess = sessions[call.parameters["id"]]
