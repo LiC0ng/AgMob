@@ -10,6 +10,7 @@ import io.ktor.request.receiveText
 import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.post
+import io.ktor.routing.put
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -23,10 +24,15 @@ import java.util.*
 import kotlin.collections.HashMap
 
 @Serializable
-data class SessionConfiguration(val interval: Int)
+class SessionConfiguration(
+        // The length of a 'mob session' in seconds
+        val interval: Int,
+        // The unix time stamp in seconds (JavaScript: Date.now() / 1000)
+        var begin: Long
+)
 
 @Serializable
-class Session(val config: SessionConfiguration) {
+class Session(var config: SessionConfiguration) {
     val id = UUID.randomUUID().toString()
     @Transient
     var driver: DriverConnection? = null
@@ -90,8 +96,19 @@ fun main(args: Array<String>) {
                 val sess = Session(if (configText.isNotBlank())
                     Json.parse(SessionConfiguration.serializer(), configText)
                 else
-                    SessionConfiguration(10 * 60))
+                    SessionConfiguration(10 * 60, System.currentTimeMillis() / 1000L))
                 sessions[sess.id] = sess
+                call.respondText(Json.stringify(Session.serializer(), sess), ContentType.Application.Json)
+            }
+
+            put("/api/session/{id}") {
+                val sess = sessions[call.parameters["id"]]
+                if (sess == null) {
+                    call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
+                    return@put
+                }
+                val newConfig = Json.parse(SessionConfiguration.serializer(), call.receiveText())
+                sess.config = newConfig
                 call.respondText(Json.stringify(Session.serializer(), sess), ContentType.Application.Json)
             }
 
