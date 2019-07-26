@@ -24,8 +24,8 @@ export default class Top extends React.Component {
                 </Row>
                 <Row className={"justify-content-md-center"}>
                     <Col md={12}>
-                        <Button className={"btn-lg btn-block"} href={"./new_workspace"}>{"New Workspace"}</Button>
-                        <Button className={"btn-lg btn-block"} href={"./join_workspace"}>{"Join Workspace"}</Button>
+                        <Button className={"btn-lg btn-block"} href={"/new_workspace"}>{"New Workspace"}</Button>
+                        <Button className={"btn-lg btn-block"} href={"/join_workspace"}>{"Join Workspace"}</Button>
                     </Col>
                 </Row>
                 <Row className={"justify-content-md-center"}>
