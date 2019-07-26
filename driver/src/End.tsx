@@ -1,5 +1,6 @@
 import React from "react";
 import {Button, Col, Container, Row} from "react-bootstrap";
+import {Link} from "react-router-dom";
 import {log} from "util";
 
 // import "./End.css";
@@ -46,7 +47,7 @@ export default class End extends React.Component<Props, State> {
                 </Row>
                 <Row className={"justify-content-md-center"}>
                     <Col md={12}>
-                        <Button className={"btn-lg btn-block"} href={"/"}>{"Back to Top"}</Button>
+                        <Link className={"btn btn-primary btn-lg btn-block"} to={"/"}>{"Back to Top"}</Link>
                     </Col>
                 </Row>
                 <Row className={"justify-content-md-center"}>
@@ -56,7 +57,7 @@ export default class End extends React.Component<Props, State> {
                 </Row>
                 <Row className={"justify-content-md-center"}>
                     <Col md={12}>
-                        <Button className={"btn-lg btn-block"} href={"/agmob"}>{"timerpage"}</Button>
+                        <Link className={"btn btn-primary btn-lg btn-block"} to={"/agmob"}>{"timerpage"}</Link>
                     </Col>
                 </Row>
             </div>
