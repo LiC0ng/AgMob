@@ -34,6 +34,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
             });
         } else {
             clearInterval(this.timer!);
+
         }
     }
 

@@ -7,6 +7,8 @@ import {
   RouteComponentProps
 } from "react-router-dom";
 import './App.css';
+import End from "./End";
+import TimerCountdown from "./timer";
 import Top from "./Top";
 import { Button, Container} from "react-bootstrap";
 
@@ -28,6 +30,9 @@ interface State {
 export default class App extends React.Component<Props, State> {
   private stream?: MediaStream;
   private videoRef?: HTMLVideoElement;
+
+  private endPage = <End/>;
+  private agmobPage = <TimerCountdown startTimeInSeconds={0} startTimeInMinutes={0}/>;
   private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
     if (this.stream)
       videoRef.srcObject = this.stream;
@@ -41,6 +46,13 @@ export default class App extends React.Component<Props, State> {
       peerList: {},
     };
   }
+
+  public onsetSessionId(sessionId: string){
+    this.setState({sessionId: sessionId});
+
+  }
+
+
 
   componentDidMount() {
     const screenSharingConstraints = {
@@ -165,17 +177,6 @@ export default class App extends React.Component<Props, State> {
     };
   }
 
-  top(){
-    return (
-        <div>
-          <h1>top</h1>
-
-          <a href="/new_workspace">new workspace</a>
-          <a href="/new_driver">new driver</a>
-        </div>
-    );
-  }
-
   newWorkspace(){
     return <div>
       <h1>newWorkspace</h1>
@@ -190,9 +191,6 @@ export default class App extends React.Component<Props, State> {
     return <div>newDriver</div>
   }
 
-  endDriver(){
-    return <div>endDriver</div>
-  }
 
   render() {
     // const navigatorUrl = `${WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
@@ -219,6 +217,7 @@ export default class App extends React.Component<Props, State> {
     //       </div>
     //     </div>
     // );
+
     return (
         <Container>
           <Router>
@@ -226,7 +225,8 @@ export default class App extends React.Component<Props, State> {
               <Route exact={true} path="/"><Top/></Route>
               <Route path="/new_workspace/">{this.newWorkspace()}</Route>
               <Route path="/join_workspace/">{this.newDriver()}</Route>
-
+              <Route path="/agmob/">{this.agmobPage}</Route>
+              <Route path="/end/"><End sessionId={this.state.sessionId}/></Route>
             </Switch>
           </Router>
         </Container>

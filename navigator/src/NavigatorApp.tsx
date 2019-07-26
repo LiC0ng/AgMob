@@ -64,6 +64,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
               ws.send(JSON.stringify(sendObject));
           }
         };
+        peer.on
         let sendObject = {
           "kind": "request_sdp",
           "payload": "",
