@@ -17,7 +17,7 @@ export default class TimerCountdown extends React.Component<any, IState> {
 
     public handleGetInputValue = (e: any) => {
         this.setState({
-            inputValue: e.target.value,
+            inputValue: e.target.value.replace(/[^0-9]/g, ""),
         });
     }
 
@@ -30,7 +30,7 @@ export default class TimerCountdown extends React.Component<any, IState> {
                 <h3>Input your desired time</h3>
                 <input
                     type="number"
-                    min="0"
+                    value={this.state.inputValue}
                     onChange={this.handleGetInputValue.bind(this)}
                 />
                 <Button onClick={ this.clickSetHandle }>Set</Button>
