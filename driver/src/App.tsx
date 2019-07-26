@@ -7,6 +7,9 @@ import {
   RouteComponentProps
 } from "react-router-dom";
 import './App.css';
+import Top from "./Top";
+import { Button, Container} from "react-bootstrap";
+
 
 
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
@@ -217,16 +220,16 @@ export default class App extends React.Component<Props, State> {
     //     </div>
     // );
     return (
-        <Router>
-        <div>
-          <Switch>
-            <Route exact={true} path="/">{this.top()}</Route>
-            <Route path="/new_workspace/">{this.newWorkspace()}</Route>
-            <Route path="/new_driver/">{this.newDriver()}</Route>
+        <Container>
+          <Router>
+            <Switch>
+              <Route exact={true} path="/"><Top/></Route>
+              <Route path="/new_workspace/">{this.newWorkspace()}</Route>
+              <Route path="/join_workspace/">{this.newDriver()}</Route>
 
-          </Switch>
-        </div>
-        </Router>
+            </Switch>
+          </Router>
+        </Container>
     );
   }
 }
