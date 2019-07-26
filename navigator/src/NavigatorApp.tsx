@@ -64,7 +64,28 @@ export default class NavigatorApp extends React.Component<Props, State> {
               ws.send(JSON.stringify(sendObject));
           }
         };
-        peer.on
+        peer.onconnectionstatechange = evt => {
+              switch(peer.connectionState) {
+                  case "connected":
+                      // The connection has become fully connected
+                      break;
+                  case "disconnected":
+                  case "failed":
+                      // One or more transports has terminated unexpectedly or in an error
+                      if(this.videoRef){
+                          this.videoRef.pause();
+                          this.videoRef.currentTime =  0;
+                      }
+                      break;
+                  case "closed":
+                      // The connection has been closed
+                      if(this.videoRef){
+                          this.videoRef.pause();
+                          this.videoRef.currentTime =  0;
+                      }
+                      break;
+              }
+        }
         let sendObject = {
           "kind": "request_sdp",
           "payload": "",

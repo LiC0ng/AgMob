@@ -6,8 +6,11 @@ import io.ktor.application.log
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.cio.websocket.*
+import io.ktor.request.receiveText
 import io.ktor.response.respondText
+import io.ktor.routing.get
 import io.ktor.routing.post
+import io.ktor.routing.put
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -15,55 +18,79 @@ import io.ktor.websocket.WebSocketServerSession
 import io.ktor.websocket.WebSockets
 import io.ktor.websocket.webSocket
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
 import java.util.*
 import kotlin.collections.HashMap
 
-class Session {
+@Serializable
+class SessionConfiguration(
+        // The length of a 'mob session' in seconds
+        val interval: Int,
+        // The unix time stamp in seconds (JavaScript: Date.now() / 1000)
+        var begin: Long
+)
+
+@Serializable
+class Session(var config: SessionConfiguration) {
     val id = UUID.randomUUID().toString()
-    val driver = DriverConnection(this)
+    @Transient
+    var driver: DriverConnection? = null
+        private set
+    @Transient
     val navigators = HashMap<Int, NavigatorConnection>()
 
-    fun addNavigator(wss: WebSocketServerSession): NavigatorConnection {
-        val conn = NavigatorConnection(this)
-        conn.wsSession = wss
+    fun addNavigator(conn: NavigatorConnection) {
         navigators[conn.id] = conn
-        return conn
     }
 
-    fun setDriverWebSocketSession(wss: WebSocketServerSession) {
-        driver.wsSession = wss
-    }
-}
+    suspend fun setDriver(conn: DriverConnection?) {
+        driver = conn
 
-class DriverConnection(val session: Session) {
-    var wsSession: WebSocketServerSession? = null
-
-    suspend fun requestSdp(navConn: NavigatorConnection, message: WebSocketMessage) {
-        wsSession?.send(WebSocketMessage("request_sdp", message.payload, navConn.id).toJson())
-    }
-
-    suspend fun receiveAnswerSdp(navConn: NavigatorConnection, message: WebSocketMessage) {
-        wsSession?.send(WebSocketMessage("sdp", message.payload, navConn.id).toJson())
+        if (conn != null) {
+            // Notify already-connected navigators that they can now attempt WebRTC connection
+            navigators.values.forEach { nav -> nav.notifyDriverReady() }
+        } else {
+            navigators.values.forEach { nav -> nav.notifyDriverQuit() }
+        }
     }
 }
 
-class NavigatorConnection(val session: Session) {
+abstract class BaseConnection(val session: Session) {
     val id = idBase++
-    var wsSession: WebSocketServerSession? = null
-
-    suspend fun receiveOfferSdp(message: WebSocketMessage) {
-        wsSession?.send(WebSocketMessage("sdp", message.payload).toJson())
-    }
 
     companion object {
         private var idBase = 0
     }
 }
 
+class DriverConnection(session: Session, private val wsSession: WebSocketServerSession) : BaseConnection(session) {
+    suspend fun requestSdpOffer(navConn: NavigatorConnection, message: WebSocketMessage) {
+        wsSession.send(WebSocketMessage("request_sdp", message.payload, navConn.id).toJson())
+    }
+
+    suspend fun receiveSdpAnswer(navConn: NavigatorConnection, message: WebSocketMessage) {
+        wsSession.send(WebSocketMessage("sdp", message.payload, navConn.id).toJson())
+    }
+}
+
+class NavigatorConnection(session: Session, private val wsSession: WebSocketServerSession) : BaseConnection(session) {
+    suspend fun receiveSdpOffer(message: WebSocketMessage) {
+        wsSession.send(WebSocketMessage("sdp", message.payload).toJson())
+    }
+
+    suspend fun notifyDriverReady() {
+        wsSession.send(WebSocketMessage("driver_ready", "").toJson())
+    }
+
+    suspend fun notifyDriverQuit() {
+        wsSession.send(WebSocketMessage("driver_quit", "").toJson())
+    }
+}
+
 // FIXME: navigator_id smells bad
 @Serializable
-data class WebSocketMessage(val kind: String, val payload: String, val navigator_id: Int = -1){
+data class WebSocketMessage(val kind: String, val payload: String, val navigator_id: Int = -1) {
     fun toJson(): String = Json.stringify(serializer(), this)
 
     companion object {
@@ -79,11 +106,35 @@ fun main(args: Array<String>) {
 
         routing {
             post("/api/session") {
-                val sess = Session()
+                val configText = call.receiveText()
+                // FIXME: Once driver supports it, this 'if' must be removed
+                val sess = Session(if (configText.isNotBlank())
+                    Json.parse(SessionConfiguration.serializer(), configText)
+                else
+                    SessionConfiguration(10 * 60, System.currentTimeMillis() / 1000L))
                 sessions[sess.id] = sess
-                call.respondText("{\"id\":\"${sess.id}\"}", ContentType.Application.Json)
+                call.respondText(Json.stringify(Session.serializer(), sess), ContentType.Application.Json)
             }
 
+            put("/api/session/{id}") {
+                val sess = sessions[call.parameters["id"]]
+                if (sess == null) {
+                    call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
+                    return@put
+                }
+                val newConfig = Json.parse(SessionConfiguration.serializer(), call.receiveText())
+                sess.config = newConfig
+                call.respondText(Json.stringify(Session.serializer(), sess), ContentType.Application.Json)
+            }
+
+            get("/api/session/{id}") {
+                val sess = sessions[call.parameters["id"]]
+                if (sess == null) {
+                    call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
+                    return@get
+                }
+                call.respondText(Json.stringify(Session.serializer(), sess), ContentType.Application.Json)
+            }
 
             webSocket("/api/session/{id}/navigator") {
                 val sess = sessions[call.parameters["id"]]
@@ -91,7 +142,8 @@ fun main(args: Array<String>) {
                     call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
                     return@webSocket
                 }
-                val conn = sess.addNavigator(this)
+                val conn = NavigatorConnection(sess, this)
+                sess.addNavigator(conn)
 
                 for (frame in incoming) {
                     if (frame !is Frame.Text) {
@@ -100,8 +152,14 @@ fun main(args: Array<String>) {
                     }
                     val msg = WebSocketMessage.parseJson(frame.readText())
                     when (msg.kind) {
-                        "request_sdp" -> sess.driver.requestSdp(conn, msg)
-                        "sdp" -> sess.driver.receiveAnswerSdp(conn, msg)
+                        "request_sdp" -> {
+                            val driver = sess.driver
+                            driver?.requestSdpOffer(conn, msg)
+                        }
+                        "sdp" -> {
+                            val driver = sess.driver
+                            driver?.receiveSdpAnswer(conn, msg)
+                        }
                         else -> {
                             log.info("invalid websocket message from navigator")
                         }
@@ -115,7 +173,8 @@ fun main(args: Array<String>) {
                     call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
                     return@webSocket
                 }
-                sess.setDriverWebSocketSession(this)
+                val conn = DriverConnection(sess, this)
+                sess.setDriver(conn)
 
                 for (frame in incoming) {
                     if (frame !is Frame.Text) {
@@ -126,7 +185,12 @@ fun main(args: Array<String>) {
                     when (msg.kind) {
                         "sdp" -> {
                             val navConn = sess.navigators[msg.navigator_id]
-                            navConn?.receiveOfferSdp(msg)
+                            navConn?.receiveSdpOffer(msg)
+                        }
+                        "quit" -> {
+                            log.info("driver: quitting")
+                            sess.setDriver(null)
+                            close()
                         }
                         else -> {
                             log.info("invalid websocket message from navigator")
