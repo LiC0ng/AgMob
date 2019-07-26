@@ -64,7 +64,6 @@ export default class NavigatorApp extends React.Component<Props, State> {
               ws.send(JSON.stringify(sendObject));
           }
         };
-
         peer.onconnectionstatechange = evt => {
               switch(peer.connectionState) {
                   case "connected":
@@ -87,7 +86,6 @@ export default class NavigatorApp extends React.Component<Props, State> {
                       break;
               }
         }
-
         let sendObject = {
           "kind": "request_sdp",
           "payload": "",
