@@ -71,6 +71,10 @@ class NavigatorConnection(session: Session, private val wsSession: WebSocketServ
     suspend fun receiveSdpOffer(message: WebSocketMessage) {
         wsSession.send(WebSocketMessage("sdp", message.payload).toJson())
     }
+
+    suspend fun notifyNewDriver() {
+        wsSession.send(WebSocketMessage("driver_ready", "").toJson())
+    }
 }
 
 // FIXME: navigator_id smells bad
@@ -160,6 +164,9 @@ fun main(args: Array<String>) {
                 }
                 val conn = DriverConnection(sess, this)
                 sess.setDriver(conn)
+
+                // Notify already-connected navigators that they can now attempt WebRTC connection
+                sess.navigators.values.forEach { nav -> nav.notifyNewDriver() }
 
                 for (frame in incoming) {
                     if (frame !is Frame.Text) {
