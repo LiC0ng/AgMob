@@ -18,14 +18,14 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         super(props);
         this.state = {
             timeRemainingInMinutes: props.startTimeInMinutes,
-            timeRemainingInSeconds: props.startTimeInSeconds
+            timeRemainingInSeconds: props.startTimeInSeconds,
         };
     }
 
     public startTimerCountdownHandler() {
-        if(this.state.timeRemainingInSeconds > 0) {
+        if (this.state.timeRemainingInSeconds > 0) {
             this.setState({
-                timeRemainingInSeconds: this.state.timeRemainingInSeconds - 1
+                timeRemainingInSeconds: this.state.timeRemainingInSeconds - 1,
             });
         } else if (this.state.timeRemainingInMinutes > 0 && this.state.timeRemainingInSeconds <= 0) {
             this.setState({
@@ -53,33 +53,3 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
     }
 }
 
-class TimerInput extends React.Component {
-    render() {
-        return (
-            <div>
-                <h3>Input your desired time</h3>
-                <input type="number" required />
-            </div>
-        );
-    }
-}
-
-class Timer extends React.Component {
-    render() {
-        return (
-            <div>
-                <h1> </h1>
-            </div>
-        );
-    }
-}
-
-class StartButton extends React.Component {
-    render() {
-        return(
-            <div>
-                <button>Start</button>
-            </div>
-        );
-    }
-}
