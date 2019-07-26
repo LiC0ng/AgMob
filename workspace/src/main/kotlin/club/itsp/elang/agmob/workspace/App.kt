@@ -44,8 +44,15 @@ class Session(var config: SessionConfiguration) {
         navigators[conn.id] = conn
     }
 
-    fun setDriver(conn: DriverConnection) {
+    suspend fun setDriver(conn: DriverConnection?) {
         driver = conn
+
+        if (conn != null) {
+            // Notify already-connected navigators that they can now attempt WebRTC connection
+            navigators.values.forEach { nav -> nav.notifyDriverReady() }
+        } else {
+            navigators.values.forEach { nav -> nav.notifyDriverQuit() }
+        }
     }
 }
 
@@ -72,8 +79,12 @@ class NavigatorConnection(session: Session, private val wsSession: WebSocketServ
         wsSession.send(WebSocketMessage("sdp", message.payload).toJson())
     }
 
-    suspend fun notifyNewDriver() {
+    suspend fun notifyDriverReady() {
         wsSession.send(WebSocketMessage("driver_ready", "").toJson())
+    }
+
+    suspend fun notifyDriverQuit() {
+        wsSession.send(WebSocketMessage("driver_quit", "").toJson())
     }
 }
 
@@ -165,9 +176,6 @@ fun main(args: Array<String>) {
                 val conn = DriverConnection(sess, this)
                 sess.setDriver(conn)
 
-                // Notify already-connected navigators that they can now attempt WebRTC connection
-                sess.navigators.values.forEach { nav -> nav.notifyNewDriver() }
-
                 for (frame in incoming) {
                     if (frame !is Frame.Text) {
                         close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "FIXME: invalid frame"))
@@ -178,6 +186,11 @@ fun main(args: Array<String>) {
                         "sdp" -> {
                             val navConn = sess.navigators[msg.navigator_id]
                             navConn?.receiveSdpOffer(msg)
+                        }
+                        "quit" -> {
+                            log.info("driver: quitting")
+                            sess.setDriver(null)
+                            close()
                         }
                         else -> {
                             log.info("invalid websocket message from navigator")
