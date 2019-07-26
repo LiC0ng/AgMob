@@ -36,7 +36,6 @@ export default class Top extends React.Component {
                 </Row>
                 <Row className={"justify-content-md-center"}>
                     <Col md={12}>
-                        <Link className={"btn btn-primary btn-lg btn-block"} to={"/agmob"}>{"timerpage"}</Link>
                         <Link className={"btn btn-primary btn-lg btn-block"} to={"/end"}>{"end page"}</Link>
 
                     </Col>

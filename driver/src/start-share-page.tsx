@@ -42,6 +42,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             });
         } else {
             clearInterval(this.timer!);
+            this.props.history.push({pathname: "/end", state: {sessionId: "sessionId-hoge-fuga"}});
         }
     }
 

@@ -33,8 +33,6 @@ export default class App extends React.Component<Props, State> {
   private stream?: MediaStream;
   private videoRef?: HTMLVideoElement;
 
-  private endPage = <End/>;
-  private agmobPage = <TimerCountdown startTimeInSeconds={0} startTimeInMinutes={0}/>;
   private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
     if (this.stream)
       videoRef.srcObject = this.stream;
@@ -227,8 +225,7 @@ export default class App extends React.Component<Props, State> {
               <Route exact={true} path="/"><Top/></Route>
               <Route path="/new_workspace/" component={ TimerCountdown }/>
               <Route path="/join_workspace/"><Join/></Route>
-              <Route path="/agmob/">{this.agmobPage}</Route>
-              <Route path="/end/"><End sessionId={this.state.sessionId}/></Route>
+              <Route path="/end/" component={End}/>
               <Route path="/start_page/" component={ StartShare } />
             </Switch>
           </Router>

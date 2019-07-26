@@ -11,6 +11,7 @@ const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 // tslint:disable-next-line:interface-name
 interface Props {
     sessionId?: string;
+    history: any;
 }
 
 // tslint:disable-next-line:interface-name
@@ -24,9 +25,9 @@ export default class End extends React.Component<Props, State> {
 
     public constructor(props: Props) {
         super(props);
-
+        const sessionId: string = this.props.history.location.state.sessionId;
         this.state = {
-            navigatorUrl: `${WORKSPACE_BASE_ADDRESS}/session/${props.sessionId}`,
+            navigatorUrl: `${WORKSPACE_BASE_ADDRESS}/session/${sessionId}`,
         };
     }
 
@@ -57,7 +58,6 @@ export default class End extends React.Component<Props, State> {
                 </Row>
                 <Row className={"justify-content-md-center"}>
                     <Col md={12}>
-                        <Link className={"btn btn-primary btn-lg btn-block"} to={"/agmob"}>{"timerpage"}</Link>
                     </Col>
                 </Row>
             </div>
