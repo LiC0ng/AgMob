@@ -12,6 +12,7 @@ import TimerCountdown from "./timer";
 import Top from "./Top";
 import Join from "./Join"
 import { Button, Container} from "react-bootstrap";
+import StartShare from "./start-share-page";
 
 
 
@@ -224,10 +225,11 @@ export default class App extends React.Component<Props, State> {
           <Router>
             <Switch>
               <Route exact={true} path="/"><Top/></Route>
-              <Route path="/new_workspace/">{this.newWorkspace()}</Route>
+              <Route path="/new_workspace/" component={ TimerCountdown }/>
               <Route path="/join_workspace/"><Join/></Route>
               <Route path="/agmob/">{this.agmobPage}</Route>
               <Route path="/end/"><End sessionId={this.state.sessionId}/></Route>
+              <Route path="/start_page/" component={ StartShare } />
             </Switch>
           </Router>
         </Container>
