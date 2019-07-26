@@ -10,6 +10,7 @@ import './App.css';
 import End from "./End";
 import TimerCountdown from "./timer";
 import Top from "./Top";
+import Join from "./Join"
 import { Button, Container} from "react-bootstrap";
 
 
@@ -224,7 +225,7 @@ export default class App extends React.Component<Props, State> {
             <Switch>
               <Route exact={true} path="/"><Top/></Route>
               <Route path="/new_workspace/">{this.newWorkspace()}</Route>
-              <Route path="/join_workspace/">{this.newDriver()}</Route>
+              <Route path="/join_workspace/"><Join/></Route>
               <Route path="/agmob/">{this.agmobPage}</Route>
               <Route path="/end/"><End sessionId={this.state.sessionId}/></Route>
             </Switch>
