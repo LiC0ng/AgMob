@@ -12,7 +12,7 @@ export default class TimerCountdown extends React.Component<any, IState> {
     public constructor(props: any) {
         super(props);
         this.state = {
-            inputValue: 0,
+            inputValue: 10,
         };
         this.clickSetHandle = this.clickSetHandle.bind(this);
     }
