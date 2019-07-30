@@ -1,6 +1,8 @@
 import React from "react";
 import { Button } from "react-bootstrap";
 
+const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
+
 interface IState {
     inputValue: number;
 }
@@ -22,8 +24,25 @@ export default class TimerCountdown extends React.Component<any, IState> {
     }
 
     public clickSetHandle() {
-        this.props.history.push({pathname: "/start_page", state: {startTimeInMinutes: this.state.inputValue}});
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `${WORKSPACE_BASE_ADDRESS}/api/session`);
+        xhr.send();
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            const obj = JSON.parse(xhr.responseText);
+            console.log("POST /api/session =>");
+            console.log(obj);
+            this.props.history.push({
+                pathname: "/start_page",
+                state: {
+                    startTimeInMinutes: this.state.inputValue,
+                    sessionId: obj.id,
+                },
+            });
+          }
+        };
     }
+
     public render() {
         return (
             <div className="timer-countdown">
