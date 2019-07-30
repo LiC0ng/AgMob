@@ -18,29 +18,31 @@ export default class TimerCountdown extends React.Component<any, IState> {
     }
 
     public handleGetInputValue = (e: any) => {
+        const value = parseInt(e.target.value.replace(/[^0-9]/g, ""));
+
         this.setState({
-            inputValue: e.target.value.replace(/[^0-9]/g, ""),
+            inputValue: value,
         });
     }
 
-    public clickSetHandle() {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", `${WORKSPACE_BASE_ADDRESS}/api/session`);
-        xhr.send();
-        xhr.onreadystatechange = () => {
-          if (xhr.readyState === 4 && xhr.status === 200) {
-            const obj = JSON.parse(xhr.responseText);
-            console.log("POST /api/session =>");
-            console.log(obj);
-            this.props.history.push({
-                pathname: "/start_page",
-                state: {
-                    startTimeInMinutes: this.state.inputValue,
-                    sessionId: obj.id,
-                },
-            });
-          }
-        };
+    public async clickSetHandle() {
+        const ret = await fetch(`${WORKSPACE_BASE_ADDRESS}/api/session`, {
+            method: "POST",
+            body: JSON.stringify({
+                interval: this.state.inputValue,
+                begin: Date.now() / 1000,
+            }),
+        });
+        const obj = await ret.json();
+        console.log("POST /api/session =>");
+        console.log(obj);
+        this.props.history.push({
+            pathname: "/start_page",
+            state: {
+                startTimeInMinutes: this.state.inputValue,
+                sessionId: obj.id,
+            },
+        });
     }
 
     public render() {
@@ -57,5 +59,3 @@ export default class TimerCountdown extends React.Component<any, IState> {
         );
     }
 }
-
-
