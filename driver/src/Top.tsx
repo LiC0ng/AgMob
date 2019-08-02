@@ -25,8 +25,12 @@ export default class Top extends React.Component {
                 </Row>
                 <Row className={"justify-content-md-center"}>
                     <Col md={12}>
-                        <Link className={"btn btn-primary btn-lg btn-block"} to={"/new_workspace"}>{"New Workspace"}</Link>
-                        <Link className={"btn btn-primary btn-lg btn-block"} to={"/join_workspace"}>{"Join Workspace"}</Link>
+                        <Link className={"btn btn-primary btn-lg btn-block"} to={"/new_workspace"}>
+                            {"New Workspace"}
+                        </Link>
+                        <Link className={"btn btn-primary btn-lg btn-block"} to={"/join_workspace"}>
+                            {"Join Workspace"}
+                        </Link>
                     </Col>
                 </Row>
                 <Row className={"justify-content-md-center"}>

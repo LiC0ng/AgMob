@@ -36,7 +36,7 @@ export default class App extends React.Component<Props, State> {
             <Switch>
               <Route exact={true} path="/"><Top/></Route>
               <Route path="/new_workspace/" component={ TimerCountdown }/>
-              <Route path="/join_workspace/"><Join/></Route>
+              <Route path="/join_workspace/" component={Join}/>
               <Route path="/end/" component={End}/>
               <Route path="/start_page/" component={ StartShare } />
             </Switch>

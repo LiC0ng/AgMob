@@ -23,12 +23,6 @@ export default class StartShare extends React.Component<IProps, IState> {
   private stream?: MediaStream;
   private videoRef?: HTMLVideoElement;
 
-  private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
-    if (this.stream)
-      videoRef.srcObject = this.stream;
-    this.videoRef = videoRef;
-  };
-
     private timer: any;
 
     public constructor(props: IProps) {
@@ -42,7 +36,7 @@ export default class StartShare extends React.Component<IProps, IState> {
         this.clickStartHandle = this.clickStartHandle.bind(this);
     }
 
-  componentDidMount() {
+  public componentDidMount() {
     const screenSharingConstraints = {
       mandatory: {
         chromeMediaSource: "desktop",
@@ -52,16 +46,85 @@ export default class StartShare extends React.Component<IProps, IState> {
       video: screenSharingConstraints as any,
     }).then((stream) => {
       this.stream = stream;
-      if (this.videoRef)
+      if (this.videoRef) {
         this.videoRef.srcObject = stream;
+      }
       stream.getTracks().forEach((track) => {
         console.log(track);
-        Object.values(this.state.peerList).forEach(peer =>
+        Object.values(this.state.peerList).forEach((peer) =>
             (peer as RTCPeerConnection).addTrack(track, stream));
       });
     });
 
     this.connectWebsocket();
+  }
+
+    public clickStartHandle() {
+        this.timer = setInterval( () => {
+            this.startTimerCountdownHandler();
+        }, 1000);
+    }
+
+    public startTimerCountdownHandler() {
+        if (this.state.timeRemainingInSeconds > 0) {
+            this.setState({
+                timeRemainingInSeconds: this.state.timeRemainingInSeconds - 1,
+            });
+        } else if (this.state.timeRemainingInMinutes > 0 && this.state.timeRemainingInSeconds <= 0) {
+            this.setState({
+                timeRemainingInMinutes: this.state.timeRemainingInMinutes - 1,
+                timeRemainingInSeconds: 59,
+            });
+        } else {
+            clearInterval(this.timer!);
+            Object.values(this.state.peerList).forEach((peer) => {
+                this.hangUp(peer as RTCPeerConnection);
+            });
+            this.props.history.push({pathname: "/end", state: {sessionId: this.state.sessionId}});
+
+        }
+    }
+
+    private hangUp(peer: RTCPeerConnection) {
+        if (peer.iceConnectionState !== "closed") {
+            peer.close();
+
+        }
+    }
+
+  public handleFocus = (event: any) => event.target.select();
+
+    public render() {
+      const navigatorUrl = `${WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
+      return (
+           <div>
+            <div className="start">
+                <Button onClick={ this.clickStartHandle }>Start</Button>
+                <h1>
+                    {this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}
+                </h1>
+            </div>
+             {/*<div>*/}
+             {/*  <video style={{ width: "80%" }} autoPlay={true}*/}
+             {/*         ref={this.setVideoRef} />*/}
+             {/*</div>*/}
+           <div>
+             <label htmlFor="navigatorUrlText">Navigator URL</label>
+             <input id="navigatorUrlText" value={navigatorUrl}
+                    onFocus={this.handleFocus} />
+           </div>
+           <div>
+             Connected to {Object.keys(this.state.peerList).length} navigator(s).
+           </div>
+           </div>
+        );
+    }
+
+  private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
+    if (this.stream) {
+      videoRef.srcObject = this.stream;
+    }
+    this.videoRef = videoRef;
   }
 
   private connectWebsocket() {
@@ -93,14 +156,14 @@ export default class StartShare extends React.Component<IProps, IState> {
         };
 
         peer.onicecandidate = (ev) => {
-          if (ev.candidate){
+          if (ev.candidate) {
             console.log(ev);
-          }else{
+          } else {
             const sdp = peer.localDescription;
             const sendObject = {
               kind: "sdp",
               payload: JSON.stringify(sdp),
-              navigator_id: navigator_id,
+              navigator_id,
             };
             connection.send(JSON.stringify(sendObject));
           }
@@ -117,21 +180,26 @@ export default class StartShare extends React.Component<IProps, IState> {
             //     navigator_id: navigator_id,
             // };
             // connection.send(JSON.stringify(sendObject));
-          } catch(err){
+          } catch (err) {
             console.error(err);
           }
         };
-        if (this.stream)
+        if (this.stream) {
           this.stream.getTracks().forEach((track) => {
             console.log(track);
             peer.addTrack(track, this.stream!);
           });
+        }
 
         this.setState({ peerList: {...this.state.peerList, [obj.navigator_id]: peer }});
-      }else if(obj.kind === "sdp"){
+      } else if (obj.kind === "sdp") {
         const peer = this.state.peerList[obj.navigator_id];
         const sdp = JSON.parse(obj.payload);
         peer.setRemoteDescription(sdp);
+      } else if (obj.kind === "interrupt_hogefuga_papparapa------------------------------------------------------------------") {
+          Object.values(this.state.peerList).forEach((peer) => {
+              this.hangUp(peer as RTCPeerConnection);
+          });
       }
     };
     connection.onerror = (e) => {
@@ -143,54 +211,4 @@ export default class StartShare extends React.Component<IProps, IState> {
       this.setState({ connection: undefined });
     };
   }
-
-    public clickStartHandle() {
-        this.timer = setInterval( () => {
-            this.startTimerCountdownHandler();
-        }, 1000);
-    }
-
-    public startTimerCountdownHandler() {
-        if (this.state.timeRemainingInSeconds > 0) {
-            this.setState({
-                timeRemainingInSeconds: this.state.timeRemainingInSeconds - 1,
-            });
-        } else if (this.state.timeRemainingInMinutes > 0 && this.state.timeRemainingInSeconds <= 0) {
-            this.setState({
-                timeRemainingInMinutes: this.state.timeRemainingInMinutes - 1,
-                timeRemainingInSeconds: 59,
-            });
-        } else {
-            clearInterval(this.timer!);
-            this.props.history.push({pathname: "/end", state: {sessionId: "sessionId-hoge-fuga"}});
-        }
-    }
-
-  handleFocus = (event: any) => event.target.select();
-
-    public render() {
-      const navigatorUrl = `${WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
-        return (
-           <div>
-            <div className="start">
-                <Button onClick={ this.clickStartHandle }>Start</Button>
-                <h1>
-                    {this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}
-                </h1>
-            </div>
-             <div>
-               <video style={{ width: "80%" }} autoPlay={true}
-                      ref={this.setVideoRef} />
-             </div>
-           <div>
-             <label htmlFor="navigatorUrlText">Navigator URL</label>
-             <input id="navigatorUrlText" value={navigatorUrl}
-                    onFocus={this.handleFocus} />
-           </div>
-           <div>
-             Connected to {Object.keys(this.state.peerList).length} navigator(s).
-           </div>
-           </div>
-        );
-    }
 }
