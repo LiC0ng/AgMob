@@ -11,8 +11,8 @@ interface IProps {
 }
 
 interface IState {
-    timeRemainingInSeconds: number;
-    timeRemainingInMinutes: number;
+  timeRemainingInSeconds: number;
+  timeRemainingInMinutes: number;
   sessionId: string;
   connection?: WebSocket;
   peerList: any;
@@ -57,6 +57,12 @@ export default class StartShare extends React.Component<IProps, IState> {
     });
 
     this.connectWebsocket();
+  }
+  public reconnect() {
+      setTimeout(() => {
+        console.log("reconnecting")
+        this.connectWebsocket();
+      }, 2000);
   }
 
     public clickStartHandle() {
@@ -209,6 +215,7 @@ export default class StartShare extends React.Component<IProps, IState> {
     };
     connection.onerror = (e) => {
       console.log(e);
+      this.reconnect();
       this.setState({ connection: undefined });
     };
     connection.onclose = (e) => {
