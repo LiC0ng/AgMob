@@ -27,6 +27,12 @@ export default class NavigatorApp extends React.Component<Props, State> {
     this.sendWebsocket();
   }
 
+  public reconnect() {
+      setTimeout(() => {
+          this.sendWebsocket();
+      }, 2000);
+  }
+
   private ws?: WebSocket;
   private sendWebsocket() {
       const id = getSessionId();
@@ -133,14 +139,16 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
       };
 
-      ws.onclose = function() {
+      ws.onclose = () => {
           console.log("closed");
       };
 
-      ws.onerror = function(evt) {
-          alert("error");
+      ws.onerror = () => {
+          console.log("error");
+          this.reconnect();
       };
   }
+
 
   handleStart = async (event: any) => {
     event.preventDefault();
