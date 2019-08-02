@@ -44,15 +44,23 @@ class Session(var config: SessionConfiguration) {
         navigators[conn.id] = conn
     }
 
+    @Synchronized
     suspend fun setDriver(conn: DriverConnection?) {
+        disconnectDriver(driver)
         driver = conn
 
-        if (conn != null) {
-            // Notify already-connected navigators that they can now attempt WebRTC connection
-            navigators.values.forEach { nav -> nav.notifyDriverReady() }
-        } else {
-            navigators.values.forEach { nav -> nav.notifyDriverQuit() }
-        }
+        // Notify already-connected navigators that they can now attempt WebRTC connection
+        navigators.values.forEach { nav -> nav.notifyDriverReady() }
+    }
+
+    // Yucks
+    @Synchronized
+    suspend fun disconnectDriver(current: DriverConnection?) {
+        if (driver != current || current == null)
+            return
+        current.disconnect()
+        driver = null
+        navigators.values.forEach { nav -> nav.notifyDriverQuit() }
     }
 }
 
@@ -71,6 +79,10 @@ class DriverConnection(session: Session, private val wsSession: WebSocketServerS
 
     suspend fun receiveSdpAnswer(navConn: NavigatorConnection, message: WebSocketMessage) {
         wsSession.send(WebSocketMessage("sdp", message.payload, navConn.id).toJson())
+    }
+
+    suspend fun disconnect() {
+        wsSession.close()
     }
 }
 
@@ -176,26 +188,30 @@ fun main(args: Array<String>) {
                 val conn = DriverConnection(sess, this)
                 sess.setDriver(conn)
 
-                for (frame in incoming) {
-                    if (frame !is Frame.Text) {
-                        close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "FIXME: invalid frame"))
-                        continue
+                try {
+                    for (frame in incoming) {
+                        if (frame !is Frame.Text) {
+                            close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "FIXME: invalid frame"))
+                            continue
+                        }
+                        val msg = WebSocketMessage.parseJson(frame.readText())
+                        when (msg.kind) {
+                            "sdp" -> {
+                                val navConn = sess.navigators[msg.navigator_id]
+                                navConn?.receiveSdpOffer(msg)
+                            }
+                            "quit" -> {
+                                log.info("driver: quitting")
+                                close()
+                                return@webSocket
+                            }
+                            else -> {
+                                log.info("invalid websocket message from navigator")
+                            }
+                        }
                     }
-                    val msg = WebSocketMessage.parseJson(frame.readText())
-                    when (msg.kind) {
-                        "sdp" -> {
-                            val navConn = sess.navigators[msg.navigator_id]
-                            navConn?.receiveSdpOffer(msg)
-                        }
-                        "quit" -> {
-                            log.info("driver: quitting")
-                            sess.setDriver(null)
-                            close()
-                        }
-                        else -> {
-                            log.info("invalid websocket message from navigator")
-                        }
-                    }
+                } finally {
+                    sess.disconnectDriver(conn)
                 }
             }
         }
