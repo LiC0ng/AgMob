@@ -30,7 +30,7 @@ export default class TimerCountdown extends React.Component<any, IState> {
             method: "POST",
             body: JSON.stringify({
                 interval: this.state.inputValue,
-                begin: Date.now() / 1000,
+                begin: Math.floor(Date.now() / 1000),
             }),
         });
         const obj = await ret.json();
