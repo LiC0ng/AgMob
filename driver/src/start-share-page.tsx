@@ -60,9 +60,11 @@ export default class StartShare extends React.Component<IProps, IState> {
   }
 
     public clickStartHandle() {
-        this.timer = setInterval( () => {
-            this.startTimerCountdownHandler();
-        }, 1000);
+        if (this.timer === undefined) {
+            this.timer = setInterval( () => {
+                this.startTimerCountdownHandler();
+            }, 1000);
+        }
     }
 
     public startTimerCountdownHandler() {
