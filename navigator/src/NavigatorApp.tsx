@@ -115,13 +115,16 @@ export default class NavigatorApp extends React.Component<Props, State> {
                       })
                   })
                   break;
-              case "new_driver_hogefuga_papparapa-------------------------":
+              case "driver_ready":
                   let sendObject = {
                       "kind": "request_sdp",
                       "payload": "",
                   };
                   ws.send(JSON.stringify(sendObject));
 
+                  break;
+
+              case "driver_quit":
                   break;
 
 
