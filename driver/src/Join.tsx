@@ -22,7 +22,7 @@ export default class Join extends React.Component {
                         <label htmlFor="sesseionIdInput">You can join the workspace as a driver by filling in the <strong>session ID</strong> in the next input form.</label>
                     </Col>
                     <Col md={"auto"}>
-                        <input id="sesseionIdInput"/>
+                        <input type="text" autoFocus={true} id="sesseionIdInput"/>
                     </Col>
                 </Row>
                 <Row className="justify-content-md-center">
