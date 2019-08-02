@@ -151,9 +151,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
   render() {
     return (
       <div style={{ textAlign: "center" }}>
-        <button onClick={this.handleStart}>start sharing</button>
         <video width="960" height="720" autoPlay={true}
-            ref={this.setVideoRef} />
+            ref={this.setVideoRef} muted/>
       </div>
     );
   }
