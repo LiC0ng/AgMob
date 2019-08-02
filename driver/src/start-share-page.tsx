@@ -82,14 +82,10 @@ export default class StartShare extends React.Component<IProps, IState> {
             Object.values(this.state.peerList).forEach((peer) => {
                 this.hangUp(peer as RTCPeerConnection);
             });
+            if(this.state.connection){
+                this.state.connection.close();
+            }
             this.props.history.push({pathname: "/end", state: {sessionId: this.state.sessionId}});
-
-        }
-    }
-
-    private hangUp(peer: RTCPeerConnection) {
-        if (peer.iceConnectionState !== "closed") {
-            peer.close();
 
         }
     }
@@ -120,6 +116,13 @@ export default class StartShare extends React.Component<IProps, IState> {
            </div>
            </div>
         );
+    }
+
+    private hangUp(peer: RTCPeerConnection) {
+        if (peer.iceConnectionState !== "closed") {
+            peer.close();
+
+        }
     }
 
   private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
@@ -211,6 +214,10 @@ export default class StartShare extends React.Component<IProps, IState> {
     connection.onclose = (e) => {
       console.log(e);
       this.setState({ connection: undefined });
+
+      Object.values(this.state.peerList).forEach((peer) => {
+            this.hangUp(peer as RTCPeerConnection);
+        });
     };
   }
 }
