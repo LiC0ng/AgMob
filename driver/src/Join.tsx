@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {Button, Col, Container, Row} from "react-bootstrap";
 import {log} from "util";
 
@@ -26,7 +27,7 @@ export default class Join extends React.Component {
                 </Row>
                 <Row className="justify-content-md-center">
                     <Col md={"auto"} style={{ margin: 30 }}>
-                        <Button className="btn-lg" href="/">Back</Button>
+                        <Link className="btn btn-primary btn-lg" to="/">Back</Link>
                     </Col>
                     <Col md={"auto"} style={{ margin: 30 }}>
                         <Button className="btn-lg" href="#">Start</Button>
