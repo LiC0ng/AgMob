@@ -32,84 +32,102 @@ export default class NavigatorApp extends React.Component<Props, State> {
       const id = getSessionId();
       var url = `${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/session/${id}/navigator`;
       var ws = new WebSocket(url);
-    this.ws = ws;
+      this.ws = ws;
 
       let peer: RTCPeerConnection;
       ws.onopen = () => {
         console.log("WebSocket connected");
-        peer = new RTCPeerConnection(pcConfig);
-        this.peer = peer;
-        peer.ontrack = evt => {
-          console.log('-- peer.ontrack()');
-          console.log(evt.track);
-          console.log(evt.streams);
-          evt.streams[0].addTrack(evt.track);
-          this.stream = evt.streams[0];
-          if (this.videoRef) {
-            this.videoRef.srcObject = this.stream;
-          }
-        };
 
-        // ICE Candidateを収集したときのイベント
-        peer.onicecandidate = evt => {
-          if (evt.candidate) {
-              console.log(evt.candidate);
-          } else {
-              console.log('empty ice event');
-              const sdp = peer.localDescription;
-              const sendObject = {
-                "kind": "sdp",
-                "payload": JSON.stringify(sdp)
-              };
-              ws.send(JSON.stringify(sendObject));
-          }
-        };
-        peer.onconnectionstatechange = evt => {
-              switch(peer.connectionState) {
-                  case "connected":
-                      // The connection has become fully connected
-                      break;
-                  case "disconnected":
-                  case "failed":
-                      // One or more transports has terminated unexpectedly or in an error
-                      if(this.videoRef){
-                          this.videoRef.pause();
-                          this.videoRef.currentTime =  0;
-                      }
-                      break;
-                  case "closed":
-                      // The connection has been closed
-                      if(this.videoRef){
-                          this.videoRef.pause();
-                          this.videoRef.currentTime =  0;
-                      }
-                      break;
-              }
-        }
         let sendObject = {
           "kind": "request_sdp",
           "payload": "",
         };
         ws.send(JSON.stringify(sendObject));
       };
-
+      const self = this;
       ws.onmessage = function(evt) {
-          console.log(evt.data);
-          const sdp = JSON.parse(evt.data);
+          const message = JSON.parse(evt.data);
+          switch (message.kind) {
+              case "sdp":
+                  console.log(message);
+                  const sdp = message
+                  peer = new RTCPeerConnection(pcConfig);
+                  self.peer = peer;
+                  peer.ontrack = evt => {
+                      console.log('-- peer.ontrack()');
+                      console.log(evt.track);
+                      console.log(evt.streams);
+                      evt.streams[0].addTrack(evt.track);
+                      self.stream = evt.streams[0];
+                      if (self.videoRef) {
+                          self.videoRef.srcObject = self.stream;
+                      }
+                  };
 
-          peer.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
-            console.log('setRemoteDescription(answer) success in promise');
-            peer.createAnswer().then((answer) => {
-              peer.setLocalDescription(answer).then(() => {
-                // const sdp = peer.localDescription;
-                // const sendObject = {
-                //   "kind": "sdp",
-                //   "payload": JSON.stringify(sdp)
-                // };
-                // ws.send(JSON.stringify(sendObject));
-              })
-            })
-          })
+                  // ICE Candidateを収集したときのイベント
+                  peer.onicecandidate = evt => {
+                      if (evt.candidate) {
+                          console.log(evt.candidate);
+                      } else {
+                          console.log('empty ice event');
+                          const sdp = peer.localDescription;
+                          const sendObject = {
+                              "kind": "sdp",
+                              "payload": JSON.stringify(sdp)
+                          };
+                          ws.send(JSON.stringify(sendObject));
+                      }
+                  };
+                  peer.onconnectionstatechange = evt => {
+                      switch(peer.connectionState) {
+                          case "connected":
+                              // The connection has become fully connected
+                              break;
+                          case "disconnected":
+                          case "failed":
+                              // One or more transports has terminated unexpectedly or in an error
+                              if(self.videoRef){
+                                  self.videoRef.pause();
+                                  self.videoRef.currentTime =  0;
+                              }
+                              break;
+                          case "closed":
+                              // The connection has been closed
+                              if(self.videoRef){
+                                  self.videoRef.pause();
+                                  self.videoRef.currentTime =  0;
+                              }
+                              break;
+                      }
+                  }
+
+                  peer.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
+                      console.log('setRemoteDescription(answer) success in promise');
+                      peer.createAnswer().then((answer) => {
+                          peer.setLocalDescription(answer).then(() => {
+                              // const sdp = peer.localDescription;
+                              // const sendObject = {
+                              //   "kind": "sdp",
+                              //   "payload": JSON.stringify(sdp)
+                              // };
+                              // ws.send(JSON.stringify(sendObject));
+                          })
+                      })
+                  })
+                  break;
+              case "new_driver_hogefuga_papparapa-------------------------":
+                  let sendObject = {
+                      "kind": "request_sdp",
+                      "payload": "",
+                  };
+                  ws.send(JSON.stringify(sendObject));
+
+                  break;
+
+
+          }
+
+
       };
 
       ws.onclose = function() {
