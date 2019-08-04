@@ -7,12 +7,14 @@ import "./index.css";
 
 import HomeApp from "./HomeApp";
 import NavigatorApp from "./NavigatorApp";
+import WaitNewDriver from "./wait-new-driver";
 
 const App = () => (
   <div>
     <Switch>
       <Route exact={true} path="/"><HomeApp /></Route>
-      <Route path="/session/"><NavigatorApp /></Route>
+      <Route path="/session/" component={ NavigatorApp } />
+      <Route path="/wait" component={ WaitNewDriver } />
     </Switch>
   </div>
 );

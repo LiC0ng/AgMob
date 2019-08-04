@@ -10,7 +10,9 @@ const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "ws://160.16.213.209:80";
 const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 
-interface Props { }
+interface Props {
+    history: any;
+}
 interface State { }
 
 export default class NavigatorApp extends React.Component<Props, State> {
@@ -18,6 +20,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
   private peer?: RTCPeerConnection;
   private videoRef?: HTMLVideoElement;
   private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
+    if (videoRef === null) return;
     if (this.stream)
       videoRef.srcObject = this.stream;
     this.videoRef = videoRef;
@@ -56,7 +59,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
           switch (message.kind) {
               case "sdp":
                   console.log(message);
-                  const sdp = message
+                  const sdp = message;
                   peer = new RTCPeerConnection(pcConfig);
                   self.peer = peer;
                   peer.ontrack = evt => {
@@ -90,6 +93,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
                               // The connection has become fully connected
                               break;
                           case "disconnected":
+                              self.props.history.push("/wait");
+                              break;
                           case "failed":
                               // One or more transports has terminated unexpectedly or in an error
                               if(self.videoRef){
@@ -105,7 +110,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                               }
                               break;
                       }
-                  }
+                  };
 
                   peer.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
                       console.log('setRemoteDescription(answer) success in promise');
@@ -119,7 +124,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                               // ws.send(JSON.stringify(sendObject));
                           })
                       })
-                  })
+                  });
                   break;
               case "driver_ready":
                   let sendObject = {
@@ -129,14 +134,9 @@ export default class NavigatorApp extends React.Component<Props, State> {
                   ws.send(JSON.stringify(sendObject));
 
                   break;
-
               case "driver_quit":
                   break;
-
-
           }
-
-
       };
 
       ws.onclose = () => {
@@ -154,7 +154,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
     event.preventDefault();
     if (this.videoRef)
       await this.videoRef.play();
-  }
+  };
 
   render() {
     return (
