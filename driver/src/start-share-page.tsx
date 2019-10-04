@@ -66,9 +66,10 @@ export default class StartShare extends React.Component<IProps, IState> {
   }
 
     private clickStartHandle() {
-        // Already started; wrong operation
-        if (this.state.timer !== undefined)
-            return;
+        this.sendWebSocket({
+            kind: "driver_ready",
+            payload: "",
+        });
         this.setState({
             timer: window.setInterval(() => this.startTimerCountdownHandler(), 1000),
         });
@@ -87,6 +88,10 @@ export default class StartShare extends React.Component<IProps, IState> {
         } else {
             clearInterval(this.state.timer!);
             this.setState({ timer: undefined });
+            this.sendWebSocket({
+                kind: "driver_quit",
+                payload: "",
+            });
             Object.values(this.state.peerList).forEach((peer) => {
                 this.hangUp(peer as RTCPeerConnection);
             });
@@ -179,12 +184,11 @@ export default class StartShare extends React.Component<IProps, IState> {
             console.log(ev);
           } else {
             const sdp = peer.localDescription;
-            const sendObject = {
+            this.sendWebSocket({
               kind: "sdp",
               payload: JSON.stringify(sdp),
               navigator_id,
-            };
-            connection.send(JSON.stringify(sendObject));
+            });
           }
         };
 
@@ -235,4 +239,8 @@ export default class StartShare extends React.Component<IProps, IState> {
         });
     };
   }
+
+    private sendWebSocket(obj: { kind: string, payload: string, navigator_id?: string }) {
+        this.state.connection!.send(JSON.stringify(obj));
+    }
 }
