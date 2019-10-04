@@ -1,4 +1,7 @@
 import React from 'react';
+import Button from 'react-bootstrap/Button';
+import {FormControl} from "react-bootstrap";
+import {InputGroup} from "react-bootstrap";
 
 function getSessionId() {
   return window.location.pathname.match(/\/session\/([a-z0-9-]+)/)![1];
@@ -158,10 +161,22 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
   render() {
     return (
-      <div style={{ textAlign: "center" }}>
-        <video width="960" height="720" autoPlay={true}
-            ref={this.setVideoRef} muted/>
-      </div>
+			<div>
+				<div style={{ textAlign: "center" }}>
+					<video width="960" height="720" autoPlay={true}
+							ref={this.setVideoRef} muted/>
+				</div>
+				<InputGroup className="mb-3">
+					<FormControl
+						placeholder="Input Message Here"
+						aria-label="Input Message Here"
+						aria-describedby="message"
+					/>
+					<InputGroup.Append>
+						<Button variant="primary">Send Message</Button>
+					</InputGroup.Append>
+        </InputGroup>
+			</div>
     );
   }
 }
