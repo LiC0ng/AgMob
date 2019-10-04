@@ -187,29 +187,6 @@ export default class NavigatorApp extends React.Component<Props, State> {
     if (this.videoRef)
       await this.videoRef.play();
   };
-
-<<<<<<< HEAD
-  render() {
-    return (
-			<div>
-				<div style={{ textAlign: "center" }}>
-					<video width="960" height="720" autoPlay={true}
-							ref={this.setVideoRef} muted/>
-				</div>
-				<InputGroup className="mb-3">
-					<FormControl
-						placeholder="Input Message Here"
-						aria-label="Input Message Here"
-						aria-describedby="message"
-					/>
-					<InputGroup.Append>
-						<Button variant="primary">Send Message</Button>
-					</InputGroup.Append>
-        </InputGroup>
-			</div>
-    );
-  }
-=======
     render() {
         return (
             <div style={{ textAlign: "center" }}>
@@ -226,8 +203,19 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 : <div />}
                 <video width="960" height="720"
                     autoPlay={true} muted={true} ref={this.setVideoRef} />
+								<div>
+								<InputGroup className="mb-3">
+									<FormControl
+										placeholder="Input Message Here"
+										aria-label="Input Message Here"
+										aria-describedby="message"
+									/>
+									<InputGroup.Append>
+										<Button variant="primary">Send Message</Button>
+									</InputGroup.Append>
+								</InputGroup>
+								</div>
             </div>
         );
     }
->>>>>>> 0d2321f51a626bbd19fd77df7ad35ebfd19478f5
 }
