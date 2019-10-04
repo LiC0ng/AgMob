@@ -8,10 +8,21 @@ const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
 const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 
+enum NavigatorState {
+    // Not connected to WebSocket
+    Disconnected,
+    // Connected to WebSocket, not connected with Driver
+    WaitingDriver,
+    // Connected to Driver
+    Connected,
+};
+
 interface Props {
     history: any;
 }
-interface State { }
+interface State {
+    state: NavigatorState,
+}
 
 export default class NavigatorApp extends React.Component<Props, State> {
   private stream?: MediaStream;
@@ -23,6 +34,14 @@ export default class NavigatorApp extends React.Component<Props, State> {
       videoRef.srcObject = this.stream;
     this.videoRef = videoRef;
   };
+
+    constructor(props: Props) {
+        super(props);
+
+        this.state = {
+            state: NavigatorState.Disconnected,
+        };
+    }
 
   componentDidMount() {
     this.sendWebsocket();
@@ -50,6 +69,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
           "payload": "",
         };
         ws.send(JSON.stringify(sendObject));
+
+          this.setState({ state: NavigatorState.WaitingDriver });
       };
       const self = this;
       ws.onmessage = function(evt) {
@@ -88,10 +109,11 @@ export default class NavigatorApp extends React.Component<Props, State> {
                   peer.onconnectionstatechange = evt => {
                       switch(peer.connectionState) {
                           case "connected":
+                              self.setState({ state: NavigatorState.Connected });
                               // The connection has become fully connected
                               break;
                           case "disconnected":
-                              self.props.history.push("/wait");
+                              self.handleDriverQuit();
                               break;
                           case "failed":
                               // One or more transports has terminated unexpectedly or in an error
@@ -133,20 +155,29 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
                   break;
               case "driver_quit":
+                  self.handleDriverQuit();
                   break;
           }
       };
 
       ws.onclose = () => {
-          console.log("closed");
+          console.log("WebSocket onclose");
+
+          this.setState({ state: NavigatorState.Disconnected });
       };
 
-      ws.onerror = () => {
-          console.log("error");
+      ws.onerror = (event: any) => {
+          console.log("WebSocket onerror, reconnecting...:");
+          console.log(event);
           this.reconnect();
       };
   }
 
+    // Called when driver_quit event is received on WebSocket or WebRTC connection dies.
+    // The latter is not always reliable.
+    handleDriverQuit = () => {
+        this.setState({ state: NavigatorState.WaitingDriver });
+    };
 
   handleStart = async (event: any) => {
     event.preventDefault();
@@ -154,12 +185,23 @@ export default class NavigatorApp extends React.Component<Props, State> {
       await this.videoRef.play();
   };
 
-  render() {
-    return (
-      <div style={{ textAlign: "center" }}>
-        <video width="960" height="720" autoPlay={true}
-            ref={this.setVideoRef} muted/>
-      </div>
-    );
-  }
+    render() {
+        return (
+            <div style={{ textAlign: "center" }}>
+                {this.state.state === NavigatorState.Disconnected ?
+                <div>
+                    <h1>Connecting to server</h1>
+                    <p>Please wait for a little while longer.</p>
+                </div>
+                : this.state.state === NavigatorState.WaitingDriver ?
+                <div>
+                    <h1>Waiting for new driver</h1>
+                    <p>Please wait for a little while longer.</p>
+                </div>
+                : <div />}
+                <video width="960" height="720"
+                    autoPlay={true} muted={true} ref={this.setVideoRef} />
+            </div>
+        );
+    }
 }
