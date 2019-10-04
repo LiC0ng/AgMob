@@ -21,7 +21,6 @@ interface IState {
 export default class StartShare extends React.Component<IProps, IState> {
 
   private stream?: MediaStream;
-  private videoRef?: HTMLVideoElement;
 
     private timer: any;
 
@@ -46,9 +45,6 @@ export default class StartShare extends React.Component<IProps, IState> {
       video: screenSharingConstraints as any,
     }).then((stream) => {
       this.stream = stream;
-      if (this.videoRef) {
-        this.videoRef.srcObject = stream;
-      }
       stream.getTracks().forEach((track) => {
         console.log(track);
         Object.values(this.state.peerList).forEach((peer) =>
@@ -108,10 +104,6 @@ export default class StartShare extends React.Component<IProps, IState> {
                     {this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}
                 </h1>
             </div>
-             {/*<div>*/}
-             {/*  <video style={{ width: "80%" }} autoPlay={true}*/}
-             {/*         ref={this.setVideoRef} />*/}
-             {/*</div>*/}
            <div>
              <label htmlFor="navigatorUrlText">Navigator URL</label>
              <input id="navigatorUrlText" value={navigatorUrl}
@@ -130,13 +122,6 @@ export default class StartShare extends React.Component<IProps, IState> {
 
         }
     }
-
-  private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
-    if (this.stream) {
-      videoRef.srcObject = this.stream;
-    }
-    this.videoRef = videoRef;
-  }
 
   private connectWebsocket() {
     if (!this.state.sessionId) {
