@@ -3,6 +3,8 @@ import {Button} from "react-bootstrap";
 import {Form} from "react-bootstrap";
 import {FormControl} from "react-bootstrap";
 import {InputGroup} from "react-bootstrap";
+import {Row} from "react-bootstrap";
+import {Col} from "react-bootstrap";
 
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
@@ -124,6 +126,16 @@ export default class StartShare extends React.Component<IProps, IState> {
               <Form.Group controlId="ChatHistory">
                 <Form.Label>Chat History</Form.Label>
                 <Form.Control as="textarea" rows="8"/>
+              </Form.Group>
+              <Form.Group as={Row} controlId="name">
+                <Form.Label column sm={1}>Name:</Form.Label>
+                <Col sm={4}>
+                  <Form.Control
+                    required
+                    type="text"
+                    placeholder="Input Name Here"
+                  />
+                </Col>
               </Form.Group>
             </Form>
             <InputGroup className="mb-3">

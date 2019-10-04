@@ -1,7 +1,10 @@
 import React from 'react';
-import Button from 'react-bootstrap/Button';
+import {Button} from "react-bootstrap";
+import {Form} from "react-bootstrap";
 import {FormControl} from "react-bootstrap";
 import {InputGroup} from "react-bootstrap";
+import {Row} from "react-bootstrap";
+import {Col} from "react-bootstrap";
 
 function getSessionId() {
   return window.location.pathname.match(/\/session\/([a-z0-9-]+)/)![1];
@@ -203,18 +206,30 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 : <div />}
                 <video width="960" height="720"
                     autoPlay={true} muted={true} ref={this.setVideoRef} />
-								<div>
-								<InputGroup className="mb-3">
-									<FormControl
-										placeholder="Input Message Here"
-										aria-label="Input Message Here"
-										aria-describedby="message"
-									/>
-									<InputGroup.Append>
-										<Button variant="primary">Send Message</Button>
-									</InputGroup.Append>
-								</InputGroup>
-								</div>
+				<div>
+                <Form>
+                    <Form.Group as={Row} controlId="name">
+                        <Form.Label column sm={1}>Name:</Form.Label>
+                        <Col sm={4}>
+                        <Form.Control
+                            required
+                            type="text"
+                            placeholder="Input Name Here"
+                        />
+                        </Col>
+                    </Form.Group>
+                </Form>
+                <InputGroup className="mb-3">
+                    <FormControl
+                        placeholder="Input Message Here"
+                        aria-label="Input Message Here"
+                        aria-describedby="message"
+                    />
+                    <InputGroup.Append>
+                        <Button variant="primary">Send Message</Button>
+                    </InputGroup.Append>
+                </InputGroup>
+                </div>
             </div>
         );
     }
