@@ -5,9 +5,7 @@ function getSessionId() {
 }
 
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
-// FIXME: NOT WORKING ON LOCAL
-//const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
-const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "ws://160.16.213.209:80";
+const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
 const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
 
 interface Props {
