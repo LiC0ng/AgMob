@@ -11,26 +11,27 @@ interface IProps {
 }
 
 interface IState {
-  timeRemainingInSeconds: number;
-  timeRemainingInMinutes: number;
-  sessionId: string;
-  connection?: WebSocket;
-  peerList: any;
+    timeRemainingInSeconds: number;
+    timeRemainingInMinutes: number;
+    sessionId: string;
+    connection?: WebSocket;
+    timer?: number;
+    peerList: any;
 }
 
 export default class StartShare extends React.Component<IProps, IState> {
 
   private stream?: MediaStream;
 
-    private timer: any;
-
     public constructor(props: IProps) {
         super(props);
         this.state = {
             timeRemainingInMinutes: this.props.history.location.state.startTimeInMinutes,
             timeRemainingInSeconds: 0,
-          sessionId: this.props.history.location.state.sessionId,
-          peerList: [],
+            sessionId: this.props.history.location.state.sessionId,
+            connection: undefined,
+            timer: undefined,
+            peerList: [],
         };
         this.clickStartHandle = this.clickStartHandle.bind(this);
     }
@@ -61,12 +62,13 @@ export default class StartShare extends React.Component<IProps, IState> {
       }, 2000);
   }
 
-    public clickStartHandle() {
-        if (this.timer === undefined) {
-            this.timer = setInterval( () => {
-                this.startTimerCountdownHandler();
-            }, 1000);
-        }
+    private clickStartHandle() {
+        // Already started; wrong operation
+        if (this.state.timer !== undefined)
+            return;
+        this.setState({
+            timer: window.setInterval(() => this.startTimerCountdownHandler(), 1000),
+        });
     }
 
     public startTimerCountdownHandler() {
@@ -80,7 +82,8 @@ export default class StartShare extends React.Component<IProps, IState> {
                 timeRemainingInSeconds: 59,
             });
         } else {
-            clearInterval(this.timer!);
+            clearInterval(this.state.timer!);
+            this.setState({ timer: undefined });
             Object.values(this.state.peerList).forEach((peer) => {
                 this.hangUp(peer as RTCPeerConnection);
             });
@@ -88,31 +91,30 @@ export default class StartShare extends React.Component<IProps, IState> {
                 this.state.connection.close();
             }
             this.props.history.push({pathname: "/end", state: {sessionId: this.state.sessionId}});
-
         }
     }
 
-  public handleFocus = (event: any) => event.target.select();
+    public handleFocus = (event: any) => event.target.select();
 
     public render() {
-      const navigatorUrl = `${WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
-      return (
-           <div>
-            <div className="start">
-                <Button onClick={ this.clickStartHandle }>Start</Button>
-                <h1>
-                    {this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}
-                </h1>
+        const navigatorUrl = `${WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
+        return (
+            <div>
+                <div className="start">
+                    <Button onClick={this.clickStartHandle}
+                            disabled={!this.state.connection || this.state.timer !== undefined}>
+                        Start
+                    </Button>
+                    <h1>{this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}</h1>
+                </div>
+                <div>
+                    <label htmlFor="navigatorUrlText">Navigator URL</label>
+                    <input id="navigatorUrlText" value={navigatorUrl} onFocus={this.handleFocus} />
+                </div>
+                <div>
+                    Connected to {Object.keys(this.state.peerList).length} navigator(s).
+                </div>
             </div>
-           <div>
-             <label htmlFor="navigatorUrlText">Navigator URL</label>
-             <input id="navigatorUrlText" value={navigatorUrl}
-                    onFocus={this.handleFocus} />
-           </div>
-           <div>
-             Connected to {Object.keys(this.state.peerList).length} navigator(s).
-           </div>
-           </div>
         );
     }
 
