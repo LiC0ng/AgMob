@@ -9,8 +9,8 @@ function getSessionId() {
 }
 
 interface IState {
-    name: any;
-    message: any;
+    name: string;
+    message: string;
 }
 
 export default class Chat extends React.Component<any, IState> {
@@ -46,8 +46,11 @@ export default class Chat extends React.Component<any, IState> {
     public async clickSendHandle() {
         let sendObject = {
             "kind": "chat",
-            "name": this.state.name,
-            "message": this.state.message,
+            "payload": {
+                "name": this.state.name,
+                "message": this.state.message,
+                "date": new Date(),
+            }
         };
         this.ws.send(JSON.stringify(sendObject));
     };
