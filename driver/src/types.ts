@@ -3,6 +3,11 @@ export interface SessionData {
     startTimeInMinutes: number;
 }
 
+export const SessionDataDummy: SessionData = {
+    sessionId: "DUMMY",
+    startTimeInMinutes: 5,
+}
+
 export interface PropsWithSession {
     currentSession?: SessionData;
     onUpdateSession: (sd?: SessionData) => void;
