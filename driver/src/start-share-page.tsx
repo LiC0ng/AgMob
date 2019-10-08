@@ -121,10 +121,10 @@ export default class StartShare extends React.Component<IProps, IState> {
                     </Button>
                     <h1>{this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}</h1>
                 </div>
-                <div>
-                    <label htmlFor="navigatorUrlText">Navigator URL</label>
-                    <input id="navigatorUrlText" value={navigatorUrl} onFocus={this.handleFocus} />
-                </div>
+                <Form.Group>
+                  <Form.Label>Join Session ({Object.keys(this.state.peerList).length} connected)</Form.Label>
+                  <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus} />
+                </Form.Group>
             <div>
             <Form>
               <Form.Group controlId="ChatHistory">
@@ -153,9 +153,6 @@ export default class StartShare extends React.Component<IProps, IState> {
               </InputGroup.Append>
             </InputGroup>
             </div>
-            <div>
-             Connected to {Object.keys(this.state.peerList).length} navigator(s).
-           </div>
            </div>
         );
     }
