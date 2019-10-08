@@ -3,17 +3,22 @@ import { Button } from "react-bootstrap";
 import ButtonToolbar from "react-bootstrap/ButtonToolbar";
 import ToggleButton from "react-bootstrap/ToggleButton";
 import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
+import {PropsWithSession} from "./types";
 
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 const STATE_FREE_MODE = "FREE";
 const STATE_STRICT_MODE = "STRICT";
+
+interface IProps extends PropsWithSession {
+    history: any;
+}
 
 interface IState {
     inputValue: number;
     mode: any;
 }
 
-export default class TimerCountdown extends React.Component<any, IState> {
+export default class TimerCountdown extends React.Component<IProps, IState> {
 
     public constructor(props: any) {
         super(props);
@@ -49,13 +54,12 @@ export default class TimerCountdown extends React.Component<any, IState> {
         const obj = await ret.json();
         console.log("POST /api/session =>");
         console.log(obj);
-        this.props.history.push({
-            pathname: "/start_page",
-            state: {
-                startTimeInMinutes: this.state.inputValue,
-                sessionId: obj.id,
-            },
+        this.props.onUpdateSession({
+            startTimeInMinutes: this.state.inputValue,
+            sessionId: obj.id,
         });
+
+        this.props.history.push({pathname: "/start_page"});
     }
 
     public render() {

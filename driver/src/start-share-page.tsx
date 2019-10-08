@@ -5,6 +5,7 @@ import {FormControl} from "react-bootstrap";
 import {InputGroup} from "react-bootstrap";
 import {Row} from "react-bootstrap";
 import {Col} from "react-bootstrap";
+import {PropsWithSession} from "./types";
 
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
@@ -14,8 +15,7 @@ const pcConfig = { iceServers: [
     { urls: "turn:160.16.213.209", credential: "ZPu5tyGmdsAEn6dlYJkNBse/x/UQnMj2", username: "agmob" },
 ]};
 
-interface IProps {
-    startTimeInMinutes: number;
+interface IProps extends PropsWithSession {
     history: any;
 }
 
@@ -35,9 +35,9 @@ export default class StartShare extends React.Component<IProps, IState> {
     public constructor(props: IProps) {
         super(props);
         this.state = {
-            timeRemainingInMinutes: this.props.history.location.state.startTimeInMinutes,
+            timeRemainingInMinutes: props.currentSession!.startTimeInMinutes,
             timeRemainingInSeconds: 0,
-            sessionId: this.props.history.location.state.sessionId,
+            sessionId: props.currentSession!.sessionId,
             connection: undefined,
             timer: undefined,
             peerList: [],
@@ -104,7 +104,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             if(this.state.connection){
                 this.state.connection.close();
             }
-            this.props.history.push({pathname: "/end", state: {sessionId: this.state.sessionId}});
+            this.props.history.push({pathname: "/end"});
         }
     }
 

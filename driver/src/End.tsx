@@ -2,6 +2,7 @@ import React from "react";
 import {Button, Col, Container, Row} from "react-bootstrap";
 import {Link} from "react-router-dom";
 import {log} from "util";
+import {PropsWithSession} from "./types";
 
 // import "./End.css";
 
@@ -9,23 +10,19 @@ const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 
 
 // tslint:disable-next-line:interface-name
-interface Props {
-    sessionId?: string;
-    history: any;
-}
+interface Props extends PropsWithSession {}
 
 // tslint:disable-next-line:interface-name
 interface State {
     navigatorUrl?: string;
 }
 
-
-
 export default class End extends React.Component<Props, State> {
 
     public constructor(props: Props) {
         super(props);
-        const sessionId: string = this.props.history.location.state.sessionId;
+
+        const sessionId = props.currentSession!.sessionId;
         this.state = {
             navigatorUrl: `${WORKSPACE_BASE_ADDRESS}/session/${sessionId}`,
         };
@@ -63,8 +60,4 @@ export default class End extends React.Component<Props, State> {
             </div>
         );
     }
-
-
 }
-
-
