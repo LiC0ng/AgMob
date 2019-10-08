@@ -2,6 +2,11 @@ import React from "react";
 import {Button, Col, Form, FormControl, InputGroup, Row} from "react-bootstrap";
 
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
+const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
+
+function getSessionId() {
+    return window.location.pathname.match(/\/session\/([a-z0-9-]+)/)![1];
+}
 
 interface IState {
     name: any;
@@ -9,16 +14,20 @@ interface IState {
 }
 
 export default class Chat extends React.Component<any, IState> {
-
-    private timer: any;
+    private id = getSessionId();
+    private url = `${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/chat/` + this.id;
+    private ws = new WebSocket(this.url);
 
     public constructor(props: any) {
         super(props);
         this.state = {
             name: "",
-            message: ""
+            message: "",
         };
         this.clickSendHandle = this.clickSendHandle.bind(this);
+        this.ws.onopen = () => {
+            console.log("connect to chat server");
+        }
     }
 
     public handleNameChange = (e: any)=> {
@@ -35,14 +44,14 @@ export default class Chat extends React.Component<any, IState> {
 
 
     public async clickSendHandle() {
-        await fetch(`${WORKSPACE_BASE_ADDRESS}/api/chat`, {
-            method: "POST",
-            body: JSON.stringify({
-                name: this.state.name,
-                message: this.state.message,
-            }),
-        });
-    }
+        let sendObject = {
+            "kind": "chat",
+            "name": this.state.name,
+            "message": this.state.message,
+        };
+        this.ws.send(JSON.stringify(sendObject));
+    };
+
 
 
     public render() {
