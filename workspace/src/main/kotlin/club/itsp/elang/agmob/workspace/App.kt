@@ -81,6 +81,10 @@ class DriverConnection(session: Session, private val wsSession: WebSocketServerS
         wsSession.send(WebSocketMessage("sdp", message.payload, navConn.id).toJson())
     }
 
+    suspend fun sendChatMessage(navConn: NavigatorConnection, message: WebSocketMessage) {
+        wsSession.send(WebSocketMessage("chat", message.payload, navConn.id).toJson())
+    }
+
     suspend fun disconnect() {
         wsSession.close()
     }
@@ -212,6 +216,35 @@ fun main(args: Array<String>) {
                     }
                 } finally {
                     sess.disconnectDriver(conn)
+                }
+            }
+
+            // webSocket of chat
+            webSocket("/api/chat/{id}") {
+                val sess = sessions[call.parameters["id"]]
+                if (sess == null) {
+                    call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
+                    return@webSocket
+                }
+                val conn = NavigatorConnection(sess, this)
+                sess.addNavigator(conn)
+
+                for (frame in incoming) {
+                    if (frame !is Frame.Text) {
+                        close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "FIXME: invalid frame"))
+                        continue
+                    }
+                    val msg = WebSocketMessage.parseJson(frame.readText())
+                    log.info(frame.readText())
+                    when (msg.kind) {
+                        "chat" -> {
+                            val driver = sess.driver
+                            driver?.sendChatMessage(conn, msg)
+                        }
+                        else -> {
+                            log.info("invalid websocket message from navigator")
+                        }
+                    }
                 }
             }
         }
