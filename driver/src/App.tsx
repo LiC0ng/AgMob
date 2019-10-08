@@ -45,24 +45,3 @@ export default class App extends React.Component<Props, State> {
     );
   }
 }
-
-
-
-// P2P通信を切断する
-// function hangUp(){
-//   if (peerConnection) {
-//     if(peerConnection.iceConnectionState !== 'closed'){
-//       peerConnection.close();
-//       peerConnection = null;
-//       negotiationneededCounter = 0;
-//       const message = JSON.stringify({ type: 'close' });
-//       console.log('sending close message');
-//       ws.send(message);
-//       cleanupVideoElement(remoteVideo);
-//       textForSendSdp.value = '';
-//       textToReceiveSdp.value = '';
-//       return;
-//     }
-//   }
-//   console.log('peerConnection is closed.');
-// }
