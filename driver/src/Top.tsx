@@ -1,21 +1,15 @@
 import React from "react";
-import {Button, Col, Container, Row} from "react-bootstrap";
 import {Link} from "react-router-dom";
 import {log} from "util";
+import {Button, Col, Container, Row} from "react-bootstrap";
+import {PropsWithSession} from "./types";
 
-// import "./Top.css";
+interface Props extends PropsWithSession { }
 
+interface State { }
 
-export default class Top extends React.Component {
-
-
-    public componentDidMount() {
-        log("start top");
-    }
-
-
+export default class Top extends React.Component<Props, State> {
     public render() {
-
         return (
             <div>
                 <Row className={"justify-content-md-center"}>

@@ -5,7 +5,6 @@ function getSessionId() {
   return window.location.pathname.match(/\/session\/([a-z0-9-]+)/)![1];
 }
 
-const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
 const pcConfig = { iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
@@ -190,6 +189,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
       await this.videoRef.play();
   };
     render() {
+        const token = getSessionId();
+        const driverUrl = `agmob-driver:${token}`;
         return (
             <div style={{ textAlign: "center" }}>
                 {this.state.state === NavigatorState.Disconnected ?
@@ -201,11 +202,16 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 <div>
                     <h1>Waiting for new driver</h1>
                     <p>Please wait for a little while longer.</p>
+                    <div className="mt-3">
+                        <h4>Become a driver</h4>
+                        <a href={driverUrl}>{driverUrl}</a>
+                    </div>
                 </div>
                 : <div />}
-                <video width="960" height="720"
+                <video width="960"
+                    className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
                     autoPlay={true} muted={true} ref={this.setVideoRef} />
-				<Chat/>
+                <Chat />
             </div>
         );
     }
