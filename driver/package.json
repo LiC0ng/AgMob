@@ -8,7 +8,19 @@
     "appId": "club.itsp.elang.agmob.driver",
     "files": [
       "build/**/*"
-    ]
+    ],
+    "protocols": [
+      {
+        "name": "agmob-driver",
+        "schemes": ["agmob-driver"]
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "perMachine": true
+    }
   },
   "scripts": {
     "start-react-scripts": "react-scripts start",
