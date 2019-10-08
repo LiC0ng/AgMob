@@ -8,7 +8,11 @@ import {Col} from "react-bootstrap";
 
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
-const pcConfig = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
+const pcConfig = { iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:160.16.213.209" },
+    { urls: "turn:160.16.213.209", credential: "ZPu5tyGmdsAEn6dlYJkNBse/x/UQnMj2", username: "agmob" },
+]};
 
 interface IProps {
     startTimeInMinutes: number;
@@ -184,6 +188,7 @@ export default class StartShare extends React.Component<IProps, IState> {
     connection.onmessage = (e) => {
       const obj = JSON.parse(e.data);
       if (obj.kind === "request_sdp") {
+        console.log("[WS] Received 'request_sdp'")
         const peer = new RTCPeerConnection(pcConfig);
         const navigator_id = obj.navigator_id;
 
