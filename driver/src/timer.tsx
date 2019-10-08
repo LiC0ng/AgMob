@@ -1,10 +1,16 @@
 import React from "react";
 import { Button } from "react-bootstrap";
+import ButtonToolbar from "react-bootstrap/ButtonToolbar";
+import ToggleButton from "react-bootstrap/ToggleButton";
+import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 
 const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
+const STATE_FREE_MODE = "FREE";
+const STATE_STRICT_MODE = "STRICT";
 
 interface IState {
     inputValue: number;
+    mode: any;
 }
 
 export default class TimerCountdown extends React.Component<any, IState> {
@@ -13,6 +19,7 @@ export default class TimerCountdown extends React.Component<any, IState> {
         super(props);
         this.state = {
             inputValue: 10,
+            mode: STATE_FREE_MODE,
         };
         this.clickSetHandle = this.clickSetHandle.bind(this);
     }
@@ -22,6 +29,12 @@ export default class TimerCountdown extends React.Component<any, IState> {
 
         this.setState({
             inputValue: value,
+        });
+    }
+
+    public handleChangeMode = (e: any) => {
+        this.setState({
+            mode: e.toString(),
         });
     }
 
@@ -47,15 +60,33 @@ export default class TimerCountdown extends React.Component<any, IState> {
 
     public render() {
         return (
-            <div className="timer-countdown">
-                <h3>Input your desired time</h3>
-                <input
-                    type="number"
-                    value={this.state.inputValue}
-                    onChange={this.handleGetInputValue.bind(this)}
-                />
-                <Button onClick={ this.clickSetHandle }>Set</Button>
+            <div style={{ margin: 15 }}>
+                <div className="select-mode">
+                    <h3>Select mode</h3>
+                    <ButtonToolbar>
+                        <ToggleButtonGroup
+                            name="mode"
+                            type="radio"
+                            value={this.state.mode}
+                            onChange={this.handleChangeMode.bind(this)}>
+                            <ToggleButton value={STATE_FREE_MODE}>Free mob mode</ToggleButton>
+                            <ToggleButton value={STATE_STRICT_MODE}>Strict mob mode</ToggleButton>
+                        </ToggleButtonGroup>
+                    </ButtonToolbar>
+                </div>
+
+                <div className="timer-countdown" style={{ marginTop: 30 }}>
+                    <h3>Input your desired time</h3>
+                    <input
+                        type="number"
+                        value={this.state.inputValue}
+                        disabled={this.state.mode === STATE_FREE_MODE}
+                        onChange={this.handleGetInputValue.bind(this)}
+                    />
+                    <Button onClick={ this.clickSetHandle }>Set</Button>
+                </div>
             </div>
         );
     }
 }
+
