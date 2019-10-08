@@ -1,60 +1,41 @@
 import React from "react";
-import {Button, Col, Container, Row} from "react-bootstrap";
 import {Link} from "react-router-dom";
-import {log} from "util";
+import {Col, Row} from "react-bootstrap";
 import {PropsWithSession} from "./types";
 
-// import "./End.css";
+interface Props extends PropsWithSession { }
 
-const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
-
-
-// tslint:disable-next-line:interface-name
-interface Props extends PropsWithSession {}
-
-// tslint:disable-next-line:interface-name
-interface State {
-    navigatorUrl?: string;
-}
+interface State { }
 
 export default class End extends React.Component<Props, State> {
 
     public constructor(props: Props) {
         super(props);
-
-        const sessionId = props.currentSession!.sessionId;
-        this.state = {
-            navigatorUrl: `${WORKSPACE_BASE_ADDRESS}/session/${sessionId}`,
-        };
     }
 
-    public componentDidMount() {
-        log("start top");
-    }
-
+    private handleFocus = (event: any) => event.target.select();
 
     public render() {
-
+        const token = this.props.currentSession!.sessionId;
+        const driverUrl = `agmob-driver:${token}`;
         return (
             <div>
-                <Row className={"justify-content-md-center"}>
-                    <Col md={"auto"}>
-                        <h1>お疲れ様でした</h1>
-                        <h2>{this.state.navigatorUrl}</h2>
+                <Row className="justify-content-md-center">
+                    <Col>
+                        <h1 className="text-center">お疲れ様でした</h1>
+                        <div className="mt-3">
+                            <input className="form-control"
+                                readOnly={true}
+                                value={driverUrl}
+                                onFocus={this.handleFocus} />
+                        </div>
                     </Col>
                 </Row>
-                <Row className={"justify-content-md-center"}>
-                    <Col md={12}>
-                        <Link className={"btn btn-primary btn-lg btn-block"} to={"/"}>{"Back to Top"}</Link>
-                    </Col>
-                </Row>
-                <Row className={"justify-content-md-center"}>
-                    <Col md={"auto"}>
-                        <h1>Debug</h1>
-                    </Col>
-                </Row>
-                <Row className={"justify-content-md-center"}>
-                    <Col md={12}>
+                <Row className="justify-content-md-center mt-5">
+                    <Col>
+                        <Link className="btn btn-primary btn-lg btn-block" to="/">
+                            Back to Top
+                        </Link>
                     </Col>
                 </Row>
             </div>
