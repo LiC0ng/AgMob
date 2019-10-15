@@ -28,7 +28,9 @@ class SessionConfiguration(
         // The length of a 'mob session' in seconds
         val interval: Int,
         // The unix time stamp in seconds (JavaScript: Date.now() / 1000)
-        var begin: Long
+        val begin: Long,
+        // The mode of a 'mob session'
+        val mode: String = "STRICT"
 )
 
 @Serializable
