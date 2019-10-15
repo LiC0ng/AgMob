@@ -54,15 +54,16 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
             body: JSON.stringify({
                 interval: this.state.inputValue,
                 begin: Math.floor(Date.now() / 1000),
-                // mode: this.state.mode,
+                mode: this.state.mode,
             }),
         });
         const obj = await ret.json();
         console.log("POST /api/session =>");
         console.log(obj);
+        const time = this.state.mode === STATE_STRICT_MODE ? this.state.inputValue : -1;
         this.props.onUpdateSession({
             sessionId: obj.id,
-            startTimeInMinutes: this.state.inputValue,
+            startTimeInMinutes: time,
         });
 
         this.props.history.push({pathname: "/start_page"});
@@ -88,7 +89,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
                     </ButtonToolbar>
 
                     <details style={{ marginTop: 5 }}>
-                        <summary>Details</summary>
+                        <summary style={{ outline: "none" }}>Details</summary>
                         <dl>
                             <dt>Free mob mode</dt>
                             <dd>The mode has no limit time and you can switch roles freely.</dd>
