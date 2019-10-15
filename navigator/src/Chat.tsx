@@ -1,7 +1,6 @@
 import React from "react";
 import {Button, Col, Form, FormControl, InputGroup, Row} from "react-bootstrap";
 
-const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
 
 function getSessionId() {

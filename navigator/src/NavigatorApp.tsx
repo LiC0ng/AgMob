@@ -45,11 +45,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
         this.state = {
             state: NavigatorState.Disconnected,
         };
+        this.sendWebsocket();
     }
-
-  componentDidMount() {
-    this.sendWebsocket();
-  }
 
   public reconnect() {
       setTimeout(() => {
