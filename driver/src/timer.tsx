@@ -40,13 +40,13 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         this.setState({
             inputValue: value,
         });
-    }
+    };
 
     public handleChangeMode = (e: any) => {
         this.setState({
             mode: e.toString(),
         });
-    }
+    };
 
     public async clickSetHandle() {
         const ret = await fetch(`${WORKSPACE_BASE_ADDRESS}/api/session`, {
