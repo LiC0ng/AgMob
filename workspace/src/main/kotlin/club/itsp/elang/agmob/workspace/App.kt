@@ -222,7 +222,7 @@ fun main(args: Array<String>) {
             }
 
             // webSocket of chat
-            webSocket("/api/chat/{id}") {
+            webSocket("/api/chat/{id}/navigator") {
                 val sess = sessions[call.parameters["id"]]
                 if (sess == null) {
                     call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
@@ -248,6 +248,16 @@ fun main(args: Array<String>) {
                         }
                     }
                 }
+            }
+
+            webSocket("/api/chat/{id}/driver") {
+                val sess = sessions[call.parameters["id"]]
+                if (sess == null) {
+                    call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
+                    return@webSocket
+                }
+                val conn = DriverConnection(sess, this)
+                sess.setDriver(conn)
             }
         }
     }.start(wait = true)
