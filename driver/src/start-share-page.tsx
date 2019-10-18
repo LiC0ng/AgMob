@@ -28,7 +28,7 @@ interface IState {
 
 export default class StartShare extends React.Component<IProps, IState> {
 
-  private stream?: MediaStream;
+    private stream?: MediaStream;
 
     public constructor(props: IProps) {
         super(props);
@@ -43,7 +43,7 @@ export default class StartShare extends React.Component<IProps, IState> {
         this.clickStartHandle = this.clickStartHandle.bind(this);
     }
 
-  public componentDidMount() {
+    public componentDidMount() {
     const screenSharingConstraints = {
       mandatory: {
         chromeMediaSource: "desktop",
@@ -62,7 +62,8 @@ export default class StartShare extends React.Component<IProps, IState> {
 
     this.connectWebsocket();
   }
-  public reconnect() {
+
+    public reconnect() {
       setTimeout(() => {
         console.log("reconnecting")
         this.connectWebsocket();
@@ -113,11 +114,16 @@ export default class StartShare extends React.Component<IProps, IState> {
         return (
             <div>
                 <div className="start">
-                    <Button onClick={this.clickStartHandle}
+                    {this.state.timeRemainingInMinutes !== -1 ?
+                    <div>
+                        <Button onClick={this.clickStartHandle}
                             disabled={!this.state.connection || this.state.timer !== undefined}>
-                        Start
-                    </Button>
-                    <h1>{this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}</h1>
+                            Start
+                        </Button>
+                        <h1>{this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}</h1>
+                    </div>
+                        : <h1>Free mode</h1>
+                    }
                 </div>
                 <Form.Group>
                   <Form.Label>Join Session ({Object.keys(this.state.peerList).length} connected)</Form.Label>
@@ -135,7 +141,7 @@ export default class StartShare extends React.Component<IProps, IState> {
         }
     }
 
-  private connectWebsocket() {
+    private connectWebsocket() {
     if (!this.state.sessionId) {
       console.log("[BUG] session id not set");
       return;

@@ -12,7 +12,9 @@
     "protocols": [
       {
         "name": "agmob-driver",
-        "schemes": ["agmob-driver"]
+        "schemes": [
+          "agmob-driver"
+        ]
       }
     ],
     "win": {
