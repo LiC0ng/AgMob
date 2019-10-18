@@ -87,6 +87,11 @@ class DriverConnection(session: Session, private val wsSession: WebSocketServerS
         wsSession.send(WebSocketMessage("chat", message.payload, navConn.id).toJson())
     }
 
+    suspend fun driverChatMessage(message: WebSocketMessage) {
+        wsSession.send(WebSocketMessage("chat", message.payload).toJson())
+    }
+
+
     suspend fun disconnect() {
         wsSession.close()
     }
@@ -178,6 +183,10 @@ fun main(args: Array<String>) {
                             val driver = sess.driver
                             driver?.receiveSdpAnswer(conn, msg)
                         }
+                        "chat" -> {
+                            val driver = sess.driver
+                            driver?.sendChatMessage(conn, msg)
+                        }
                         else -> {
                             log.info("invalid websocket message from navigator")
                         }
@@ -211,6 +220,10 @@ fun main(args: Array<String>) {
                                 close()
                                 return@webSocket
                             }
+                            "chat" -> {
+                                val driver = sess.driver
+                                driver?.driverChatMessage(msg)
+                            }
                             else -> {
                                 log.info("invalid websocket message from navigator")
                             }
@@ -219,45 +232,6 @@ fun main(args: Array<String>) {
                 } finally {
                     sess.disconnectDriver(conn)
                 }
-            }
-
-            // webSocket of chat
-            webSocket("/api/chat/{id}/navigator") {
-                val sess = sessions[call.parameters["id"]]
-                if (sess == null) {
-                    call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
-                    return@webSocket
-                }
-                val conn = NavigatorConnection(sess, this)
-                sess.addNavigator(conn)
-
-                for (frame in incoming) {
-                    if (frame !is Frame.Text) {
-                        close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "FIXME: invalid frame"))
-                        continue
-                    }
-                    val msg = WebSocketMessage.parseJson(frame.readText())
-                    log.info(frame.readText())
-                    when (msg.kind) {
-                        "chat" -> {
-                            val driver = sess.driver
-                            driver?.sendChatMessage(conn, msg)
-                        }
-                        else -> {
-                            log.info("invalid websocket message from navigator")
-                        }
-                    }
-                }
-            }
-
-            webSocket("/api/chat/{id}/driver") {
-                val sess = sessions[call.parameters["id"]]
-                if (sess == null) {
-                    call.respondText("FIXME: invalid sess id", status = HttpStatusCode.BadRequest)
-                    return@webSocket
-                }
-                val conn = DriverConnection(sess, this)
-                sess.setDriver(conn)
             }
         }
     }.start(wait = true)

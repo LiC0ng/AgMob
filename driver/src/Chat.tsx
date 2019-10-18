@@ -1,6 +1,6 @@
 import React from "react";
 import {Button, Col, Form, FormControl, InputGroup, Row} from "react-bootstrap";
-import * as Config from "./config";
+import {PropsWithSession} from "./types";
 
 interface IState {
     name: string;
@@ -8,15 +8,11 @@ interface IState {
     history: string;
 }
 
-interface IProps {
-    sessionId: string;
+interface IProps extends PropsWithSession {
+    history: string;
 }
 
 export default class Chat extends React.Component<IProps, IState> {
-    private url = Config.WORKSPACE_WEBSOCKET_BASE_ADDRESS +
-        `/api/chat/ ${this.props.sessionId}/driver`;
-    private ws = new WebSocket(this.url);
-
     public constructor(props: IProps) {
         super(props);
         this.state = {
@@ -25,18 +21,18 @@ export default class Chat extends React.Component<IProps, IState> {
             name: "",
         };
         this.clickSendHandle = this.clickSendHandle.bind(this);
-        this.ws.onopen = () => {
-            console.log("connect to chat server");
-        };
-        this.ws.onmessage = (e) => {
-            const obj = JSON.parse(e.data);
-            if (obj.kind === "chat") {
-                this.setState({
-                    history: this.state.history + (obj.payload.name + " " + obj.payload.date + ":\n"
-                        + obj.payload.message + "\n"),
-                });
-            }
-        };
+        // this.ws.onopen = () => {
+        //     console.log("connect to chat server");
+        // };
+        // this.ws.onmessage = (e) => {
+        //     const obj = JSON.parse(e.data);
+        //     if (obj.kind === "chat") {
+        //         this.setState({
+        //             history: this.state.history + (obj.payload.name + " " + obj.payload.date + ":\n"
+        //                 + obj.payload.message + "\n"),
+        //         });
+        //     }
+        // };
     }
 
     public handleNameChange = (e: any) => {
@@ -53,9 +49,10 @@ export default class Chat extends React.Component<IProps, IState> {
 
 
     public async clickSendHandle() {
-        this.setState({
-            history: this.state.history + (this.state.name + " " + new Date() + ":\n"
-                + this.state.message + "\n"),
+        const date = new Date();
+        this.props.currentSession!.sendMessage({
+            kind: "driver_ready",
+            payload: `{"name":"${this.state.name}","message":"${this.state.message}","date":"${date.getHours()}:${date.getMinutes()}"}`,
         });
     }
 
@@ -66,7 +63,7 @@ export default class Chat extends React.Component<IProps, IState> {
                 <Form>
                     <Form.Group controlId="ChatHistory">
                         <Form.Label>Chat History</Form.Label>
-                        <Form.Control as="textarea" rows="8" value={this.state.history}/>
+                        <Form.Control as="textarea" rows="8" value={this.props.history}/>
                     </Form.Group>
                     <Form.Group as={Row} controlId="name">
                         <Form.Label column sm={1}>Name:</Form.Label>

@@ -1,10 +1,8 @@
 import React from "react";
 import {Button, Col, Form, FormControl, InputGroup, Row} from "react-bootstrap";
 
-const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
-
-function getSessionId() {
-    return window.location.pathname.match(/\/session\/([a-z0-9-]+)/)![1];
+interface IProps {
+    ws: WebSocket;
 }
 
 interface IState {
@@ -12,49 +10,36 @@ interface IState {
     message: string;
 }
 
-export default class Chat extends React.Component<any, IState> {
-    private id = getSessionId();
-    private url = `${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/chat/${this.id}/navigator`;
-    private ws = new WebSocket(this.url);
-
-    public constructor(props: any) {
+export default class Chat extends React.Component<IProps, IState> {
+    public constructor(props: IProps) {
         super(props);
         this.state = {
             name: "",
             message: "",
         };
         this.clickSendHandle = this.clickSendHandle.bind(this);
-        this.ws.onopen = () => {
-            console.log("connect to chat server");
-        }
     }
 
-    public handleNameChange = (e: any)=> {
+    public handleNameChange = (e: any) => {
         this.setState({
             name: e.target.value,
         })
     };
 
-    public handleMessageChange = (e: any)=> {
+    public handleMessageChange = (e: any) => {
         this.setState({
             message: e.target.value,
         })
     };
 
-
     public async clickSendHandle() {
+        const date = new Date();
         let sendObject = {
             "kind": "chat",
-            "payload": {
-                "name": this.state.name,
-                "message": this.state.message,
-                "date": new Date(),
-            }
+            "payload": `{"name":"${this.state.name}","message":"${this.state.message}","date":"${date.getHours()}:${date.getMinutes()}"}`
         };
-        this.ws.send(JSON.stringify(sendObject));
+        this.props.ws.send(JSON.stringify(sendObject));
     };
-
-
 
     public render() {
         return (
@@ -82,7 +67,7 @@ export default class Chat extends React.Component<any, IState> {
                         onChange={this.handleMessageChange}
                     />
                     <InputGroup.Append>
-                        <Button variant="primary" onClick={ this.clickSendHandle }>Send Message</Button>
+                        <Button variant="primary" onClick={this.clickSendHandle}>Send Message</Button>
                     </InputGroup.Append>
                 </InputGroup>
             </div>

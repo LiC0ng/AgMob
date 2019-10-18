@@ -1,5 +1,4 @@
 import React from "react";
-import {Button} from "react-bootstrap";
 import {Form} from "react-bootstrap";
 import Chat from "./Chat";
 import * as Config from "./config";
@@ -13,6 +12,7 @@ interface IState {
     timeRemainingInSeconds: number;
     timeRemainingInMinutes: number;
     sessionId: string;
+    chatHistory: string;
     timer?: number;
     peerList: any;
 }
@@ -27,6 +27,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             timeRemainingInMinutes: props.currentSession!.startTimeInMinutes,
             timeRemainingInSeconds: 0,
             sessionId: props.currentSession!.sessionId,
+            chatHistory: "",
             timer: undefined,
             peerList: [],
         };
@@ -75,7 +76,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             });
         } else {
             clearInterval(this.state.timer!);
-            this.setState({ timer: undefined });
+            this.setState({timer: undefined});
             this.props.currentSession!.sendMessage({
                 kind: "driver_quit",
                 payload: "",
@@ -100,11 +101,11 @@ export default class StartShare extends React.Component<IProps, IState> {
                     }
                 </div>
                 <Form.Group>
-                  <Form.Label>Join Session ({Object.keys(this.state.peerList).length} connected)</Form.Label>
-                  <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus} />
+                    <Form.Label>Join Session ({Object.keys(this.state.peerList).length} connected)</Form.Label>
+                    <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus}/>
                 </Form.Group>
-                <Chat sessionId={this.state.sessionId}/>
-           </div>
+                <Chat  history={this.state.chatHistory} onUpdateSession={this.props.onUpdateSession}/>
+            </div>
         );
     }
 
@@ -114,10 +115,10 @@ export default class StartShare extends React.Component<IProps, IState> {
         }
     }
 
-    onWebSocketMessage = (e: any)  => {
+    onWebSocketMessage = (e: any) => {
         const obj = JSON.parse(e.data);
         if (obj.kind === "request_sdp") {
-            console.log("[WS] Received 'request_sdp'")
+            console.log("[WS] Received 'request_sdp'");
             const peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
             const navigator_id = obj.navigator_id;
 
@@ -160,15 +161,21 @@ export default class StartShare extends React.Component<IProps, IState> {
                 });
             }
 
-            this.setState({ peerList: {...this.state.peerList, [obj.navigator_id]: peer }});
+            this.setState({peerList: {...this.state.peerList, [obj.navigator_id]: peer}});
         } else if (obj.kind === "sdp") {
             const peer = this.state.peerList[obj.navigator_id];
             const sdp = JSON.parse(obj.payload);
             peer.setRemoteDescription(sdp);
+        } else if (obj.kind === "chat") {
+            const content = JSON.parse(obj.payload);
+            this.setState({
+                chatHistory: this.state.chatHistory + (content.name + " " + content.date + ":\n"
+                    + content.message + "\n"),
+            });
         } else if (obj.kind === "interrupt_hogefuga_papparapa------------------------------------------------------------------") {
             Object.values(this.state.peerList).forEach((peer) => {
                 this.hangUp(peer as RTCPeerConnection);
             });
         }
-    }
+    };
 }
