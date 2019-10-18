@@ -5,7 +5,7 @@ import {
   Switch,
 } from "react-router-dom";
 import {Container} from "react-bootstrap";
-import {SessionData, SessionDataDummy, PropsWithSession} from "./types";
+import {DriverSession, PropsWithSession} from "./types";
 import End from "./End";
 import TimerCountdown from "./timer";
 import Top from "./Top";
@@ -25,13 +25,13 @@ export default class App extends React.Component<Props, State> {
 
         this.state = {
             componentProps: {
-                currentSession: SessionDataDummy,
+                currentSession: undefined,
                 onUpdateSession: this.onUpdateSession,
             },
         };
     }
 
-    onUpdateSession = (sd?: SessionData) => {
+    onUpdateSession = (sd?: DriverSession) => {
         const props = {...this.state.componentProps};
         props.currentSession = sd;
         this.setState({componentProps: props});

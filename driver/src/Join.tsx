@@ -2,8 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import {Button, Col, Container, Row} from "react-bootstrap";
 import {log} from "util";
-
-const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
+import {DriverSession} from "./types";
+import * as Config from "./config";
 
 interface State {
     inputSessionId: string;
@@ -27,39 +27,13 @@ export default class Join extends React.Component<any, State> {
     private handleStart = async (e: any) => {
         e.preventDefault();
 
-        const resId = `${WORKSPACE_BASE_ADDRESS}/api/session/${this.state.inputSessionId}`;
-        // TODO: This doesn't look pretty. Can this GET request be removed?
-        const retGet = await fetch(resId);
-        if (retGet.status != 200) {
-            console.log("GET /api/session/{id} => " + retGet.text());
+        const sess = await DriverSession.join(this.state.inputSessionId);
+        if (sess === null) {
             this.setState({ error: true });
-            return;
+        } else {
+            this.props.onUpdateSession(sess);
+            this.props.history.push({pathname: "/start_page"});
         }
-        const currentSession = await retGet.json();
-
-        // Now replace 'begin' with current time and update config
-        const ret = await fetch(resId, {
-            method: "PUT",
-            body: JSON.stringify({
-                ...currentSession.config,
-                begin: Math.floor(Date.now() / 1000),
-            }),
-        });
-        if (ret.status != 200) {
-            console.log("PUT /api/session/{id} => " + ret.text());
-            this.setState({ error: true });
-            return;
-        }
-        const obj = await ret.json();
-        console.log("PUT /api/session =>");
-        console.log(obj);
-        this.props.history.push({
-            pathname: "/start_page",
-            state: {
-                startTimeInMinutes: currentSession.config.interval,
-                sessionId: obj.id,
-            },
-        });
     }
 
     public render() {

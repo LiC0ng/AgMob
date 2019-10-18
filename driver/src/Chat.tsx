@@ -1,7 +1,6 @@
 import React from "react";
 import {Button, Col, Form, FormControl, InputGroup, Row} from "react-bootstrap";
-
-const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
+import * as Config from "./config";
 
 interface IState {
     name: string;
@@ -14,7 +13,8 @@ interface IProps {
 }
 
 export default class Chat extends React.Component<IProps, IState> {
-    private url = `${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/chat/ ${this.props.sessionId}/driver`;
+    private url = Config.WORKSPACE_WEBSOCKET_BASE_ADDRESS +
+        `/api/chat/ ${this.props.sessionId}/driver`;
     private ws = new WebSocket(this.url);
 
     public constructor(props: IProps) {

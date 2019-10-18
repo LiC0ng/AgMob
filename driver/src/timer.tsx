@@ -7,9 +7,9 @@ import InputGroup from "react-bootstrap/InputGroup";
 import ToggleButton from "react-bootstrap/ToggleButton";
 import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import {Link} from "react-router-dom";
-import {PropsWithSession} from "./types";
+import * as Config from "./config";
+import {PropsWithSession, DriverSession} from "./types";
 
-const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
 const STATE_FREE_MODE = "FREE";
 const STATE_STRICT_MODE = "STRICT";
 
@@ -64,22 +64,8 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
     };
 
     public async clickSetHandle() {
-        const ret = await fetch(`${WORKSPACE_BASE_ADDRESS}/api/session`, {
-            method: "POST",
-            body: JSON.stringify({
-                interval: this.state.inputValue,
-                begin: Math.floor(Date.now() / 1000),
-                mode: this.state.mode,
-            }),
-        });
-        const obj = await ret.json();
-        console.log("POST /api/session =>");
-        console.log(obj);
-        const time = this.state.mode === STATE_STRICT_MODE ? this.state.inputValue : -1;
-        this.props.onUpdateSession({
-            sessionId: obj.id,
-            startTimeInMinutes: time,
-        });
+        const sess = await DriverSession.create(this.state.mode, this.state.inputValue);
+        this.props.onUpdateSession(sess);
 
         this.props.history.push({pathname: "/start_page"});
     }
