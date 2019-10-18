@@ -104,7 +104,7 @@ export default class StartShare extends React.Component<IProps, IState> {
                     <Form.Label>Join Session ({Object.keys(this.state.peerList).length} connected)</Form.Label>
                     <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus}/>
                 </Form.Group>
-                <Chat  history={this.state.chatHistory} onUpdateSession={this.props.onUpdateSession}/>
+                <Chat  history={this.state.chatHistory}/>
             </div>
         );
     }
@@ -167,10 +167,8 @@ export default class StartShare extends React.Component<IProps, IState> {
             const sdp = JSON.parse(obj.payload);
             peer.setRemoteDescription(sdp);
         } else if (obj.kind === "chat") {
-            const content = JSON.parse(obj.payload);
             this.setState({
-                chatHistory: this.state.chatHistory + (content.name + " " + content.date + ":\n"
-                    + content.message + "\n"),
+                chatHistory: obj.payload,
             });
         } else if (obj.kind === "interrupt_hogefuga_papparapa------------------------------------------------------------------") {
             Object.values(this.state.peerList).forEach((peer) => {
