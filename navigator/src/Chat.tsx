@@ -14,7 +14,7 @@ interface IState {
 
 export default class Chat extends React.Component<any, IState> {
     private id = getSessionId();
-    private url = `${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/chat/` + this.id;
+    private url = `${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/chat/${this.id}/navigator`;
     private ws = new WebSocket(this.url);
 
     public constructor(props: any) {
