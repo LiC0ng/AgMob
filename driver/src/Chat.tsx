@@ -37,10 +37,14 @@ export default class Chat extends React.Component<IProps, IState> {
 
 
     public clickSendHandle() {
+        if (this.state.message === "") {
+            return;
+        }
+        const nameStr = (this.state.name === "") ? "Driver" : this.state.name;
         const date = new Date();
         const dateStr = date.getHours() + ":" + date.getMinutes();
         this.setState({
-            history: this.state.history + (this.state.name + " " + dateStr + ":\n"
+            history: this.state.history + (nameStr + " " + dateStr + ":\n"
                 + this.state.message + "\n"),
             message: "",
         });
@@ -55,10 +59,11 @@ export default class Chat extends React.Component<IProps, IState> {
     public componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
         if (nextProps.history !== this.props.history) {
             const message = JSON.parse(nextProps.history);
+            const nameStr = (message.name === "") ? "Navigator" : message.name;
             const date = new Date(message.date);
             const dateStr = date.getHours() + ":" + date.getMinutes();
             this.setState({
-                history: this.state.history + (message.name + " " + dateStr + "\n"
+                history: this.state.history + (nameStr + " " + dateStr + "\n"
                     + message.message + "\n"),
             });
         }
@@ -104,7 +109,7 @@ export default class Chat extends React.Component<IProps, IState> {
                         aria-label="Input Message Here"
                         aria-describedby="message"
                         value={this.state.message}
-                        onKeyPress = {this.pressSendHandle}
+                        onKeyPress={this.pressSendHandle}
                         onChange={this.handleMessageChange}
                     />
                     <InputGroup.Append>

@@ -34,6 +34,9 @@ export default class Chat extends React.Component<IProps, IState> {
     };
 
     public clickSendHandle() {
+        if (this.state.message === "") {
+            return
+        }
         const date = new Date();
         let sendObject = {
             "kind": "chat",
@@ -74,7 +77,7 @@ export default class Chat extends React.Component<IProps, IState> {
                         aria-label="Input Message Here"
                         aria-describedby="message"
                         value={this.state.message}
-                        onKeyPress = {this.pressSendHandle}
+                        onKeyPress={this.pressSendHandle}
                         onChange={this.handleMessageChange}
                     />
                     <InputGroup.Append>
