@@ -51,7 +51,7 @@ export default class Chat extends React.Component<IProps, IState> {
             const date = new Date(message.date);
             const dateStr = date.getHours() + ":" + date.getMinutes();
             this.setState({
-                history: this.state.history + (message.name + " " + dateStr + ":\n"
+                history: this.state.history + (message.name + " " + dateStr + "\n"
                     + message.message + "\n"),
             });
         }
