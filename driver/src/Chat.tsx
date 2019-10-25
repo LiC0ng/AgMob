@@ -4,6 +4,7 @@ import {Button, Col, Form, FormControl, InputGroup, Row} from "react-bootstrap";
 interface IState {
     name: string;
     message: string;
+    newMessage: string;
     history: string;
 }
 
@@ -18,6 +19,7 @@ export default class Chat extends React.Component<IProps, IState> {
             history: "",
             message: "",
             name: "",
+            newMessage: "",
         };
         this.clickSendHandle = this.clickSendHandle.bind(this);
         this.pressSendHandle = this.pressSendHandle.bind(this);
@@ -65,12 +67,13 @@ export default class Chat extends React.Component<IProps, IState> {
             this.setState({
                 history: this.state.history + (nameStr + " " + dateStr + "\n"
                     + message.message + "\n"),
+                newMessage: nextProps.history,
             });
         }
     }
 
     public componentDidUpdate(prevState: Readonly<IState>, snapshot?: any): void {
-        if (prevState.history !== this.state.history) {
+        if (prevState.history !== this.state.newMessage) {
             this.ScrollToBottom();
         }
     }
