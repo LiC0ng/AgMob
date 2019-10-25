@@ -6,6 +6,7 @@ function getSessionId() {
 }
 
 const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
+const WORKSPACE_HTTPS_BASE_ADDRESS = "https://elang.itsp.club";
 const pcConfig = {
     iceServers: [
         {urls: "stun:stun.l.google.com:19302"},
@@ -30,6 +31,7 @@ interface Props {
 interface State {
     state: NavigatorState,
     ws: WebSocket,
+    mode: String,
 }
 
 export default class NavigatorApp extends React.Component<Props, State> {
@@ -50,7 +52,9 @@ export default class NavigatorApp extends React.Component<Props, State> {
         this.state = {
             state: NavigatorState.Disconnected,
             ws: new WebSocket(url),
+            mode: "Not connect",
         };
+        this.getSessInfo(id);
         this.sendWebsocket();
     }
 
@@ -58,6 +62,15 @@ export default class NavigatorApp extends React.Component<Props, State> {
         setTimeout(() => {
             this.sendWebsocket();
         }, 2000);
+    }
+
+    private async getSessInfo(id: any) {
+        const ret = await fetch(`${WORKSPACE_HTTPS_BASE_ADDRESS}/api/session/${id}`);
+        const obj = await ret.json();
+
+        this.setState({
+            mode: obj.config.mode + " MODE",
+        });
     }
 
     private sendWebsocket() {
@@ -209,6 +222,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 <video width="960"
                        className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
                        autoPlay={true} muted={true} ref={this.setVideoRef}/>
+                <h1>{this.state.mode}</h1>
                 <Chat ws={this.state.ws}/>
             </div>
         );
