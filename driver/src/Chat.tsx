@@ -57,6 +57,18 @@ export default class Chat extends React.Component<IProps, IState> {
         }
     }
 
+    public componentDidUpdate(prevState: Readonly<IState>, snapshot?: any): void {
+        if (prevState.history !== this.state.history) {
+            this.ScrollToBottom();
+        }
+    }
+
+
+    public ScrollToBottom() {
+        const chatHistory: any = document.getElementById("ChatHistory");
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
 
     public render() {
         return (
