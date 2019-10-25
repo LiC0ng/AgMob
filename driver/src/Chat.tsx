@@ -41,6 +41,7 @@ export default class Chat extends React.Component<IProps, IState> {
         this.setState({
             history: this.state.history + (this.state.name + " " + dateStr + ":\n"
                 + this.state.message + "\n"),
+            message: "",
         });
     }
 

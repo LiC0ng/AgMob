@@ -45,7 +45,6 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        super(props);
         const id = getSessionId();
         const url = `${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/session/${id}/navigator`;
         this.state = {

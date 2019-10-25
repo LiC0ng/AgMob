@@ -39,6 +39,9 @@ export default class Chat extends React.Component<IProps, IState> {
             "payload": `{"name":"${this.state.name}","message":"${this.state.message}","date":"${date.getHours()}:${date.getMinutes()}"}`
         };
         this.props.ws.send(JSON.stringify(sendObject));
+        this.setState({
+            message: "",
+        })
     };
 
     public render() {
