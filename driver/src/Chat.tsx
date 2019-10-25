@@ -20,6 +20,7 @@ export default class Chat extends React.Component<IProps, IState> {
             name: "",
         };
         this.clickSendHandle = this.clickSendHandle.bind(this);
+        this.pressSendHandle = this.pressSendHandle.bind(this);
     }
 
     public handleNameChange = (e: any) => {
@@ -35,7 +36,7 @@ export default class Chat extends React.Component<IProps, IState> {
     };
 
 
-    public async clickSendHandle() {
+    public clickSendHandle() {
         const date = new Date();
         const dateStr = date.getHours() + ":" + date.getMinutes();
         this.setState({
@@ -43,6 +44,12 @@ export default class Chat extends React.Component<IProps, IState> {
                 + this.state.message + "\n"),
             message: "",
         });
+    }
+
+    public pressSendHandle(e: any) {
+        if (e.charCode === 13 && e.ctrlKey) {
+            this.clickSendHandle();
+        }
     }
 
     public componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
@@ -97,10 +104,12 @@ export default class Chat extends React.Component<IProps, IState> {
                         aria-label="Input Message Here"
                         aria-describedby="message"
                         value={this.state.message}
+                        onKeyPress = {this.pressSendHandle}
                         onChange={this.handleMessageChange}
                     />
                     <InputGroup.Append>
-                        <Button variant="primary" onClick={this.clickSendHandle}>Send Message</Button>
+                        <Button variant="primary" onClick={this.clickSendHandle}>Send
+                            Message</Button>
                     </InputGroup.Append>
                 </InputGroup>
             </div>
