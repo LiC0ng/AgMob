@@ -1,8 +1,8 @@
 import React from "react";
 
 interface IProps {
-    startTimeInSeconds: number;
     startTimeInMinutes: number;
+    begin: number;
 }
 
 interface IState {
@@ -18,7 +18,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         super(props);
         this.state = {
             timeRemainingInMinutes: props.startTimeInMinutes,
-            timeRemainingInSeconds: props.startTimeInSeconds,
+            timeRemainingInSeconds: 0,
         };
     }
 
@@ -43,11 +43,23 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         }, 1000);
     }
 
+    componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
+        if (nextProps.begin !== this.props.begin) {
+            this.setState({
+                timeRemainingInMinutes: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) / 60),
+                timeRemainingInSeconds: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) % 60)
+            })
+        }
+    }
+
 
     public render() {
         return (
             <div className="timer-countdown">
-                {this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}
+                {this.state.timeRemainingInMinutes !== -1 ?
+                    <h1>{this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}</h1>
+                    : <h1></h1>
+                }
             </div>
         );
     }

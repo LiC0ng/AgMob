@@ -1,5 +1,6 @@
 import React from 'react';
 import Chat from "./Chat";
+import Timer from "./Timer"
 
 function getSessionId() {
     return window.location.pathname.match(/\/session\/([a-z0-9-]+)/)![1];
@@ -31,7 +32,9 @@ interface Props {
 interface State {
     state: NavigatorState,
     ws: WebSocket,
-    mode: String,
+    mode: string,
+    interval: number,
+    begin: number;
 }
 
 export default class NavigatorApp extends React.Component<Props, State> {
@@ -53,6 +56,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
             state: NavigatorState.Disconnected,
             ws: new WebSocket(url),
             mode: "Not connect",
+            interval: -1,
+            begin: -1,
         };
         this.getSessInfo(id);
         this.sendWebsocket();
@@ -69,7 +74,9 @@ export default class NavigatorApp extends React.Component<Props, State> {
         const obj = await ret.json();
 
         this.setState({
-            mode: obj.config.mode + " MODE",
+            mode: obj.config.mode,
+            begin: obj.config.begin,
+            interval: obj.config.interval,
         });
     }
 
@@ -222,7 +229,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 <video width="960"
                        className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
                        autoPlay={true} muted={true} ref={this.setVideoRef}/>
-                <h1>{this.state.mode}</h1>
+                <h1>{this.state.mode} MODE</h1>
+                <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}/>
                 <Chat ws={this.state.ws}/>
             </div>
         );
