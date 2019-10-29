@@ -17,6 +17,12 @@ interface IState {
     peerList: any;
 }
 
+declare global {
+    interface Window {
+        require: any
+    }
+}
+
 export default class StartShare extends React.Component<IProps, IState> {
 
     private stream?: MediaStream;
@@ -90,6 +96,11 @@ export default class StartShare extends React.Component<IProps, IState> {
 
     public handleFocus = (event: any) => event.target.select();
 
+    public handleCheck = (event: any) => {
+        const remote = window.require('electron').remote;
+        remote.getCurrentWindow().setAlwaysOnTop(event.target.checked);
+    };
+
     public render() {
         const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
         return (
@@ -105,6 +116,9 @@ export default class StartShare extends React.Component<IProps, IState> {
                     <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus}/>
                 </Form.Group>
                 <Chat  history={this.state.chatHistory}/>
+                <Form.Group>
+                    <Form.Check type="checkbox" label="Show always on top" onChange={this.handleCheck} defaultChecked/>
+                </Form.Group>
             </div>
         );
     }
