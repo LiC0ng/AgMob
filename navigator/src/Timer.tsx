@@ -44,7 +44,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
     }
 
     componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
-        if (nextProps.begin !== this.props.begin) {
+        if (nextProps.begin !== this.props.begin && nextProps.startTimeInMinutes !== -1) {
             this.setState({
                 timeRemainingInMinutes: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) / 60),
                 timeRemainingInSeconds: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) % 60)

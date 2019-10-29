@@ -27,7 +27,7 @@ export class DriverSession {
         console.log(obj);
 
         const conn = await this.createWebSocket(obj.id);
-        const time = mode === STATE_STRICT_MODE ? startTimeInMinutes : -1;
+        const time = startTimeInMinutes;
 
         return new DriverSession(obj.id, conn, time);
     }

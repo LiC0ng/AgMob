@@ -34,7 +34,9 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
     }
 
     public handleGetInputValue = (e: any) => {
-        if (!e.target.value) return;
+        if (!e.target.value) {
+            return;
+        }
         const input = parseInt(e.target.value.replace(/[^0-9-]/g, ""));
         const value = (input >= 0) ? input : 0;
 
@@ -54,7 +56,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         const value = this.state.inputValue > 0 ? this.state.inputValue - 1 : 0;
         this.setState({
             inputValue: value,
-        })
+        });
     };
 
     public handleChangeMode = (e: any) => {
@@ -64,7 +66,12 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
     };
 
     public async clickSetHandle() {
-        const sess = await DriverSession.create(this.state.mode, this.state.inputValue);
+        let sess: any;
+        if (this.state.mode === STATE_FREE_MODE) {
+            sess = await DriverSession.create(this.state.mode, -1);
+        } else {
+            sess = await DriverSession.create(this.state.mode, this.state.inputValue);
+        }
         this.props.onUpdateSession(sess);
 
         this.props.history.push({pathname: "/start_page"});
@@ -73,7 +80,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
     public render() {
         // @ts-ignore
         return (
-            <div style={{ margin: 15 }}>
+            <div style={{margin: 15}}>
                 <div className="select-mode">
                     <h3>Select mode</h3>
                     <label>Please select mode how you want to develop software through mob programming.</label>
@@ -89,8 +96,8 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
                         </ToggleButtonGroup>
                     </ButtonToolbar>
 
-                    <details style={{ marginTop: 5 }}>
-                        <summary style={{ outline: "none" }}>Details</summary>
+                    <details style={{marginTop: 5}}>
+                        <summary style={{outline: "none"}}>Details</summary>
                         <Alert variant={"secondary"}>
                             <dl>
                                 <dt>Free mob mode</dt>
@@ -102,30 +109,32 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
                     </details>
                 </div>
 
-                <div className="timer-countdown" style={{ marginTop: 30 }}>
+                <div className="timer-countdown" style={{marginTop: 30}}>
                     <h3>Input your desired time</h3>
                     <InputGroup>
                         <InputGroup.Prepend>
-                            <Button variant="primary" onClick={this.handleDecrementValue} disabled={this.state.mode === STATE_FREE_MODE}>-</Button>
+                            <Button variant="primary" onClick={this.handleDecrementValue}
+                                    disabled={this.state.mode === STATE_FREE_MODE}>-</Button>
                         </InputGroup.Prepend>
                         <input
                             type={"number"}
                             value={this.state.inputValue.toString()}
-                            style={{ textAlign: "end" }}
+                            style={{textAlign: "end"}}
                             disabled={this.state.mode === STATE_FREE_MODE}
-                            onChange={this.handleGetInputValue.bind(this)} />
+                            onChange={this.handleGetInputValue.bind(this)}/>
                         <InputGroup.Append>
-                            <Button variant="primary" onClick={this.handleIncrementValue} disabled={this.state.mode === STATE_FREE_MODE}>+</Button>
+                            <Button variant="primary" onClick={this.handleIncrementValue}
+                                    disabled={this.state.mode === STATE_FREE_MODE}>+</Button>
                         </InputGroup.Append>
                     </InputGroup>
                 </div>
 
                 <Row className="justify-content-md-center fixed-bottom">
-                    <Col xs={"auto"} style={{ padding: 30 }}>
+                    <Col xs={"auto"} style={{padding: 30}}>
                         <Link className="btn btn-primary btn-lg" to="/">Back</Link>
                     </Col>
-                    <Col xs={"auto"} style={{ padding: 30 }}>
-                        <Button className="btn btn-primary btn-lg" onClick={ this.clickSetHandle }>Create</Button>
+                    <Col xs={"auto"} style={{padding: 30}}>
+                        <Button className="btn btn-primary btn-lg" onClick={this.clickSetHandle}>Create</Button>
                     </Col>
                 </Row>
             </div>
