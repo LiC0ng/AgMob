@@ -74,7 +74,7 @@ export default class StartShare extends React.Component<IProps, IState> {
                 timeRemainingInMinutes: this.state.timeRemainingInMinutes - 1,
                 timeRemainingInSeconds: 59,
             });
-        } else {
+        } else if(this.state.timeRemainingInMinutes !== -1) {
             clearInterval(this.state.timer!);
             this.setState({timer: undefined});
             this.props.currentSession!.sendMessage({
