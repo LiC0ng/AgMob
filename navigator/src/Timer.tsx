@@ -37,7 +37,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         }
     }
 
-    public componentDidMount()  {
+    public componentDidMount() {
         this.timer = setInterval(() => {
             this.startTimerCountdownHandler();
         }, 1000);
@@ -48,7 +48,11 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
             this.setState({
                 timeRemainingInMinutes: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) / 60),
                 timeRemainingInSeconds: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) % 60)
-            })
+            });
+            clearInterval(this.timer!);
+            this.timer = setInterval(() => {
+                this.startTimerCountdownHandler();
+            }, 1000);
         }
     }
 
