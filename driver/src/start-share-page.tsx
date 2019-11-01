@@ -15,7 +15,7 @@ interface IState {
     sessionId: string;
     chatHistory: string;
     timer?: number;
-    peerList: any;
+    peerList: RTCPeerConnection[];
 }
 
 declare global {
@@ -25,7 +25,6 @@ declare global {
 }
 
 export default class StartShare extends React.Component<IProps, IState> {
-
     private stream?: MediaStream;
 
     public constructor(props: IProps) {
@@ -41,6 +40,10 @@ export default class StartShare extends React.Component<IProps, IState> {
         this.clickStopHandle = this.clickStopHandle.bind(this);
     }
 
+    private addTrackToPeer(pc: RTCPeerConnection, stream: MediaStream) {
+        stream.getTracks().forEach(track => pc.addTrack(track, stream));
+    }
+
     public componentDidMount() {
         const screenSharingConstraints = {
             mandatory: {
@@ -51,11 +54,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             video: screenSharingConstraints as any,
         }).then((stream) => {
             this.stream = stream;
-            stream.getTracks().forEach((track) => {
-                console.log(track);
-                Object.values(this.state.peerList).forEach((peer) =>
-                    (peer as RTCPeerConnection).addTrack(track, stream));
-            });
+            Object.values(this.state.peerList).forEach(pc => this.addTrackToPeer(pc, stream));
         });
 
         this.props.currentSession!.attach(this.onWebSocketMessage);
@@ -149,10 +148,6 @@ export default class StartShare extends React.Component<IProps, IState> {
             const peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
             const navigator_id = obj.navigator_id;
 
-            peer.ontrack = (ev) => {
-                console.log(ev);
-            };
-
             peer.onicecandidate = (ev) => {
                 if (ev.candidate) {
                     console.log(ev);
@@ -170,23 +165,12 @@ export default class StartShare extends React.Component<IProps, IState> {
                 try {
                     const offer = await peer.createOffer();
                     await peer.setLocalDescription(offer);
-                    // const sdp = peer.localDescription;
-                    // const sendObject = {
-                    //     kind: "sdp",
-                    //     payload: JSON.stringify(sdp),
-                    //     navigator_id: navigator_id,
-                    // };
-                    // connection.send(JSON.stringify(sendObject));
                 } catch (err) {
                     console.error(err);
                 }
             };
-            if (this.stream) {
-                this.stream.getTracks().forEach((track) => {
-                    console.log(track);
-                    peer.addTrack(track, this.stream!);
-                });
-            }
+            if (this.stream)
+                this.addTrackToPeer(peer, this.stream);
 
             this.setState({peerList: {...this.state.peerList, [obj.navigator_id]: peer}});
         } else if (obj.kind === "sdp") {
