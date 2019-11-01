@@ -1,5 +1,6 @@
 import React from "react";
-import {Form} from "react-bootstrap";
+import {Form, InputGroup} from "react-bootstrap";
+import Button from "react-bootstrap/Button";
 import Chat from "./Chat";
 import * as Config from "./config";
 import {PropsWithSession} from "./types";
@@ -37,6 +38,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             timer: undefined,
             peerList: [],
         };
+        this.clickStopHandle = this.clickStopHandle.bind(this);
     }
 
     public componentDidMount() {
@@ -80,18 +82,26 @@ export default class StartShare extends React.Component<IProps, IState> {
                 timeRemainingInMinutes: this.state.timeRemainingInMinutes - 1,
                 timeRemainingInSeconds: 59,
             });
-        } else if(this.state.timeRemainingInMinutes !== -1) {
-            clearInterval(this.state.timer!);
-            this.setState({timer: undefined});
-            this.props.currentSession!.sendMessage({
-                kind: "driver_quit",
-                payload: "",
-            });
-            Object.values(this.state.peerList).forEach((peer) => {
-                this.hangUp(peer as RTCPeerConnection);
-            });
-            this.props.history.push({pathname: "/end"});
+        } else if (this.state.timeRemainingInMinutes !== -1) {
+            this.stopSharing();
         }
+    }
+
+    public stopSharing() {
+        clearInterval(this.state.timer!);
+        this.setState({timer: undefined});
+        this.props.currentSession!.sendMessage({
+            kind: "driver_quit",
+            payload: "",
+        });
+        Object.values(this.state.peerList).forEach((peer) => {
+            this.hangUp(peer as RTCPeerConnection);
+        });
+        this.props.history.push({pathname: "/end"});
+    }
+
+    public clickStopHandle() {
+        this.stopSharing();
     }
 
     public handleFocus = (event: any) => event.target.select();
@@ -107,15 +117,18 @@ export default class StartShare extends React.Component<IProps, IState> {
             <div>
                 <div className="start">
                     {this.state.timeRemainingInMinutes !== -1 ?
-                        <h1>{this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}</h1>
-                        : <h1>Free mode</h1>
+                        <h1>{this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}
+                            <Button style={{marginLeft: 30}} variant="primary"
+                                    onClick={this.clickStopHandle}>Stop</Button></h1>
+                        : <h1>Free mode<Button style={{marginLeft: 30}} variant="primary"
+                                               onClick={this.clickStopHandle}>Stop</Button></h1>
                     }
                 </div>
                 <Form.Group>
                     <Form.Label>Join Session ({Object.keys(this.state.peerList).length} connected)</Form.Label>
                     <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus}/>
                 </Form.Group>
-                <Chat  history={this.state.chatHistory}/>
+                <Chat history={this.state.chatHistory}/>
                 <Form.Group>
                     <Form.Check type="checkbox" label="Show always on top" onChange={this.handleCheck} defaultChecked/>
                 </Form.Group>
