@@ -60,7 +60,7 @@ export class DriverSession {
         console.log(obj);
 
         const conn = await this.createWebSocket(obj.id);
-        const time = obj.ode === STATE_STRICT_MODE ? obj.interval : -1;
+        const time = obj.config.mode === STATE_STRICT_MODE ? obj.config.interval : -1;
 
         return new DriverSession(obj.id, conn, time);
     }
