@@ -10,8 +10,8 @@ import {Link} from "react-router-dom";
 import * as Config from "./config";
 import {PropsWithSession, DriverSession} from "./types";
 
-const STATE_FREE_MODE = "FREE";
-const STATE_STRICT_MODE = "STRICT";
+const STATE_FREE_MODE = "Free Mode";
+const STATE_STRICT_MODE = "Strict Mode";
 
 interface IProps extends PropsWithSession {
     history: any;

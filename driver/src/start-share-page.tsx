@@ -20,7 +20,7 @@ interface IState {
 
 declare global {
     interface Window {
-        require: any
+        require: any;
     }
 }
 

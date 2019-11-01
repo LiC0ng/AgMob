@@ -26,11 +26,13 @@ import kotlin.collections.HashMap
 @Serializable
 class SessionConfiguration(
         // The length of a 'mob session' in seconds
-        val interval: Int,
+        var interval: Int,
         // The unix time stamp in seconds (JavaScript: Date.now() / 1000)
-        val begin: Long,
+        var begin: Long,
         // The mode of a 'mob session'
-        val mode: String = "STRICT"
+        var mode: String = "Free Mode",
+        // The state of a mob 'session'
+        var state: String = "No Connection"
 )
 
 @Serializable
@@ -235,6 +237,9 @@ fun main(args: Array<String>) {
                                 log.info("driver: quitting")
                                 close()
                                 return@webSocket
+                            }
+                            "driver_quit" -> {
+                                sess.config.state = "No Connection"
                             }
                             "chat" -> {
                                 val driver = sess.driver

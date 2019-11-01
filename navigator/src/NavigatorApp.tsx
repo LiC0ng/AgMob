@@ -35,6 +35,7 @@ interface State {
     mode: string,
     interval: number,
     begin: number;
+    connectionState: string;
 }
 
 export default class NavigatorApp extends React.Component<Props, State> {
@@ -58,6 +59,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
             mode: "Not connect",
             interval: -1,
             begin: -1,
+            connectionState: "No Connection"
         };
         this.getSessInfo(id);
         this.sendWebsocket();
@@ -77,6 +79,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
             mode: obj.config.mode,
             begin: obj.config.begin,
             interval: obj.config.interval,
+            connectionState: obj.config.state
         });
     }
 
@@ -198,6 +201,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
     // The latter is not always reliable.
     handleDriverQuit = () => {
         this.setState({state: NavigatorState.WaitingDriver});
+        const id = getSessionId();
+        this.getSessInfo(id);
     };
 
     handleStart = async (event: any) => {
@@ -229,8 +234,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 <video width="960"
                        className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
                        autoPlay={true} muted={true} ref={this.setVideoRef}/>
-                <h1>{this.state.mode} MODE</h1>
-                <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}/>
+                {this.state.connectionState === "Connected" ? <h1>{this.state.mode}</h1> : <h1>{this.state.connectionState}</h1>}
+                <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval} mode={this.state.mode}/>
                 <Chat ws={this.state.ws}/>
             </div>
         );

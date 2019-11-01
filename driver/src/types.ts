@@ -1,8 +1,8 @@
 import * as Config from "./config";
 
 // TODO: Convert into enum?
-const STATE_FREE_MODE = "FREE";
-const STATE_STRICT_MODE = "STRICT";
+const STATE_FREE_MODE = "Free Mode";
+const STATE_STRICT_MODE = "Strict Mode";
 
 export class DriverSession {
     private constructor(
@@ -21,6 +21,7 @@ export class DriverSession {
                 interval: startTimeInMinutes,
                 begin: Math.floor(Date.now() / 1000),
                 mode: mode,
+                state: "Connected",
             }),
         });
         const obj = await ret.json();
@@ -49,6 +50,7 @@ export class DriverSession {
             body: JSON.stringify({
                 ...currentSession.config,
                 begin: Math.floor(Date.now() / 1000),
+                state: "Connected",
             }),
         });
         if (ret.status != 200) {
