@@ -144,20 +144,21 @@ export default class StartShare extends React.Component<IProps, IState> {
     onWebSocketMessage = (e: any) => {
         const obj = JSON.parse(e.data);
         if (obj.kind === "request_sdp") {
-            console.log("[WS] Received 'request_sdp'");
-            const peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
             const navigator_id = obj.navigator_id;
+            console.log(`[WS] Received 'request_sdp' from ${navigator_id}`);
+            const peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
 
             peer.onicecandidate = (ev) => {
                 if (ev.candidate) {
-                    console.log(ev);
-                } else {
-                    const sdp = peer.localDescription;
+                    console.log(`[RTC-${navigator_id}] New ICE candidate`);
+                    console.log(ev.candidate);
                     this.props.currentSession!.sendMessage({
-                        kind: "sdp",
-                        payload: JSON.stringify(sdp),
+                        kind: "ice_candidate",
+                        payload: JSON.stringify(ev.candidate),
                         navigator_id,
                     });
+                } else {
+                    console.log(`[RTC-${navigator_id}] ICE candidates complete`);
                 }
             };
 
@@ -165,6 +166,14 @@ export default class StartShare extends React.Component<IProps, IState> {
                 try {
                     const offer = await peer.createOffer();
                     await peer.setLocalDescription(offer);
+
+                    // Send initial SDP
+                    console.log(`[RTC-${navigator_id}] Sending initial SDP`);
+                    this.props.currentSession!.sendMessage({
+                        kind: "sdp",
+                        payload: JSON.stringify(peer.localDescription),
+                        navigator_id,
+                    });
                 } catch (err) {
                     console.error(err);
                 }
@@ -177,6 +186,10 @@ export default class StartShare extends React.Component<IProps, IState> {
             const peer = this.state.peerList[obj.navigator_id];
             const sdp = JSON.parse(obj.payload);
             peer.setRemoteDescription(sdp);
+        } else if (obj.kind === "ice_candidate") {
+            const peer = this.state.peerList[obj.navigator_id];
+            const candidate = JSON.parse(obj.payload);
+            peer.addIceCandidate(candidate);
         } else if (obj.kind === "chat") {
             this.setState({
                 chatHistory: obj.payload,

@@ -83,6 +83,10 @@ class DriverConnection(session: Session, private val wsSession: WebSocketServerS
         wsSession.send(WebSocketMessage("sdp", message.payload, navConn.id).toJson())
     }
 
+    suspend fun receiveIceCandidate(navConn: NavigatorConnection, message: WebSocketMessage) {
+        wsSession.send(WebSocketMessage("ice_candidate", message.payload, navConn.id).toJson())
+    }
+
     suspend fun sendChatMessage(navConn: NavigatorConnection, message: WebSocketMessage) {
         wsSession.send(WebSocketMessage("chat", message.payload, navConn.id).toJson())
     }
@@ -100,6 +104,10 @@ class DriverConnection(session: Session, private val wsSession: WebSocketServerS
 class NavigatorConnection(session: Session, private val wsSession: WebSocketServerSession) : BaseConnection(session) {
     suspend fun receiveSdpOffer(message: WebSocketMessage) {
         wsSession.send(WebSocketMessage("sdp", message.payload).toJson())
+    }
+
+    suspend fun receiveIceCandidate(message: WebSocketMessage) {
+        wsSession.send(WebSocketMessage("ice_candidate", message.payload).toJson())
     }
 
     suspend fun notifyDriverReady() {
@@ -183,6 +191,10 @@ fun main(args: Array<String>) {
                             val driver = sess.driver
                             driver?.receiveSdpAnswer(conn, msg)
                         }
+                        "ice_candidate" -> {
+                            val driver = sess.driver
+                            driver?.receiveIceCandidate(conn, msg)
+                        }
                         "chat" -> {
                             val driver = sess.driver
                             driver?.sendChatMessage(conn, msg)
@@ -214,6 +226,10 @@ fun main(args: Array<String>) {
                             "sdp" -> {
                                 val navConn = sess.navigators[msg.navigator_id]
                                 navConn?.receiveSdpOffer(msg)
+                            }
+                            "ice_candidate" -> {
+                                val navConn = sess.navigators[msg.navigator_id]
+                                navConn?.receiveIceCandidate(msg)
                             }
                             "quit" -> {
                                 log.info("driver: quitting")

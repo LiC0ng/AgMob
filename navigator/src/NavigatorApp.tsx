@@ -114,17 +114,16 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     };
 
                     // ICE Candidateを収集したときのイベント
-                    peer.onicecandidate = evt => {
-                        if (evt.candidate) {
-                            console.log(evt.candidate);
+                    peer.onicecandidate = ev => {
+                        if (ev.candidate) {
+                            console.log(`[RTC] New ICE candidate`);
+                            console.log(ev.candidate);
+                            this.send(JSON.stringify({
+                                kind: "ice_candidate",
+                                payload: JSON.stringify(ev.candidate),
+                            }));
                         } else {
-                            console.log('empty ice event');
-                            const sdp = peer.localDescription;
-                            const sendObject = {
-                                "kind": "sdp",
-                                "payload": JSON.stringify(sdp)
-                            };
-                            this.send(JSON.stringify(sendObject));
+                            console.log(`[RTC] ICE candidates complete`);
                         }
                     };
                     peer.onconnectionstatechange = evt => {
@@ -157,15 +156,16 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         console.log('setRemoteDescription(answer) success in promise');
                         peer.createAnswer().then((answer) => {
                             peer.setLocalDescription(answer).then(() => {
-                                // const sdp = peer.localDescription;
-                                // const sendObject = {
-                                //   "kind": "sdp",
-                                //   "payload": JSON.stringify(sdp)
-                                // };
-                                // ws.send(JSON.stringify(sendObject));
+                                this.send(JSON.stringify({
+                                    "kind": "sdp",
+                                    "payload": JSON.stringify(peer.localDescription),
+                                }));
                             })
                         })
                     });
+                    break;
+                case "ice_candidate":
+                    self.peer!.addIceCandidate(JSON.parse(message.payload));
                     break;
                 case "driver_ready":
                     let sendObject = {
