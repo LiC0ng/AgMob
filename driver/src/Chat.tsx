@@ -35,6 +35,10 @@ export default class Chat extends React.Component<IProps, IState> {
         });
     };
 
+    public handleHistoryChange = (e: any) => {
+        this.setState({});
+    };
+
 
     public clickSendHandle() {
         if (this.state.message === "") {
@@ -88,7 +92,7 @@ export default class Chat extends React.Component<IProps, IState> {
                 <Form>
                     <Form.Group controlId="ChatHistory">
                         <Form.Label>Chat History</Form.Label>
-                        <Form.Control as="textarea" rows="8" value={this.state.history}/>
+                        <Form.Control as="textarea" rows="8" value={this.state.history} onChange={this.handleHistoryChange}/>
                     </Form.Group>
                     <Form.Group as={Row} controlId="name">
                         <Form.Label column sm={1}>Name:</Form.Label>
