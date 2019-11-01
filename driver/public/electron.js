@@ -9,7 +9,7 @@ const url = require('url');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow;
+let mainWindow, overlayWindow;
 
 function createWindow() {
     // Create the browser window.
@@ -45,12 +45,28 @@ function createWindow() {
         const url = "/driver/" + req.url.substr(13);
         mainWindow.loadURL(url);
     });
+
+    // Setup Agmob overlay window
+    overlayWindow = new BrowserWindow({
+        //alwaysOnTop: true,
+        transparent: true,
+        frames: false,
+        focusable: false,
+        fullscreen: true,
+        webPreferences: {
+            nodeIntegration: true,
+            webSecurity: false, // FIXME!!!!!!
+        },
+    });
+    overlayWindow.setIgnoreMouseEvents(true)
+
+    overlayWindow.loadURL(startUrl + "#overlay");
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => setTimeout(createWindow, 500));
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
