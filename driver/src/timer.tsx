@@ -80,7 +80,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
     public render() {
         // @ts-ignore
         return (
-            <div style={{margin: 15}}>
+            <div>
                 <div className="select-mode">
                     <h3>Select mode</h3>
                     <label>Please select mode how you want to develop software through mob programming.</label>

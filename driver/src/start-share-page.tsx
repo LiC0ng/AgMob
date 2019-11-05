@@ -141,24 +141,25 @@ export default class StartShare extends React.Component<IProps, IState> {
     public render() {
         const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
         return (
-            <div>
+            <div className="h-100 d-flex flex-column">
                 <div className="start">
-                    {this.state.timeRemainingInMinutes !== -1 ?
-                        <h1>{this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}
-                            <Button style={{marginLeft: 30}} variant="primary"
-                                    onClick={this.clickStopHandle}>Stop</Button></h1>
-                        : <h1>Free mode<Button style={{marginLeft: 30}} variant="primary"
-                                               onClick={this.clickStopHandle}>Stop</Button></h1>
-                    }
+                    <h1 className="d-inline">
+                        {this.state.timeRemainingInMinutes !== -1 ?
+                            `${this.state.timeRemainingInMinutes} : ${this.state.timeRemainingInSeconds}`
+                            : "Free mode"
+                        }
+                    </h1>
+                    <Button style={{marginLeft: 30}} variant="primary"
+                        onClick={this.clickStopHandle}>Stop</Button>
+                    <Form.Group>
+                        <Form.Check type="checkbox" label="Show always on top" onChange={this.handleCheck} defaultChecked/>
+                    </Form.Group>
                 </div>
                 <Form.Group>
                     <Form.Label>Join Session ({this.state.peers.length} connected)</Form.Label>
                     <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus}/>
                 </Form.Group>
                 <Chat history={this.state.chatHistory}/>
-                <Form.Group>
-                    <Form.Check type="checkbox" label="Show always on top" onChange={this.handleCheck} defaultChecked/>
-                </Form.Group>
             </div>
         );
     }
