@@ -132,3 +132,10 @@ export interface PropsWithSession {
     currentSession?: DriverSession;
     onUpdateSession: (sd?: DriverSession) => void;
 }
+
+export interface LaserPointerState {
+    // Identifies the navigator.  Maybe we should use a 'navigator' object or something...
+    color: string;
+    posX: number; // In px
+    posY: number; // In px
+}

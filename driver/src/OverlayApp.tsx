@@ -1,55 +1,78 @@
-import {ipcRenderer} from "electron";
-import React from 'react';
-import {
-    BrowserRouter as Router,
-    Route,
-    Switch,
-} from "react-router-dom";
-import {Container} from "react-bootstrap";
-import {DriverSession, PropsWithSession} from "./types";
-import End from "./End";
-import TimerCountdown from "./timer";
-import Top from "./Top";
-import Join from "./Join";
-import StartShare from "./start-share-page";
+import React from "react";
+import {LaserPointerState} from "./types";
+const electron = window.require("electron");
 
 interface Props {
 }
 
 interface State {
-    componentProps: PropsWithSession;
-    data: any;
 }
 
 export default class OverlayApp extends React.Component<Props, State> {
+    private canvasRef?: HTMLCanvasElement;
+    private readonly setCanvasRef = (canvas: HTMLCanvasElement) => {
+        this.canvasRef = canvas;
+        if (canvas === null)
+            return;
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    };
+
     constructor(props: Props) {
         super(props);
 
         this.state = {
-            componentProps: {
-                currentSession: undefined,
-                onUpdateSession: this.onUpdateSession,
-            },
-            data: null,
         };
 
-        ipcRenderer.on("overlay", (event: any, arg: any) =>
-            this.setState({ data: arg }));
+        electron.ipcRenderer.on("overlay", (event: any, arg: any) => {
+            console.log(`[Overlay] Received laser pointers update: ${arg}`);
+            this.update(arg);
+        });
     }
 
-    onUpdateSession = (sd?: DriverSession) => {
-        const props = {...this.state.componentProps};
-        props.currentSession = sd;
-        this.setState({componentProps: props});
-    };
+    private statesHistory: LaserPointerState[][] = [];
+
+    private update(ary: LaserPointerState[]) {
+        this.statesHistory.push(ary);
+        if (this.statesHistory.length > 100)
+            this.statesHistory.shift();
+
+        const canvas = this.canvasRef;
+        if (!canvas)
+            return;
+        const context = canvas.getContext("2d");
+        // How can this happen?
+        if (!context)
+            return;
+
+        // Clear the canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Create pointers and trail
+        for (let i = 0; i < this.statesHistory.length; i++) {
+            const states = this.statesHistory[i];
+            const opacity = (i + 1) / this.statesHistory.length;
+
+            for (let j = 0; j < states.length; j++) {
+                const item = states[j];
+                context.beginPath();
+                context.arc(item.posX, item.posY, 1.5, 0, 2 * Math.PI);
+                context.fillStyle = `rgba(${item.color}, ${opacity})`;
+                context.fill();
+            }
+        }
+
+        //window.requestAnimationFrame();
+    }
 
     render() {
-        const componentProps = this.state.componentProps;
         return (
-            <Container style={{ border: "20px solid #ff0000" }}>
-                <h1>THIS IS THE OVERLAY WINDOW</h1>
-                <h2>{this.state.data}</h2>
-            </Container>
+            <canvas style={{
+                    display: "block",
+                    height: "100vh",
+                    width: "100vw",
+                }}
+                ref={this.setCanvasRef}></canvas>
         );
     }
 }
