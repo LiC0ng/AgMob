@@ -257,7 +257,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
         const driverUrl = `agmob-driver:${token}`;
         return (
             <div className="container-fluid d-flex p-3">
-                <div className="flex-grow-1 text-center">
+                <div className="flex-grow-1 text-center mr-3">
                     {this.state.state === NavigatorState.Disconnected ?
                         <div>
                             <h1>Connecting to server</h1>
@@ -272,9 +272,10 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                 <a href={driverUrl}>{driverUrl}</a>
                             </div>
                         </div>
-                    : <video width="960"
-                           className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
-                           autoPlay={true} muted={true} ref={this.setVideoRef}/>}
+                    : <video
+                        style={{width: "100%"}}
+                        className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
+                        autoPlay={true} muted={true} ref={this.setVideoRef}/>}
                 </div>
                 <div className="w-30 h-100 d-flex flex-column">
                     {this.state.connectionState === "Connected" ? <h1>{this.state.mode}</h1> : <h1>{this.state.connectionState}</h1>}
