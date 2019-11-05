@@ -190,6 +190,20 @@ export default class StartShare extends React.Component<IProps, IState> {
                     const offer = await peer.createOffer();
                     await peer.setLocalDescription(offer);
 
+                    const dataChannel = peer.createDataChannel('pointer');
+                    const checkDataChannelState = () => {
+                        if (dataChannel.readyState === 'open') {
+                            console.log("datachannel is ready");
+                        }
+                    };
+                    dataChannel.onopen = checkDataChannelState;
+                    dataChannel.onclose = checkDataChannelState;
+                    dataChannel.onmessage = (ev: any) => {
+                        console.log("received via datachannel");
+                        dataChannel.send("send form driver");
+                        console.log("send via datachannel")
+                    };
+
                     // Send initial SDP
                     console.log(`[RTC-${navigator_id}] Sending initial SDP`);
                     this.props.currentSession!.sendMessage({
