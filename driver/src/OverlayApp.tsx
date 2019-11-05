@@ -1,5 +1,10 @@
 import React from "react";
 import {LaserPointerState} from "./types";
+declare global {
+    interface Window {
+        require: any;
+    }
+}
 const electron = window.require("electron");
 
 interface Props {

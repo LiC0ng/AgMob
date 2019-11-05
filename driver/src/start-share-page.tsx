@@ -4,6 +4,12 @@ import Button from "react-bootstrap/Button";
 import Chat from "./Chat";
 import * as Config from "./config";
 import {PropsWithSession} from "./types";
+
+declare global {
+    interface Window {
+        require: any;
+    }
+}
 const electron = window.require("electron");
 
 interface IProps extends PropsWithSession {
@@ -17,12 +23,6 @@ interface IState {
     chatHistory: string;
     timer?: number;
     peerList: RTCPeerConnection[];
-}
-
-declare global {
-    interface Window {
-        require: any;
-    }
 }
 
 export default class StartShare extends React.Component<IProps, IState> {
@@ -122,7 +122,7 @@ export default class StartShare extends React.Component<IProps, IState> {
     public handleFocus = (event: any) => event.target.select();
 
     public handleCheck = (event: any) => {
-        const remote = window.require('electron').remote;
+        const remote = electron.remote;
         remote.getCurrentWindow().setAlwaysOnTop(event.target.checked);
     };
 
