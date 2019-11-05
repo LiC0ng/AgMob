@@ -34,6 +34,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
     private peer?: RTCPeerConnection;
     private dataChannel?: RTCDataChannel;
     private videoRef?: HTMLVideoElement;
+    private color?: string;
     private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
         if (videoRef === null) return;
         if (this.stream)
@@ -150,16 +151,19 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
                     peer.ondatachannel = (ev) => {
                         dataChannel = ev.channel;
-                        const checkDataChannelState = () => {
+                        dataChannel.onopen = () => {
                             if (dataChannel.readyState === 'open') {
                                 console.log("datachannel is ready");
                             }
                         };
-                        dataChannel.onopen = checkDataChannelState;
-                        dataChannel.onclose = checkDataChannelState;
+                        dataChannel.onclose = () => {
+                            if (dataChannel.readyState === 'closed') {
+                                console.log("datachannel is closed");
+                            }
+                        };
                         dataChannel.onmessage = (ev: any) => {
-                            let text: string = ev.data;
-                            console.log(text);
+                            let navigator_id: number = ev.data;
+                            self.color = Config.Colors[navigator_id % Config.Colors.length];
                             console.log("received via datachannel");
                         };
                         self.dataChannel = dataChannel;

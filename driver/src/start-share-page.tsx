@@ -192,17 +192,21 @@ export default class StartShare extends React.Component<IProps, IState> {
                     await peer.setLocalDescription(offer);
 
                     const dataChannel = peer.createDataChannel('pointer');
-                    const checkDataChannelState = () => {
+                    dataChannel.onopen = () => {
                         if (dataChannel.readyState === 'open') {
                             console.log("datachannel is ready");
+
+                            dataChannel.send(navigator_id);
+                            console.log("send via datachannel");
                         }
                     };
-                    dataChannel.onopen = checkDataChannelState;
-                    dataChannel.onclose = checkDataChannelState;
+                    dataChannel.onclose = () => {
+                        if (dataChannel.readyState === 'closed') {
+                            console.log("datachannel is closed");
+                        }
+                    };
                     dataChannel.onmessage = (ev: any) => {
                         console.log("received via datachannel");
-                        dataChannel.send("send form driver");
-                        console.log("send via datachannel")
                     };
 
                     // Send initial SDP
