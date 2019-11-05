@@ -3,7 +3,7 @@ import {Form, InputGroup} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Chat from "./Chat";
 import * as Config from "./config";
-import {PropsWithSession} from "./types";
+import {PropsWithSession, LaserPointerState} from "./types";
 
 declare global {
     interface Window {
@@ -13,6 +13,9 @@ declare global {
 const electron = window.require("electron");
 
 class PeerInfo {
+    public pointerX?: number;
+    public pointerY?: number;
+
     constructor(public id: number, public pc: RTCPeerConnection) {
     }
 
@@ -54,20 +57,18 @@ export default class StartShare extends React.Component<IProps, IState> {
         };
         this.clickStopHandle = this.clickStopHandle.bind(this);
 
-        // FIXME: electron.ipcRenderer.send() should be called when receiving
-        // laser pointers data through the data channel.  As the argument,
-        // this component passes the positions of all laser pointers, in an
-        // array of LaserPointerState.
-        let a = 0;
         setInterval(() => {
-            // Prepare a dummy position
-            a = (a + 1) % 800;
-            // Check the definition of LaserPointerState
-            const ary = [
-                { color: "255, 0, 0", posX: a, posY: a },
-            ];
+            const ary: LaserPointerState[] = [];
+            this.state.peers.forEach(peer => {
+                if (peer.pointerX !== undefined && peer.pointerY !== undefined)
+                    ary.push({
+                        color: Config.Colors[peer.id % Config.Colors.length],
+                        posX: peer.pointerX,
+                        posY: peer.pointerY,
+                    });
+            });
             electron.ipcRenderer.send("overlay", ary);
-        }, 30);
+        }, 1000/60);
     }
 
     public componentDidMount() {
