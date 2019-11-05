@@ -55,7 +55,6 @@ export default class NavigatorApp extends React.Component<Props, State> {
         }, false);
         videoRef.addEventListener("mouseup", () => {
             mousePressed = false;
-            this.sendDataChannel({});
         }, false);
         videoRef.addEventListener("mousemove", (e: any) => {
             if (mousePressed)

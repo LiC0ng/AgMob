@@ -136,6 +136,6 @@ export interface PropsWithSession {
 export interface LaserPointerState {
     // Identifies the navigator.  Maybe we should use a 'navigator' object or something...
     color: string;
-    posX?: number; // In px
-    posY?: number; // In px
+    posX: number; // In px
+    posY: number; // In px
 }

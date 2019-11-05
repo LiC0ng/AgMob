@@ -61,10 +61,6 @@ export default class OverlayApp extends React.Component<Props, State> {
 
             for (let j = 0; j < states.length; j++) {
                 const item = states[j];
-                if (item.posX === undefined || item.posY === undefined) {
-                    prev[j] = undefined as any;
-                    return;
-                }
                 const r = parseInt(item.color.substr(1, 2), 16),
                     g = parseInt(item.color.substr(3, 2), 16),
                     b = parseInt(item.color.substr(5, 2), 16);
