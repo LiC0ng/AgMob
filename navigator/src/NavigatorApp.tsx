@@ -256,8 +256,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
         const token = getSessionId();
         const driverUrl = `agmob-driver:${token}`;
         return (
-            <div className="container-fluid d-flex p-3">
-                <div className="flex-grow-1 text-center mr-3">
+            <div className="container-fluid dp-3 d-flex h-100 flex-column">
+                <div className="flex-grow-1 text-center">
                     {this.state.state === NavigatorState.Disconnected ?
                         <div>
                             <h1>Connecting to server</h1>
@@ -273,13 +273,16 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             </div>
                         </div>
                     : <video
-                        style={{width: "100%"}}
+                        style={{height: "100%"}}
                         className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
                         autoPlay={true} muted={true} ref={this.setVideoRef}/>}
                 </div>
-                <div className="w-25 h-100 d-flex flex-column">
-                    {this.state.connectionState === "Connected" ? <h1>{this.state.mode}</h1> : <h1>{this.state.connectionState}</h1>}
-                    <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval} mode={this.state.mode} status={this.state.connectionState}/>
+                <div className="row">
+                    {this.state.connectionState === "Connected"
+                        ? <h1 className="col-auto">{this.state.mode}</h1>
+                        : <h1 className="col-auto">{this.state.connectionState}</h1>}
+                    <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
+                        mode={this.state.mode} status={this.state.connectionState}/>
                     <Chat ws={this.state.ws}/>
                 </div>
             </div>
