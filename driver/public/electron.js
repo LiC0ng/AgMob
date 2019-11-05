@@ -47,40 +47,23 @@ function createWindow() {
     });
 
     // Setup Agmob overlay window
-
-    // Workaround on Linux desktop: it won't be full screen if focusable is disabled.
-    let extraConfig = {};
-    switch (process.platform) {
-        case "linux":
-            const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize;
-            extraConfig = {
-                ...extraConfig,
-                width: width,
-                height: height,
-                x: 0,
-                y: 0,
-            };
-            break;
-        case "win32":
-            extraConfig = {
-                ...extraConfig,
-                alwaysOnTop: true,
-            };
-            break;
-    }
-
+    const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize;
     overlayWindow = new BrowserWindow({
+        autoHideMenuBar: true,
         transparent: true,
         frames: false,
         focusable: false,
-        fullscreen: true,
+        width: width,
+        height: height,
+        x: 0,
+        y: 0,
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false, // FIXME!!!!!!
         },
-        ...extraConfig,
     });
     overlayWindow.setIgnoreMouseEvents(true);
+    overlayWindow.setAlwaysOnTop(true);
     overlayWindow.loadURL(startUrl + "#overlay");
 
     // Pipe between mainWindow and overlayWindow (-> only)
