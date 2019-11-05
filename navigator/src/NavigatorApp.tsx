@@ -36,10 +36,30 @@ export default class NavigatorApp extends React.Component<Props, State> {
     private videoRef?: HTMLVideoElement;
     private color?: string;
     private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
-        if (videoRef === null) return;
+        this.videoRef = videoRef;
+        if (videoRef === null)
+            return;
         if (this.stream)
             videoRef.srcObject = this.stream;
-        this.videoRef = videoRef;
+
+        const sendPointer = (e: any) => {
+            const rect = videoRef.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width,
+                y = (e.clientY - rect.top) / rect.height;
+            this.sendDataChannel({x, y});
+        }
+        let mousePressed = false;
+        videoRef.addEventListener("mousedown", (e: any) => {
+            mousePressed = true;
+            sendPointer(e);
+        }, false);
+        videoRef.addEventListener("mouseup", () => {
+            mousePressed = false;
+        }, false);
+        videoRef.addEventListener("mousemove", (e: any) => {
+            if (mousePressed)
+                sendPointer(e);
+        }, false);
     };
 
     constructor(props: Props) {
@@ -219,10 +239,12 @@ export default class NavigatorApp extends React.Component<Props, State> {
         this.getSessInfo(id);
     };
 
-    private sendDataChannel() {
+    private sendDataChannel(data: any) {
         if(this.dataChannel !== undefined) {
-            this.dataChannel.send("send via datachannel");
             console.log("send via datachannel");
+
+            const str = JSON.stringify(data);
+            this.dataChannel.send(str);
         }
     }
 
