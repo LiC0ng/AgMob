@@ -42,27 +42,24 @@ export default class NavigatorApp extends React.Component<Props, State> {
         if (this.stream)
             videoRef.srcObject = this.stream;
 
-        let mousePressed = false;
         const sendPointer = (e: any) => {
-            if (!mousePressed) {
-                this.sendDataChannel({});
-                return;
-            }
             const rect = videoRef.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width,
                 y = (e.clientY - rect.top) / rect.height;
             this.sendDataChannel({x, y});
         }
+        let mousePressed = false;
         videoRef.addEventListener("mousedown", (e: any) => {
             mousePressed = true;
             sendPointer(e);
         }, false);
-        videoRef.addEventListener("mouseup", (e: any) => {
+        videoRef.addEventListener("mouseup", () => {
             mousePressed = false;
-            sendPointer(e);
+            this.sendDataChannel({});
         }, false);
         videoRef.addEventListener("mousemove", (e: any) => {
-            sendPointer(e);
+            if (mousePressed)
+                sendPointer(e);
         }, false);
     };
 
