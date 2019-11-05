@@ -9,12 +9,10 @@ import HomeApp from "./HomeApp";
 import NavigatorApp from "./NavigatorApp";
 
 const App = () => (
-  <div>
     <Switch>
-      <Route exact={true} path="/"><HomeApp /></Route>
-      <Route path="/session/" component={ NavigatorApp } />
+        <Route exact={true} path="/"><HomeApp /></Route>
+        <Route path="/session/" component={ NavigatorApp } />
     </Switch>
-  </div>
 );
 
 ReactDOM.render(

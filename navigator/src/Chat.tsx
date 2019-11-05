@@ -56,35 +56,33 @@ export default class Chat extends React.Component<IProps, IState> {
 
     public render() {
         return (
-            <div className="chat">
-                <Form>
-                    <Form.Group as={Row} controlId="name">
-                        <Form.Label column sm={1}>Name:</Form.Label>
-                        <Col sm={4}>
-                            <Form.Control
-                                required
-                                type="text"
-                                placeholder="Input Name Here"
-                                value={this.state.name}
-                                onChange={this.handleNameChange}
-                            />
-                        </Col>
-                    </Form.Group>
-                </Form>
-                <InputGroup className="mb-3">
-                    <FormControl
-                        placeholder="Input Message Here"
-                        aria-label="Input Message Here"
-                        aria-describedby="message"
-                        value={this.state.message}
-                        onKeyPress={this.pressSendHandle}
-                        onChange={this.handleMessageChange}
-                    />
-                    <InputGroup.Append>
-                        <Button variant="primary" onClick={this.clickSendHandle}>Send Message</Button>
-                    </InputGroup.Append>
-                </InputGroup>
-            </div>
+            <Form className="chat col">
+                <Form.Group as={Row} controlId="name" className="w-100">
+                    <Form.Label column xs="auto">Name:</Form.Label>
+                    <Col xs="auto">
+                        <Form.Control
+                            required
+                            type="text"
+                            placeholder="Input Name Here"
+                            value={this.state.name}
+                            onChange={this.handleNameChange}
+                        />
+                    </Col>
+                    <InputGroup className="col">
+                        <FormControl
+                            placeholder="Input Message Here"
+                            aria-label="Input Message Here"
+                            aria-describedby="message"
+                            value={this.state.message}
+                            onKeyPress={this.pressSendHandle}
+                            onChange={this.handleMessageChange}
+                        />
+                        <InputGroup.Append>
+                            <Button variant="primary" onClick={this.clickSendHandle}>Send Message</Button>
+                        </InputGroup.Append>
+                    </InputGroup>
+                </Form.Group>
+            </Form>
         );
     }
 }

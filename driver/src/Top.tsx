@@ -10,7 +10,7 @@ interface State { }
 export default class Top extends React.Component<Props, State> {
     public render() {
         return (
-            <div style={{ margin: 15 }}>
+            <div>
                 <Row className={"justify-content-md-center"}>
                     <Col md={"auto"}>
                         <h1>AgMob</h1>

@@ -54,16 +54,38 @@ export default class OverlayApp extends React.Component<Props, State> {
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         // Create pointers and trail
+        let prev: Array<[number, number]> = [];
         for (let i = 0; i < this.statesHistory.length; i++) {
             const states = this.statesHistory[i];
             const opacity = (i + 1) / this.statesHistory.length;
 
             for (let j = 0; j < states.length; j++) {
                 const item = states[j];
-                context.beginPath();
-                context.arc(item.posX, item.posY, 1.5, 0, 2 * Math.PI);
-                context.fillStyle = `rgba(${item.color}, ${opacity})`;
-                context.fill();
+                const r = parseInt(item.color.substr(1, 2), 16),
+                    g = parseInt(item.color.substr(3, 2), 16),
+                    b = parseInt(item.color.substr(5, 2), 16);
+                const style = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+                const x = item.posX * canvas.width,
+                    y = item.posY * canvas.height;
+
+                const pair = prev[j];
+                if (pair !== undefined) {
+                    context.beginPath();
+                    context.moveTo(pair[0], pair[1]);
+                    context.lineTo(x, y);
+                    context.strokeStyle = style;
+                    context.lineWidth = 5;
+                    context.lineCap = "round";
+                    context.stroke();
+                }
+                if (i === this.statesHistory.length - 1) {
+                    context.beginPath();
+                    context.arc(x, y, 10, 0, 2 * Math.PI);
+                    context.fillStyle = style;
+                    context.fill();
+                }
+
+                prev[j] = [x, y];
             }
         }
 

@@ -40,7 +40,7 @@ export default class App extends React.Component<Props, State> {
     render() {
         const componentProps = this.state.componentProps;
         return (
-            <Container>
+            <Container fluid={true} id="main-root" className="h-100">
                 <Router>
                     <Switch>
                         <Route exact={true} path="/" render={(obj) =>

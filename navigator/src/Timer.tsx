@@ -61,7 +61,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
 
     public render() {
         return (
-            <div className="timer-countdown">
+            <div className="col-1 timer-countdown">
                 {(this.props.status !== "No Connection" && this.props.mode === "Strict Mode") ?
                     <h1>{this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}</h1>
                     : <h1></h1>

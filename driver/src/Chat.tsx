@@ -2,7 +2,6 @@ import React from "react";
 import {Button, Col, Form, FormControl, InputGroup, Row} from "react-bootstrap";
 
 interface IState {
-    name: string;
     message: string;
     history: string;
 }
@@ -17,17 +16,10 @@ export default class Chat extends React.Component<IProps, IState> {
         this.state = {
             history: "",
             message: "",
-            name: "",
         };
         this.clickSendHandle = this.clickSendHandle.bind(this);
         this.pressSendHandle = this.pressSendHandle.bind(this);
     }
-
-    public handleNameChange = (e: any) => {
-        this.setState({
-            name: e.target.value,
-        });
-    };
 
     public handleMessageChange = (e: any) => {
         this.setState({
@@ -39,16 +31,14 @@ export default class Chat extends React.Component<IProps, IState> {
         this.setState({});
     };
 
-
     public clickSendHandle() {
         if (this.state.message === "") {
             return;
         }
-        const nameStr = (this.state.name === "") ? "Driver" : this.state.name;
         const date = new Date();
         const dateStr = date.getHours() + ":" + date.getMinutes();
         this.setState({
-            history: this.state.history + (nameStr + " " + dateStr + ":\n"
+            history: this.state.history + ("Driver " + dateStr + ":\n"
                 + this.state.message + "\n"),
             message: "",
         });
@@ -88,26 +78,13 @@ export default class Chat extends React.Component<IProps, IState> {
 
     public render() {
         return (
-            <div>
-                <Form>
-                    <Form.Group controlId="ChatHistory">
-                        <Form.Label>Chat History</Form.Label>
-                        <Form.Control as="textarea" rows="8" value={this.state.history} onChange={this.handleHistoryChange}/>
-                    </Form.Group>
-                    <Form.Group as={Row} controlId="name">
-                        <Form.Label column sm={1}>Name:</Form.Label>
-                        <Col sm={4}>
-                            <Form.Control
-                                required
-                                type="text"
-                                placeholder="Input Name Here"
-                                value={this.state.name}
-                                onChange={this.handleNameChange}
-                            />
-                        </Col>
-                    </Form.Group>
-                </Form>
-                <InputGroup className="mb-3">
+            <Form className="flex-grow-1 d-flex flex-column">
+                <Form.Group controlId="ChatHistory" className="flex-grow-1 d-flex flex-column">
+                    <Form.Label>Chat History</Form.Label>
+                    <Form.Control as="textarea" className="overflow-auto flex-grow-1"
+                        value={this.state.history} onChange={this.handleHistoryChange}/>
+                </Form.Group>
+                <InputGroup>
                     <FormControl
                         placeholder="Input Message Here"
                         aria-label="Input Message Here"
@@ -121,7 +98,7 @@ export default class Chat extends React.Component<IProps, IState> {
                             Message</Button>
                     </InputGroup.Append>
                 </InputGroup>
-            </div>
+            </Form>
         );
     }
 }

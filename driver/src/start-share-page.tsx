@@ -3,7 +3,7 @@ import {Form, InputGroup} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Chat from "./Chat";
 import * as Config from "./config";
-import {PropsWithSession} from "./types";
+import {PropsWithSession, LaserPointerState} from "./types";
 
 declare global {
     interface Window {
@@ -11,6 +11,23 @@ declare global {
     }
 }
 const electron = window.require("electron");
+
+class PeerInfo {
+    public pointerX?: number;
+    public pointerY?: number;
+
+    constructor(public id: number, public pc: RTCPeerConnection) {
+    }
+
+    addTracks(stream: MediaStream) {
+        stream.getTracks().forEach(track => this.pc.addTrack(track, stream));
+    }
+
+    hangUp() {
+        if (this.pc.iceConnectionState !== "closed")
+            this.pc.close();
+    }
+}
 
 interface IProps extends PropsWithSession {
     history: any;
@@ -22,7 +39,7 @@ interface IState {
     sessionId: string;
     chatHistory: string;
     timer?: number;
-    peerList: RTCPeerConnection[];
+    peers: PeerInfo[];
 }
 
 export default class StartShare extends React.Component<IProps, IState> {
@@ -36,28 +53,22 @@ export default class StartShare extends React.Component<IProps, IState> {
             sessionId: props.currentSession!.sessionId,
             chatHistory: "",
             timer: undefined,
-            peerList: [],
+            peers: [],
         };
         this.clickStopHandle = this.clickStopHandle.bind(this);
 
-        // FIXME: electron.ipcRenderer.send() should be called when receiving
-        // laser pointers data through the data channel.  As the argument,
-        // this component passes the positions of all laser pointers, in an
-        // array of LaserPointerState.
-        let a = 0;
         setInterval(() => {
-            // Prepare a dummy position
-            a = (a + 1) % 800;
-            // Check the definition of LaserPointerState
-            const ary = [
-                { color: "255, 0, 0", posX: a, posY: a },
-            ];
+            const ary: LaserPointerState[] = [];
+            this.state.peers.forEach(peer => {
+                if (peer.pointerX !== undefined && peer.pointerY !== undefined)
+                    ary.push({
+                        color: Config.Colors[peer.id % Config.Colors.length],
+                        posX: peer.pointerX,
+                        posY: peer.pointerY,
+                    });
+            });
             electron.ipcRenderer.send("overlay", ary);
-        }, 30);
-    }
-
-    private addTrackToPeer(pc: RTCPeerConnection, stream: MediaStream) {
-        stream.getTracks().forEach(track => pc.addTrack(track, stream));
+        }, 1000/60);
     }
 
     public componentDidMount() {
@@ -70,7 +81,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             video: screenSharingConstraints as any,
         }).then((stream) => {
             this.stream = stream;
-            Object.values(this.state.peerList).forEach(pc => this.addTrackToPeer(pc, stream));
+            this.state.peers.forEach(peer => peer.addTracks(stream));
         });
 
         this.props.currentSession!.attach(this.onWebSocketMessage);
@@ -104,13 +115,14 @@ export default class StartShare extends React.Component<IProps, IState> {
 
     public stopSharing() {
         clearInterval(this.state.timer!);
-        this.setState({timer: undefined});
         this.props.currentSession!.sendMessage({
             kind: "driver_quit",
             payload: "",
         });
-        Object.values(this.state.peerList).forEach((peer) => {
-            this.hangUp(peer as RTCPeerConnection);
+        this.state.peers.forEach(peer => peer.hangUp());
+        this.setState({
+            timer: undefined,
+            peers: [],
         });
         this.props.history.push({pathname: "/end"});
     }
@@ -129,32 +141,27 @@ export default class StartShare extends React.Component<IProps, IState> {
     public render() {
         const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
         return (
-            <div>
+            <div className="h-100 d-flex flex-column">
                 <div className="start">
-                    {this.state.timeRemainingInMinutes !== -1 ?
-                        <h1>{this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}
-                            <Button style={{marginLeft: 30}} variant="primary"
-                                    onClick={this.clickStopHandle}>Stop</Button></h1>
-                        : <h1>Free mode<Button style={{marginLeft: 30}} variant="primary"
-                                               onClick={this.clickStopHandle}>Stop</Button></h1>
-                    }
+                    <h1 className="d-inline">
+                        {this.state.timeRemainingInMinutes !== -1 ?
+                            `${this.state.timeRemainingInMinutes} : ${this.state.timeRemainingInSeconds}`
+                            : "Free mode"
+                        }
+                    </h1>
+                    <Button style={{marginLeft: 30}} variant="primary"
+                        onClick={this.clickStopHandle}>Stop</Button>
+                    <Form.Group>
+                        <Form.Check type="checkbox" label="Show always on top" onChange={this.handleCheck} defaultChecked/>
+                    </Form.Group>
                 </div>
                 <Form.Group>
-                    <Form.Label>Join Session ({Object.keys(this.state.peerList).length} connected)</Form.Label>
+                    <Form.Label>Join Session ({this.state.peers.length} connected)</Form.Label>
                     <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus}/>
                 </Form.Group>
                 <Chat history={this.state.chatHistory}/>
-                <Form.Group>
-                    <Form.Check type="checkbox" label="Show always on top" onChange={this.handleCheck} defaultChecked/>
-                </Form.Group>
             </div>
         );
-    }
-
-    private hangUp(peer: RTCPeerConnection) {
-        if (peer.iceConnectionState !== "closed") {
-            peer.close();
-        }
     }
 
     onWebSocketMessage = (e: any) => {
@@ -163,6 +170,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             const navigator_id = obj.navigator_id;
             console.log(`[WS] Received 'request_sdp' from ${navigator_id}`);
             const peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
+            const peerInfo = new PeerInfo(navigator_id, peer);
 
             peer.onicecandidate = (ev) => {
                 if (ev.candidate) {
@@ -183,6 +191,26 @@ export default class StartShare extends React.Component<IProps, IState> {
                     const offer = await peer.createOffer();
                     await peer.setLocalDescription(offer);
 
+                    const dataChannel = peer.createDataChannel('pointer');
+                    dataChannel.onopen = () => {
+                        if (dataChannel.readyState === 'open') {
+                            console.log("datachannel is ready");
+
+                            dataChannel.send(navigator_id);
+                            console.log("send via datachannel");
+                        }
+                    };
+                    dataChannel.onclose = () => {
+                        if (dataChannel.readyState === 'closed') {
+                            console.log("datachannel is closed");
+                        }
+                    };
+                    dataChannel.onmessage = (ev: any) => {
+                        const data = JSON.parse(ev.data);
+                        peerInfo.pointerX = data.x;
+                        peerInfo.pointerY = data.y;
+                    };
+
                     // Send initial SDP
                     console.log(`[RTC-${navigator_id}] Sending initial SDP`);
                     this.props.currentSession!.sendMessage({
@@ -194,25 +222,38 @@ export default class StartShare extends React.Component<IProps, IState> {
                     console.error(err);
                 }
             };
-            if (this.stream)
-                this.addTrackToPeer(peer, this.stream);
 
-            this.setState({peerList: {...this.state.peerList, [obj.navigator_id]: peer}});
+            if (this.stream)
+                peerInfo.addTracks(this.stream);
+            const newPeers = [...this.state.peers, peerInfo];
+            this.setState({peers: newPeers});
         } else if (obj.kind === "sdp") {
-            const peer = this.state.peerList[obj.navigator_id];
+            const peer = this.state.peers.find(peer => peer.id === obj.navigator_id);
+            if (!peer) {
+                console.log(`[WS] Unexpected 'sdp' event for id=${obj.navigator_id}`);
+                console.log(obj);
+                return;
+            }
             const sdp = JSON.parse(obj.payload);
-            peer.setRemoteDescription(sdp);
+            try {
+                peer.pc.setRemoteDescription(sdp);
+            } catch(e) {
+                console.log("[WS] peer.pc.setRemoteDescription failed for navigator " +
+                    `id=${obj.navigator_id}`);
+                console.log(e);
+            }
         } else if (obj.kind === "ice_candidate") {
-            const peer = this.state.peerList[obj.navigator_id];
+            const peer = this.state.peers.find(peer => peer.id === obj.navigator_id);
+            if (!peer) {
+                console.log(`[WS] Unexpected 'ice_candidate' event for id=${obj.navigator_id}`);
+                console.log(obj);
+                return;
+            }
             const candidate = JSON.parse(obj.payload);
-            peer.addIceCandidate(candidate);
+            peer.pc.addIceCandidate(candidate);
         } else if (obj.kind === "chat") {
             this.setState({
                 chatHistory: obj.payload,
-            });
-        } else if (obj.kind === "interrupt_hogefuga_papparapa------------------------------------------------------------------") {
-            Object.values(this.state.peerList).forEach((peer) => {
-                this.hangUp(peer as RTCPeerConnection);
             });
         }
     };

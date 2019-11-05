@@ -1,20 +1,11 @@
 import React from 'react';
+import * as Config from "./config";
 import Chat from "./Chat";
 import Timer from "./Timer"
 
 function getSessionId() {
     return window.location.pathname.match(/\/session\/([a-z0-9-]+)/)![1];
 }
-
-const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
-const WORKSPACE_HTTPS_BASE_ADDRESS = "https://elang.itsp.club";
-const pcConfig = {
-    iceServers: [
-        {urls: "stun:stun.l.google.com:19302"},
-        {urls: "stun:160.16.213.209"},
-        {urls: "turn:160.16.213.209", credential: "ZPu5tyGmdsAEn6dlYJkNBse/x/UQnMj2", username: "agmob"},
-    ]
-};
 
 enum NavigatorState {
     // Not connected to WebSocket
@@ -41,18 +32,40 @@ interface State {
 export default class NavigatorApp extends React.Component<Props, State> {
     private stream?: MediaStream;
     private peer?: RTCPeerConnection;
+    private dataChannel?: RTCDataChannel;
     private videoRef?: HTMLVideoElement;
+    private color?: string;
     private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
-        if (videoRef === null) return;
+        this.videoRef = videoRef;
+        if (videoRef === null)
+            return;
         if (this.stream)
             videoRef.srcObject = this.stream;
-        this.videoRef = videoRef;
+
+        const sendPointer = (e: any) => {
+            const rect = videoRef.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width,
+                y = (e.clientY - rect.top) / rect.height;
+            this.sendDataChannel({x, y});
+        }
+        let mousePressed = false;
+        videoRef.addEventListener("mousedown", (e: any) => {
+            mousePressed = true;
+            sendPointer(e);
+        }, false);
+        videoRef.addEventListener("mouseup", () => {
+            mousePressed = false;
+        }, false);
+        videoRef.addEventListener("mousemove", (e: any) => {
+            if (mousePressed)
+                sendPointer(e);
+        }, false);
     };
 
     constructor(props: Props) {
         super(props);
         const id = getSessionId();
-        const url = `${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/session/${id}/navigator`;
+        const url = `${Config.WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/session/${id}/navigator`;
         this.state = {
             state: NavigatorState.Disconnected,
             ws: new WebSocket(url),
@@ -72,7 +85,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
     }
 
     private async getSessInfo(id: any) {
-        const ret = await fetch(`${WORKSPACE_HTTPS_BASE_ADDRESS}/api/session/${id}`);
+        const ret = await fetch(`${Config.WORKSPACE_BASE_ADDRESS}/api/session/${id}`);
         const obj = await ret.json();
 
         this.setState({
@@ -85,6 +98,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
     private sendWebsocket() {
         let peer: RTCPeerConnection;
+        let dataChannel: RTCDataChannel;
         this.state.ws.onopen = () => {
             console.log("WebSocket connected");
 
@@ -103,7 +117,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 case "sdp":
                     console.log(message);
                     const sdp = message;
-                    peer = new RTCPeerConnection(pcConfig);
+                    peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
                     self.peer = peer;
                     peer.ontrack = evt => {
                         console.log('-- peer.ontrack()');
@@ -153,6 +167,26 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                 }
                                 break;
                         }
+                    };
+
+                    peer.ondatachannel = (ev) => {
+                        dataChannel = ev.channel;
+                        dataChannel.onopen = () => {
+                            if (dataChannel.readyState === 'open') {
+                                console.log("datachannel is ready");
+                            }
+                        };
+                        dataChannel.onclose = () => {
+                            if (dataChannel.readyState === 'closed') {
+                                console.log("datachannel is closed");
+                            }
+                        };
+                        dataChannel.onmessage = (ev: any) => {
+                            let navigator_id: number = ev.data;
+                            self.color = Config.Colors[navigator_id % Config.Colors.length];
+                            console.log("received via datachannel");
+                        };
+                        self.dataChannel = dataChannel;
                     };
 
                     peer.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
@@ -205,6 +239,13 @@ export default class NavigatorApp extends React.Component<Props, State> {
         this.getSessInfo(id);
     };
 
+    private sendDataChannel(data: any) {
+        if(this.dataChannel !== undefined) {
+            const str = JSON.stringify(data);
+            this.dataChannel.send(str);
+        }
+    }
+
     handleStart = async (event: any) => {
         event.preventDefault();
         if (this.videoRef)
@@ -215,12 +256,13 @@ export default class NavigatorApp extends React.Component<Props, State> {
         const token = getSessionId();
         const driverUrl = `agmob-driver:${token}`;
         return (
-            <div style={{textAlign: "center"}}>
-                {this.state.state === NavigatorState.Disconnected ?
-                    <div>
-                        <h1>Connecting to server</h1>
-                        <p>Please wait for a little while longer.</p>
-                    </div>
+            <div className="container-fluid dp-3 d-flex h-100 flex-column">
+                <div className="flex-grow-1 text-center">
+                    {this.state.state === NavigatorState.Disconnected ?
+                        <div>
+                            <h1>Connecting to server</h1>
+                            <p>Please wait for a little while longer.</p>
+                        </div>
                     : this.state.state === NavigatorState.WaitingDriver ?
                         <div>
                             <h1>Waiting for new driver</h1>
@@ -230,13 +272,19 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                 <a href={driverUrl}>{driverUrl}</a>
                             </div>
                         </div>
-                        : <div/>}
-                <video width="960"
-                       className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
-                       autoPlay={true} muted={true} ref={this.setVideoRef}/>
-                {this.state.connectionState === "Connected" ? <h1>{this.state.mode}</h1> : <h1>{this.state.connectionState}</h1>}
-                <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval} mode={this.state.mode} status={this.state.connectionState}/>
-                <Chat ws={this.state.ws}/>
+                    : <video
+                        style={{height: "100%"}}
+                        className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
+                        autoPlay={true} muted={true} ref={this.setVideoRef}/>}
+                </div>
+                <div className="row">
+                    {this.state.connectionState === "Connected"
+                        ? <h1 className="col-auto">{this.state.mode}</h1>
+                        : <h1 className="col-auto">{this.state.connectionState}</h1>}
+                    <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
+                        mode={this.state.mode} status={this.state.connectionState}/>
+                    <Chat ws={this.state.ws}/>
+                </div>
             </div>
         );
     }
