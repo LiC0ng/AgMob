@@ -1,79 +1,379 @@
-.is-responsive {
-    min-width: auto;
+body {
+    width: 100%;
+    height: 100%;
+    word-break: break-all;
+    background: url("img/bg.jpg");
+    background-size: cover;
+    position: relative;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+div {
+    display: block;
+}
+
+body, button, input, select, textarea {
+    font: 14px/1.5 PingFangSC-Regular, "Microsoft Yahei", Tahoma, sans-serif;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.content {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
 }
 
 body {
+    -webkit-text-size-adjust: 100% !important;
+}
+
+html {
+    -webkit-text-size-adjust: none !important;
+    -webkit-tap-highlight-color: transparent;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+.root {
+    position: absolute;
+    top: 0;
+    width: 100%;
     height: 100%;
-    margin: 0;
-    color: #574c4f;
-    font: 16px/1.7 normal normal;
-    font-family: "Helvetica Neue", Helvetica, arial, freesans, clean, sans-serif;
 }
 
-.footer-push {
-    min-height: 100%;
-    height: auto !important;
-    height: 100%;
-    margin-bottom: -55px;
+.mod_head {
+    background: 0 0;
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    min-width: 900px;
+    z-index: 11;
 }
 
-.top-bar {
-    text-align: left;
-    padding: 5px 0;
-    background-color: #584b4f;
-    color: #efeae1;
-    font-size: 15px;
-    height: 40px;
-}
-
-.wrapper.no-pad {
-    padding-left: 0;
-    padding-right: 0;
-}
-
-.wrapper {
-    width:  960px;
+.mod_head .mod_head_inner {
+    display: block;
+    position: relative;
     margin: 0 auto;
-    padding-left: 40px;
-    padding-right: 40px;
-    overflow: hidden;
+    height: 80px;
 }
 
-.top-bar .navigation {
+.max_width {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.mod_head .mod_head_logo {
+    position: relative;
     display: inline-block;
+    font-size: 20px;
+    color: #fff;
+    line-height: 80px;
 }
 
-.top-bar a {
-    color: #efeae1;
-}
-
-a {
-    color: #3b9b6d;
-    text-decoration: none;
-}
-
-
-* {
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-}
-
-.navigation {
-    list-style-type: none;
-    margin: auto;
-    padding: 0;
+.mod_head .mod_head_menu {
+    display: inline-block;
     float: right;
 }
 
-li {
-    display: list-item;
-    text-align: -webkit-match-parent;
+.mod_head .mod_head_logo_word {
+    position: relative;
+    display: inline-block;
+    font-size: 20px;
+    color: #fff;
+    line-height: 80px;
 }
 
-.navigation li {
+.mod_head .mod_head_menu_item {
+    position: relative;
     display: inline-block;
-    padding-right: 5px;
-    height: 33px;
-    vertical-align: top;
+    font-size: 20px;
+    color: #fff;
+    line-height: 80px;
+    margin-left: 90px;
+}
+
+.main {
+    margin-top: 7.8125vh;
+}
+
+.main {
+    width: auto;
+    height: auto;
+    max-width: 1200px;
+    margin: 15.625vh auto 0;
+    position: relative;
+    z-index: 6;
+}
+
+.main .product_info {
+    width: auto;
+    height: auto;
+}
+
+.main .product_info .product_info_top {
+    height: 202px;
+}
+
+.main .product_info .product_title {
+    font-size: 38px;
+    color: #fff;
+    word-spacing: 5px;
+    letter-spacing: 2px;
+}
+
+.main .product_info .product_slogan {
+    color: #fff;
+    letter-spacing: 0;
+    margin: 28px 0 0 0;
+}
+
+.main .product_info .product_slogan .slogan_1 {
+    display: inline-block;
+    width: 1080px;
+    height: 89px;
+    font-size: 60px;
+    color: #fff;
+    word-spacing: 5px;
+    letter-spacing: 2px;
+
+}
+
+.main .product_info .product_slogan .icon_slogan {
+    display: none;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+}
+
+.main .product_info .product_plat {
+    display: none;
+}
+
+.main .product_info .product_plat .product_version_yes {
+    position: relative;
+}
+
+.main .product_info .product_plat .product_version_yes .version_info {
+    margin-top: 2.60417vh;
+}
+
+.main .product_info .product_plat .product_version_yes .version_info {
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: 0;
+    margin: 5.20833vh 0 0 0;
+    position: relative;
+}
+
+.main .product_info .product_plat .product_version_yes .version_info span {
+    margin: 0 10px;
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: 0;
+}
+
+.main .product_info .product_plat .product_version_yes .version_info .showpop {
+    display: inline-flex;
+    width: 25px;
+    height: 25px;
+    float: right;
+    margin: 3px 0 0 0;
+    background-image: url(img/right_arrow.png);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+    position: relative;
+    cursor: pointer;
+}
+
+.main .product_info .product_plat .product_version_yes .pop {
+    height: auto;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    width: 440px;
+    background: #000;
+    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, .25);
+    border-radius: 6px;
+    padding: 2.08333vh 0 3.54167vh 1.5625vw;
+    font-size: 16px;
+    color: #fff;
+    line-height: 30px;
+    cursor: auto;
+    user-select: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-size: 1em;
+}
+
+h5 {
+    display: block;
+    font-size: 0.83em;
+    margin-block-start: 1.67em;
+    margin-block-end: 1.67em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    font-weight: bold;
+}
+
+.main .product_info .product_plat .product_version_yes .pop .popcontent_item {
+    white-space: pre-line;
+}
+
+p {
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+}
+
+.main .product_info .product_plat .product_version_yes .pop .icon_close {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 18px;
+    height: 18px;
+    padding: 10px;
+    /*background: url(/tencentvideo/vstyle/qqplayer/style/img/home/ico_empty_close_normal.png) no-repeat center;*/
+    cursor: pointer;
+}
+
+.main .product_info .product_plat .product_version_yes a {
+    display: inline-block;
+    margin: 40px 0 0 0;
+}
+
+.main .product_info .product_plat .product_version_yes .download_btn {
+    width: 310px;
+    height: 66px;
+    border-radius: 40px;
+    text-align: center;
+    line-height: 66px;
+    color: #fff;
+    font-size: 26px;
+    background: linear-gradient(90deg, #00eaff, #0096ff);
+    transition: all .5s;
+    cursor: pointer;
+}
+
+.main .product_info .product_plat .product_version_yes .qrcode {
+    display: none;
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    /*background-image: url(/tencentvideo/vstyle/qqplayer/style/img/home/qrcode_3.png);*/
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    position: absolute;
+    top: 66px;
+    left: 395px;
+    border: 5px solid #fff;
+}
+
+.footer {
+    position: absolute;
+    z-index: 5;
+    margin-top: 50px;
+    width: 100%;
+    height: 100px;
+    border-top: 1px solid rgba(255, 255, 255, .25);
+    overflow: hidden;
+}
+
+.footer .foot_main {
+    max-width: 1200px;
+    min-width: 900px;
+    height: 100%;
+    margin: 0 auto;
+    position: relative;
+}
+
+.footer .foot_main .platform_container {
+    width: 550px;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    float: left;
+}
+
+.footer .foot_main .platform_container .platform {
+    display: inline-flex;
+    width: 100px;
+    height: 100%;
+    margin: 0 20px 0 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.footer .foot_main .platform_container .platform span {
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.footer .foot_main .platform_container .platform .icon_plat_win {
+    width: 100px;
+    height: 55px;
+    background-image: url(img/windows-icon.png);
+    background-size: 36px 36px;
+}
+
+.footer .foot_main .platform_container .platform .word_plat {
+    width: 100px;
+    font-size: 18px;
+    color: #fff;
+    word-spacing: 5px;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+.footer .foot_main .platform_container .platform .icon_plat_mac {
+    width: 100px;
+    height: 55px;
+    background-image: url(img/apple-icon.png);
+    background-size: 40px 40px;
+}
+
+.footer .foot_main .platform_container .platform .icon_plat_linux {
+    width: 100px;
+    height: 55px;
+    background-image: url(img/linux-icon.png);
+    background-size: 36px 36px;
+}
+
+.footer .foot_main .copyrighten {
+    font-size: 14px;
+    color: #fff;
+    float: right;
+    position: absolute;
+    bottom: 10px;
+    right: 0;
+}
+
+.footer .foot_main .platform_container .platform:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    background: #fff;
+    height: 1px;
+    left: 0;
+    width: 0;
 }
