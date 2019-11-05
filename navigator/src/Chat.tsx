@@ -59,8 +59,8 @@ export default class Chat extends React.Component<IProps, IState> {
             <div className="chat">
                 <Form>
                     <Form.Group as={Row} controlId="name">
-                        <Form.Label column sm={1}>Name:</Form.Label>
-                        <Col sm={4}>
+                        <Form.Label column sm="auto">Name:</Form.Label>
+                        <Col>
                             <Form.Control
                                 required
                                 type="text"

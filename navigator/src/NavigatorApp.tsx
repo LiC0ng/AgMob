@@ -256,12 +256,13 @@ export default class NavigatorApp extends React.Component<Props, State> {
         const token = getSessionId();
         const driverUrl = `agmob-driver:${token}`;
         return (
-            <div style={{textAlign: "center"}}>
-                {this.state.state === NavigatorState.Disconnected ?
-                    <div>
-                        <h1>Connecting to server</h1>
-                        <p>Please wait for a little while longer.</p>
-                    </div>
+            <div className="container-fluid d-flex p-3">
+                <div className="flex-grow-1 text-center">
+                    {this.state.state === NavigatorState.Disconnected ?
+                        <div>
+                            <h1>Connecting to server</h1>
+                            <p>Please wait for a little while longer.</p>
+                        </div>
                     : this.state.state === NavigatorState.WaitingDriver ?
                         <div>
                             <h1>Waiting for new driver</h1>
@@ -271,13 +272,15 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                 <a href={driverUrl}>{driverUrl}</a>
                             </div>
                         </div>
-                        : <div/>}
-                <video width="960"
-                       className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
-                       autoPlay={true} muted={true} ref={this.setVideoRef}/>
-                {this.state.connectionState === "Connected" ? <h1>{this.state.mode}</h1> : <h1>{this.state.connectionState}</h1>}
-                <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval} mode={this.state.mode} status={this.state.connectionState}/>
-                <Chat ws={this.state.ws}/>
+                    : <video width="960"
+                           className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
+                           autoPlay={true} muted={true} ref={this.setVideoRef}/>}
+                </div>
+                <div className="w-30 h-100 d-flex flex-column">
+                    {this.state.connectionState === "Connected" ? <h1>{this.state.mode}</h1> : <h1>{this.state.connectionState}</h1>}
+                    <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval} mode={this.state.mode} status={this.state.connectionState}/>
+                    <Chat ws={this.state.ws}/>
+                </div>
             </div>
         );
     }
