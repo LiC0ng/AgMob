@@ -59,14 +59,12 @@ export default class StartShare extends React.Component<IProps, IState> {
 
         setInterval(() => {
             const ary: LaserPointerState[] = [];
-            this.state.peers.forEach(peer => {
-                if (peer.pointerX !== undefined && peer.pointerY !== undefined)
-                    ary.push({
-                        color: Config.Colors[peer.id % Config.Colors.length],
-                        posX: peer.pointerX,
-                        posY: peer.pointerY,
-                    });
-            });
+            this.state.peers.forEach(peer =>
+                ary.push({
+                    color: Config.Colors[peer.id % Config.Colors.length],
+                    posX: peer.pointerX,
+                    posY: peer.pointerY,
+                }));
             electron.ipcRenderer.send("overlay", ary);
         }, 1000/60);
     }
