@@ -235,7 +235,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                        className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
                        autoPlay={true} muted={true} ref={this.setVideoRef}/>
                 {this.state.connectionState === "Connected" ? <h1>{this.state.mode}</h1> : <h1>{this.state.connectionState}</h1>}
-                <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval} mode={this.state.mode}/>
+                <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval} mode={this.state.mode} status={this.state.connectionState}/>
                 <Chat ws={this.state.ws}/>
             </div>
         );
