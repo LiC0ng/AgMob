@@ -1,20 +1,11 @@
 import React from 'react';
+import * as Config from "./config";
 import Chat from "./Chat";
 import Timer from "./Timer"
 
 function getSessionId() {
     return window.location.pathname.match(/\/session\/([a-z0-9-]+)/)![1];
 }
-
-const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
-const WORKSPACE_HTTPS_BASE_ADDRESS = "https://elang.itsp.club";
-const pcConfig = {
-    iceServers: [
-        {urls: "stun:stun.l.google.com:19302"},
-        {urls: "stun:160.16.213.209"},
-        {urls: "turn:160.16.213.209", credential: "ZPu5tyGmdsAEn6dlYJkNBse/x/UQnMj2", username: "agmob"},
-    ]
-};
 
 enum NavigatorState {
     // Not connected to WebSocket
@@ -52,7 +43,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         const id = getSessionId();
-        const url = `${WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/session/${id}/navigator`;
+        const url = `${Config.WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/session/${id}/navigator`;
         this.state = {
             state: NavigatorState.Disconnected,
             ws: new WebSocket(url),
@@ -72,7 +63,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
     }
 
     private async getSessInfo(id: any) {
-        const ret = await fetch(`${WORKSPACE_HTTPS_BASE_ADDRESS}/api/session/${id}`);
+        const ret = await fetch(`${Config.WORKSPACE_BASE_ADDRESS}/api/session/${id}`);
         const obj = await ret.json();
 
         this.setState({
@@ -103,7 +94,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 case "sdp":
                     console.log(message);
                     const sdp = message;
-                    peer = new RTCPeerConnection(pcConfig);
+                    peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
                     self.peer = peer;
                     peer.ontrack = evt => {
                         console.log('-- peer.ontrack()');
