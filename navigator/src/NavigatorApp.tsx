@@ -32,6 +32,7 @@ interface State {
 export default class NavigatorApp extends React.Component<Props, State> {
     private stream?: MediaStream;
     private peer?: RTCPeerConnection;
+    private dataChannel?: RTCDataChannel;
     private videoRef?: HTMLVideoElement;
     private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
         if (videoRef === null) return;
@@ -76,6 +77,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
     private sendWebsocket() {
         let peer: RTCPeerConnection;
+        let dataChannel: RTCDataChannel;
         this.state.ws.onopen = () => {
             console.log("WebSocket connected");
 
@@ -146,6 +148,23 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         }
                     };
 
+                    peer.ondatachannel = (ev) => {
+                        dataChannel = ev.channel;
+                        const checkDataChannelState = () => {
+                            if (dataChannel.readyState === 'open') {
+                                console.log("datachannel is ready");
+                            }
+                        };
+                        dataChannel.onopen = checkDataChannelState;
+                        dataChannel.onclose = checkDataChannelState;
+                        dataChannel.onmessage = (ev: any) => {
+                            let text: string = ev.data;
+                            console.log(text);
+                            console.log("received via datachannel");
+                        };
+                        self.dataChannel = dataChannel;
+                    };
+
                     peer.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
                         console.log('setRemoteDescription(answer) success in promise');
                         peer.createAnswer().then((answer) => {
@@ -195,6 +214,13 @@ export default class NavigatorApp extends React.Component<Props, State> {
         const id = getSessionId();
         this.getSessInfo(id);
     };
+
+    private sendDataChannel() {
+        if(this.dataChannel !== undefined) {
+            this.dataChannel.send("send via datachannel");
+            console.log("send via datachannel");
+        }
+    }
 
     handleStart = async (event: any) => {
         event.preventDefault();
