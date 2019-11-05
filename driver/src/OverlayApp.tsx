@@ -75,6 +75,7 @@ export default class OverlayApp extends React.Component<Props, State> {
                     context.lineTo(x, y);
                     context.strokeStyle = style;
                     context.lineWidth = 5;
+                    context.lineCap = "round";
                     context.stroke();
                 }
                 if (i === this.statesHistory.length - 1) {
