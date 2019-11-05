@@ -206,7 +206,9 @@ export default class StartShare extends React.Component<IProps, IState> {
                         }
                     };
                     dataChannel.onmessage = (ev: any) => {
-                        console.log("received via datachannel");
+                        const data = JSON.parse(ev.data);
+                        peerInfo.pointerX = data.x;
+                        peerInfo.pointerY = data.y;
                     };
 
                     // Send initial SDP
@@ -228,16 +230,22 @@ export default class StartShare extends React.Component<IProps, IState> {
         } else if (obj.kind === "sdp") {
             const peer = this.state.peers.find(peer => peer.id === obj.navigator_id);
             if (!peer) {
-                console.log(`[SDP] Unexpected 'sdp' event for id=${obj.navigator_id}`);
+                console.log(`[WS] Unexpected 'sdp' event for id=${obj.navigator_id}`);
                 console.log(obj);
                 return;
             }
             const sdp = JSON.parse(obj.payload);
-            peer.pc.setRemoteDescription(sdp);
+            try {
+                peer.pc.setRemoteDescription(sdp);
+            } catch(e) {
+                console.log("[WS] peer.pc.setRemoteDescription failed for navigator " +
+                    `id=${obj.navigator_id}`);
+                console.log(e);
+            }
         } else if (obj.kind === "ice_candidate") {
             const peer = this.state.peers.find(peer => peer.id === obj.navigator_id);
             if (!peer) {
-                console.log(`[SDP] Unexpected 'ice_candidate' event for id=${obj.navigator_id}`);
+                console.log(`[WS] Unexpected 'ice_candidate' event for id=${obj.navigator_id}`);
                 console.log(obj);
                 return;
             }

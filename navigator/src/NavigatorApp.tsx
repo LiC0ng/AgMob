@@ -241,8 +241,6 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
     private sendDataChannel(data: any) {
         if(this.dataChannel !== undefined) {
-            console.log("send via datachannel");
-
             const str = JSON.stringify(data);
             this.dataChannel.send(str);
         }
