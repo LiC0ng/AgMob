@@ -5,7 +5,7 @@ const download_link_mac = "https://elang.itsp.club/download/agmob-driver-1.0.0.A
 const download_link_lin = "https://elang.itsp.club/download/agmob-driver-1.0.0.dmg";
 
 interface IState {
-    platformCode: number;
+    platformCode: number ;
     package_version: string;
     package_size: string;
     package_date: string;
@@ -27,6 +27,31 @@ export default class HomeApp extends React.Component<any, IState> {
         };
     }
 
+    public getOsInfo() {
+        var userAgent = navigator.userAgent.toLowerCase();
+        if (userAgent.indexOf('win') > -1) {
+            this.setState({
+                platformCode: 0,
+            })
+            this.handlePlatformChange(0);
+        } else if (userAgent.indexOf('mac') > -1) {
+            this.setState({
+                platformCode: 1,
+            })
+            this.handlePlatformChange(1);
+        } else if (userAgent.indexOf('linux') > -1) {
+            this.setState({
+                platformCode: 2,
+            })
+            this.handlePlatformChange(2);
+        } else {
+            this.setState({
+                platformCode: 1,
+            })
+            this.handlePlatformChange(1);
+        }
+    }
+
     public handlePlatformChange(platformCode: number) {
         this.setState({
             platformCode: platformCode
@@ -43,7 +68,7 @@ export default class HomeApp extends React.Component<any, IState> {
             })
         } else if (platformCode === 1) {
             this.setState({
-                package_version: "v1.0.0",
+                package_version: "v 1.0.0",
                 package_size: "60.00MB",
                 package_date: "2019.10.01",
                 package_link: download_link_mac,
@@ -65,10 +90,11 @@ export default class HomeApp extends React.Component<any, IState> {
         this.changeOpacityOfPllatform(platformCode);
     }
 
+
     public changeOpacityOfPllatform(e: number) {
         var arr = document.getElementsByClassName("platform");
         for (let i = 0; i < arr.length; i++) {
-            if(i == e){
+            if (i === e) {
                 arr[e].classList.add("selected");
                 arr[e].classList.remove("unselected");
             } else {
@@ -79,7 +105,7 @@ export default class HomeApp extends React.Component<any, IState> {
     }
 
     componentDidMount(): void {
-        this.handlePlatformChange(this.state.platformCode)
+        this.getOsInfo();
     }
 
     render() {
@@ -93,7 +119,8 @@ export default class HomeApp extends React.Component<any, IState> {
                             <a href="https://elang.itsp.club" className="mod_head_logo_word">AgMob</a>
                         </div>
                         <div className="mod_head_menu">
-                            <a href="https://github.com/Linsho/AgMob/issues" className="mod_head_menu_item">Feedback</a>
+                            <a href="https://github.com/Linsho/AgMob/issues"
+                               className="mod_head_menu_item">Feedback</a>
                             <a href="https://github.com/Linsho/AgMob" className="mod_head_menu_item">Source Code</a>
                         </div>
                     </div>
