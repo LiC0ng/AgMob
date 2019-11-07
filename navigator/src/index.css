@@ -282,7 +282,7 @@ p {
     width: 120px;
     height: 120px;
     border-radius: 8px;
-    /*background-image: url(/tencentvideo/vstyle/qqplayer/style/img/home/qrcode_3.png);*/
+    /*background-image: url()*/
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
@@ -330,6 +330,15 @@ p {
     position: relative;
 }
 
+.selected {
+    border-top: 1px solid white;
+    opacity: 1;
+}
+
+.unselected {
+    opacity: 0.5;
+}
+
 .footer .foot_main .platform_container .platform span {
     display: inline-block;
     background-repeat: no-repeat;
@@ -357,14 +366,14 @@ p {
     width: 100px;
     height: 55px;
     background-image: url(img/apple-icon.png);
-    background-size: 40px 40px;
+    background-size: 33px 40px;
 }
 
 .footer .foot_main .platform_container .platform .icon_plat_linux {
     width: 100px;
     height: 55px;
     background-image: url(img/linux-icon.png);
-    background-size: 36px 36px;
+    background-size: 42px 42px;
 }
 
 .footer .foot_main .copyrighten {

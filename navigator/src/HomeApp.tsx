@@ -62,6 +62,20 @@ export default class HomeApp extends React.Component<any, IState> {
                     "3.ccc；</p>"
             })
         }
+        this.changeOpacityOfPllatform(platformCode);
+    }
+
+    public changeOpacityOfPllatform(e: number) {
+        var arr = document.getElementsByClassName("platform");
+        for (let i = 0; i < arr.length; i++) {
+            if(i == e){
+                arr[e].classList.add("selected");
+                arr[e].classList.remove("unselected");
+            } else {
+                arr[i].classList.add("unselected");
+                arr[i].classList.remove("selected");
+            }
+        }
     }
 
     componentDidMount(): void {
@@ -148,15 +162,15 @@ export default class HomeApp extends React.Component<any, IState> {
                 <div className="footer">
                     <div className="foot_main">
                         <div className="platform_container">
-                            <div className="platform" data-index="0" onClick={() => this.handlePlatformChange(0)}>
+                            <div className="platform" id="plat0" onClick={() => this.handlePlatformChange(0)}>
                                 <span className="icon_plat_win"></span>
                                 <span className="word_plat">Windows</span>
                             </div>
-                            <div className="platform" data-index="1" onClick={() => this.handlePlatformChange(1)}>
+                            <div className="platform" id="plat1" onClick={() => this.handlePlatformChange(1)}>
                                 <span className="icon_plat_mac"></span>
                                 <span className="word_plat">Mac</span>
                             </div>
-                            <div className="platform" data-index="2" onClick={() => this.handlePlatformChange(2)}>
+                            <div className="platform" id="plat2" onClick={() => this.handlePlatformChange(2)}>
                                 <span className="icon_plat_linux"></span>
                                 <span className="word_plat">Linux</span>
                             </div>
