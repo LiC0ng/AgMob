@@ -5,12 +5,13 @@ const download_link_mac = "https://elang.itsp.club/download/agmob-driver-1.0.0.A
 const download_link_lin = "https://elang.itsp.club/download/agmob-driver-1.0.0.dmg";
 
 interface IState {
-    platformCode: number ;
+    platformCode: number;
     package_version: string;
     package_size: string;
     package_date: string;
     package_new: string;
     package_link: string;
+    popStatus: number;
 }
 
 export default class HomeApp extends React.Component<any, IState> {
@@ -23,31 +24,34 @@ export default class HomeApp extends React.Component<any, IState> {
             package_size: "",
             package_date: "",
             package_new: "",
-            package_link: ""
+            package_link: "",
+            popStatus: 1,
         };
+        this.handlePopShow = this.handlePopShow.bind(this);
+        this.handlePopClose = this.handlePopClose.bind(this);
     }
 
     public getOsInfo() {
-        var userAgent = navigator.userAgent.toLowerCase();
+        const userAgent = navigator.userAgent.toLowerCase();
         if (userAgent.indexOf('win') > -1) {
             this.setState({
                 platformCode: 0,
-            })
+            });
             this.handlePlatformChange(0);
         } else if (userAgent.indexOf('mac') > -1) {
             this.setState({
                 platformCode: 1,
-            })
+            });
             this.handlePlatformChange(1);
         } else if (userAgent.indexOf('linux') > -1) {
             this.setState({
                 platformCode: 2,
-            })
+            });
             this.handlePlatformChange(2);
         } else {
             this.setState({
                 platformCode: 1,
-            })
+            });
             this.handlePlatformChange(1);
         }
     }
@@ -62,9 +66,9 @@ export default class HomeApp extends React.Component<any, IState> {
                 package_size: "60.00MB",
                 package_date: "2019.10.01",
                 package_link: download_link_win,
-                package_new: "<p className=\"popcontent_item\">1.aaa；\n" +
+                package_new: "1.aaa；\n" +
                     "2.bbb；\n" +
-                    "3.ccc；</p>"
+                    "3.ccc；"
             })
         } else if (platformCode === 1) {
             this.setState({
@@ -82,17 +86,17 @@ export default class HomeApp extends React.Component<any, IState> {
                 package_size: "60.00MB",
                 package_date: "2019.10.01",
                 package_link: download_link_lin,
-                package_new: "<p className=\"popcontent_item\">1.aaa；\n" +
+                package_new: "1.aaa；\n" +
                     "2.bbb；\n" +
-                    "3.ccc；</p>"
+                    "3.ccc；"
             })
         }
-        this.changeOpacityOfPllatform(platformCode);
+        this.changeOpacityOfPlatform(platformCode);
     }
 
 
-    public changeOpacityOfPllatform(e: number) {
-        var arr = document.getElementsByClassName("platform");
+    public changeOpacityOfPlatform(e: number) {
+        const arr = document.getElementsByClassName("platform");
         for (let i = 0; i < arr.length; i++) {
             if (i === e) {
                 arr[e].classList.add("selected");
@@ -101,6 +105,23 @@ export default class HomeApp extends React.Component<any, IState> {
                 arr[i].classList.add("unselected");
                 arr[i].classList.remove("selected");
             }
+        }
+    }
+
+    public handlePopShow() {
+        const pop = document.getElementById("pop");
+        if (pop && this.state.popStatus % 2 === 1) {
+            pop.style.display = "block"
+        }
+        this.setState({
+            popStatus: this.state.popStatus + 1
+        })
+    }
+
+    public handlePopClose() {
+        const pop = document.getElementById("pop");
+        if (pop && this.state.popStatus % 2 === 0) {
+            pop.style.display = "none"
         }
     }
 
@@ -142,11 +163,11 @@ export default class HomeApp extends React.Component<any, IState> {
                                 <div
                                     className="version_info">{this.state.package_version} | {this.state.package_size} | {this.state.package_date}
                                     <span>What's New</span>
-                                    <div className="showpop">
-                                        <div className="pop" style={{display: "none"}}>
+                                    <div className="showpop" onClick={this.handlePopShow}>
+                                        <div className="pop" id="pop" style={{display: "none"}}>
                                             <h5 className="pop_title">{this.state.package_version} What's New</h5>
                                             <p className="popcontent_item">{this.state.package_new}</p>
-                                            <div className="icon_close"></div>
+                                            <div className="icon_close" onClick={this.handlePopClose}></div>
                                         </div>
                                     </div>
                                 </div>

@@ -6,8 +6,6 @@ html {
 body {
     width: 100%;
     height: 100%;
-    word-break: break-all;
-    position: relative;
 }
 
 * {
@@ -228,9 +226,7 @@ h1, h2, h3, h4, h5, h6 {
 
 h5 {
     display: block;
-    font-size: 0.83em;
-    margin-block-start: 1.67em;
-    margin-block-end: 1.67em;
+    font-size: 1em;
     margin-inline-start: 0px;
     margin-inline-end: 0px;
     font-weight: bold;
@@ -255,7 +251,7 @@ p {
     width: 18px;
     height: 18px;
     padding: 10px;
-    /*background: url(/tencentvideo/vstyle/qqplayer/style/img/home/ico_empty_close_normal.png) no-repeat center;*/
+    background: url(img/close.png) no-repeat center;
     cursor: pointer;
 }
 
