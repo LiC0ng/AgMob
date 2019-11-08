@@ -1,6 +1,6 @@
 import React from 'react';
 import * as Config from "./config";
-import {NavigatorState} from "./types";
+import {SessionMode, NavigatorState} from "./types";
 import Chat from "./Chat";
 import Timer from "./Timer"
 
@@ -13,10 +13,10 @@ interface Props {
 }
 
 interface State {
-    state: NavigatorState,
-    ws: WebSocket,
-    mode: string,
-    interval: number,
+    state: NavigatorState;
+    ws: WebSocket;
+    mode: SessionMode;
+    interval: number;
     begin: number;
 }
 
@@ -60,7 +60,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
         this.state = {
             state: NavigatorState.Disconnected,
             ws: new WebSocket(url),
-            mode: "Not connect",
+            mode: SessionMode.Free,
             interval: -1,
             begin: -1,
         };

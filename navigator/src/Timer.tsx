@@ -1,10 +1,10 @@
 import React from "react";
-import {NavigatorState} from "./types";
+import {SessionMode, NavigatorState} from "./types";
 
 interface IProps {
     startTimeInMinutes: number;
     begin: number;
-    mode: string;
+    mode: SessionMode;
     state: NavigatorState;
 }
 
@@ -47,7 +47,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
 
     componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
         if (nextProps.begin !== this.props.begin &&
-            nextProps.mode === "Strict Mode" &&
+            nextProps.mode === SessionMode.Strict &&
             nextProps.state !== NavigatorState.Disconnected) {
             this.setState({
                 timeRemainingInMinutes: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) / 60),
@@ -68,7 +68,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
                 break;
             case NavigatorState.WaitingDriver:
             case NavigatorState.Connected:
-                if (this.props.mode === "Strict Mode") {
+                if (this.props.mode === SessionMode.Strict) {
                     text = `${this.state.timeRemainingInMinutes} : ${this.state.timeRemainingInSeconds}`;
                 } else {
                     text = "FREE MODE";
