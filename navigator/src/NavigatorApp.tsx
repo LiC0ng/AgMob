@@ -244,7 +244,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
     render() {
         const driverUrl = `agmob-driver:${this.state.sessionId}`;
         return (
-            <div className="container-fluid dp-3 d-flex h-100 flex-column">
+            <div className="container-fluid p-3 d-flex h-100 flex-column">
                 <div className="flex-grow-1 text-center">
                     {this.state.state === NavigatorState.Disconnected ?
                         <div>
@@ -267,8 +267,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 </div>
                 <div className="row">
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
-                        mode={this.state.mode} state={this.state.state}/>
-                    <Chat ws={this.state.ws}/>
+                        mode={this.state.mode} state={this.state.state} />
+                    <Chat ws={this.state.ws} state={this.state.state} />
                 </div>
             </div>
         );

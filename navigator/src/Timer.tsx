@@ -76,9 +76,9 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
                 break;
         }
         return (
-            <div className="col-2 timer-countdown">
-                <h1>{text}</h1>
-            </div>
+            <label className="col-2 timer-countdown m-auto">
+                {text}
+            </label>
         );
     }
 }

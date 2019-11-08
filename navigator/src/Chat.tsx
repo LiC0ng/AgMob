@@ -1,8 +1,10 @@
 import React from "react";
-import {Button, Col, Form, FormControl, InputGroup, Row} from "react-bootstrap";
+import {Button, Form, FormControl, InputGroup} from "react-bootstrap";
+import {NavigatorState} from "./types";
 
 interface IProps {
     ws: WebSocket;
+    state: NavigatorState;
 }
 
 interface IState {
@@ -49,6 +51,8 @@ export default class Chat extends React.Component<IProps, IState> {
     };
 
     public pressSendHandle(e: any) {
+        if (this.props.state === NavigatorState.Disconnected)
+            return;
         if (e.charCode === 13 && e.ctrlKey) {
             this.clickSendHandle();
         }
@@ -56,32 +60,32 @@ export default class Chat extends React.Component<IProps, IState> {
 
     public render() {
         return (
-            <Form className="chat col">
-                <Form.Group as={Row} controlId="name" className="w-100">
-                    <Form.Label column xs="auto">Name:</Form.Label>
-                    <Col xs="auto">
-                        <Form.Control
-                            required
-                            type="text"
-                            placeholder="Input Name Here"
-                            value={this.state.name}
-                            onChange={this.handleNameChange}
-                        />
-                    </Col>
-                    <InputGroup className="col">
-                        <FormControl
-                            placeholder="Input Message Here"
-                            aria-label="Input Message Here"
-                            aria-describedby="message"
-                            value={this.state.message}
-                            onKeyPress={this.pressSendHandle}
-                            onChange={this.handleMessageChange}
-                        />
-                        <InputGroup.Append>
-                            <Button variant="primary" onClick={this.clickSendHandle}>Send Message</Button>
-                        </InputGroup.Append>
-                    </InputGroup>
-                </Form.Group>
+            <Form className="chat col row">
+                <FormControl
+                    className="col-3"
+                    required
+                    type="text"
+                    placeholder="Input Name Here"
+                    value={this.state.name}
+                    onChange={this.handleNameChange}
+                />
+                <InputGroup className="col">
+                    <FormControl
+                        placeholder="Input Message Here"
+                        aria-label="Input Message Here"
+                        aria-describedby="message"
+                        value={this.state.message}
+                        onKeyPress={this.pressSendHandle}
+                        onChange={this.handleMessageChange}
+                    />
+                    <InputGroup.Append>
+                        <Button variant="primary"
+                            disabled={this.props.state === NavigatorState.Disconnected}
+                            onClick={this.clickSendHandle}>
+                            Send Message
+                        </Button>
+                    </InputGroup.Append>
+                </InputGroup>
             </Form>
         );
     }
