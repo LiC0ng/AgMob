@@ -89,21 +89,23 @@ export default class NavigatorApp extends React.Component<Props, State> {
     }
 
     private sendWebsocket() {
+        const ws = this.state.ws;
         let peer: RTCPeerConnection;
         let dataChannel: RTCDataChannel;
-        this.state.ws.onopen = () => {
+
+        ws.onopen = () => {
             console.log("WebSocket connected");
 
             let sendObject = {
                 "kind": "request_sdp",
                 "payload": "",
             };
-            this.state.ws.send(JSON.stringify(sendObject));
+            ws.send(JSON.stringify(sendObject));
 
             this.setState({state: NavigatorState.WaitingDriver});
         };
         const self = this;
-        this.state.ws.onmessage = function (evt) {
+        ws.onmessage = function (evt) {
             const message = JSON.parse(evt.data);
             switch (message.kind) {
                 case "sdp":
@@ -210,13 +212,13 @@ export default class NavigatorApp extends React.Component<Props, State> {
             }
         };
 
-        this.state.ws.onclose = () => {
+        ws.onclose = () => {
             console.log("WebSocket onclose");
 
             this.setState({state: NavigatorState.Disconnected});
         };
 
-        this.state.ws.onerror = (event: any) => {
+        ws.onerror = (event: any) => {
             console.log("WebSocket onerror, reconnecting...:");
             console.log(event);
             this.reconnect();
