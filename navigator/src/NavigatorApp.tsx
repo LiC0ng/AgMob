@@ -1,20 +1,12 @@
 import React from 'react';
 import * as Config from "./config";
+import {NavigatorState} from "./types";
 import Chat from "./Chat";
 import Timer from "./Timer"
 
 function getSessionId() {
     return window.location.pathname.match(/\/session\/([a-z0-9-]+)/)![1];
 }
-
-enum NavigatorState {
-    // Not connected to WebSocket
-    Disconnected,
-    // Connected to WebSocket, not connected with Driver
-    WaitingDriver,
-    // Connected to Driver
-    Connected,
-};
 
 interface Props {
     history: any;
@@ -26,7 +18,6 @@ interface State {
     mode: string,
     interval: number,
     begin: number;
-    connectionState: string;
 }
 
 export default class NavigatorApp extends React.Component<Props, State> {
@@ -72,7 +63,6 @@ export default class NavigatorApp extends React.Component<Props, State> {
             mode: "Not connect",
             interval: -1,
             begin: -1,
-            connectionState: "No Connection"
         };
         this.getSessInfo(id);
         this.sendWebsocket();
@@ -92,7 +82,6 @@ export default class NavigatorApp extends React.Component<Props, State> {
             mode: obj.config.mode,
             begin: obj.config.begin,
             interval: obj.config.interval,
-            connectionState: obj.config.state
         });
     }
 
@@ -278,11 +267,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         autoPlay={true} muted={true} ref={this.setVideoRef}/>}
                 </div>
                 <div className="row">
-                    {this.state.connectionState === "Connected"
-                        ? <h1 className="col-auto">{this.state.mode}</h1>
-                        : <h1 className="col-auto">{this.state.connectionState}</h1>}
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
-                        mode={this.state.mode} status={this.state.connectionState}/>
+                        mode={this.state.mode} state={this.state.state}/>
                     <Chat ws={this.state.ws}/>
                 </div>
             </div>

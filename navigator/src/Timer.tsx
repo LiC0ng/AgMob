@@ -1,10 +1,11 @@
 import React from "react";
+import {NavigatorState} from "./types";
 
 interface IProps {
     startTimeInMinutes: number;
     begin: number;
     mode: string;
-    status: string;
+    state: NavigatorState;
 }
 
 interface IState {
@@ -13,7 +14,6 @@ interface IState {
 }
 
 export default class TimerCountdown extends React.Component<IProps, IState> {
-
     private timer: any;
 
     public constructor(props: IProps) {
@@ -46,7 +46,9 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
     }
 
     componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
-        if (nextProps.begin !== this.props.begin && nextProps.mode === "Strict Mode" && nextProps.status !== "No Connection") {
+        if (nextProps.begin !== this.props.begin &&
+            nextProps.mode === "Strict Mode" &&
+            nextProps.state !== NavigatorState.Disconnected) {
             this.setState({
                 timeRemainingInMinutes: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) / 60),
                 timeRemainingInSeconds: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) % 60)
@@ -58,14 +60,24 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         }
     }
 
-
-    public render() {
-        return (
-            <div className="col-1 timer-countdown">
-                {(this.props.status !== "No Connection" && this.props.mode === "Strict Mode") ?
-                    <h1>{this.state.timeRemainingInMinutes} : {this.state.timeRemainingInSeconds}</h1>
-                    : <h1></h1>
+    render() {
+        let text: React.ReactNode;
+        switch (this.props.state) {
+            case NavigatorState.Disconnected:
+                text = "Disconnected";
+                break;
+            case NavigatorState.WaitingDriver:
+            case NavigatorState.Connected:
+                if (this.props.mode === "Strict Mode") {
+                    text = `${this.state.timeRemainingInMinutes} : ${this.state.timeRemainingInSeconds}`;
+                } else {
+                    text = "FREE MODE";
                 }
+                break;
+        }
+        return (
+            <div className="col-2 timer-countdown">
+                <h1>{text}</h1>
             </div>
         );
     }
