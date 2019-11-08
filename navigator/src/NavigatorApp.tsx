@@ -91,7 +91,6 @@ export default class NavigatorApp extends React.Component<Props, State> {
     private sendWebsocket() {
         const ws = this.state.ws;
         let peer: RTCPeerConnection;
-        let dataChannel: RTCDataChannel;
 
         ws.onopen = () => {
             console.log("WebSocket connected");
@@ -104,24 +103,21 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
             this.setState({state: NavigatorState.WaitingDriver});
         };
-        const self = this;
-        ws.onmessage = function (evt) {
+        ws.onmessage = evt => {
             const message = JSON.parse(evt.data);
             switch (message.kind) {
                 case "sdp":
                     console.log(message);
                     const sdp = message;
                     peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
-                    self.peer = peer;
                     peer.ontrack = evt => {
                         console.log('-- peer.ontrack()');
                         console.log(evt.track);
                         console.log(evt.streams);
                         evt.streams[0].addTrack(evt.track);
-                        self.stream = evt.streams[0];
-                        if (self.videoRef) {
-                            self.videoRef.srcObject = self.stream;
-                        }
+                        this.stream = evt.streams[0];
+                        if (this.videoRef)
+                            this.videoRef.srcObject = this.stream;
                     };
 
                     // ICE Candidateを収集したときのイベント
@@ -129,7 +125,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         if (ev.candidate) {
                             console.log(`[RTC] New ICE candidate`);
                             console.log(ev.candidate);
-                            this.send(JSON.stringify({
+                            ws.send(JSON.stringify({
                                 kind: "ice_candidate",
                                 payload: JSON.stringify(ev.candidate),
                             }));
@@ -140,31 +136,31 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     peer.onconnectionstatechange = evt => {
                         switch (peer.connectionState) {
                             case "connected":
-                                self.setState({state: NavigatorState.Connected});
+                                this.setState({state: NavigatorState.Connected});
                                 // The connection has become fully connected
                                 break;
                             case "disconnected":
-                                self.handleDriverQuit();
+                                this.handleDriverQuit();
                                 break;
                             case "failed":
                                 // One or more transports has terminated unexpectedly or in an error
-                                if (self.videoRef) {
-                                    self.videoRef.pause();
-                                    self.videoRef.currentTime = 0;
+                                if (this.videoRef) {
+                                    this.videoRef.pause();
+                                    this.videoRef.currentTime = 0;
                                 }
                                 break;
                             case "closed":
                                 // The connection has been closed
-                                if (self.videoRef) {
-                                    self.videoRef.pause();
-                                    self.videoRef.currentTime = 0;
+                                if (this.videoRef) {
+                                    this.videoRef.pause();
+                                    this.videoRef.currentTime = 0;
                                 }
                                 break;
                         }
                     };
 
                     peer.ondatachannel = (ev) => {
-                        dataChannel = ev.channel;
+                        const dataChannel = ev.channel;
                         dataChannel.onopen = () => {
                             if (dataChannel.readyState === 'open') {
                                 console.log("datachannel is ready");
@@ -177,17 +173,17 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         };
                         dataChannel.onmessage = (ev: any) => {
                             let navigator_id: number = ev.data;
-                            self.color = Config.Colors[navigator_id % Config.Colors.length];
+                            this.color = Config.Colors[navigator_id % Config.Colors.length];
                             console.log("received via datachannel");
                         };
-                        self.dataChannel = dataChannel;
+                        this.dataChannel = dataChannel;
                     };
 
                     peer.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
                         console.log('setRemoteDescription(answer) success in promise');
                         peer.createAnswer().then((answer) => {
                             peer.setLocalDescription(answer).then(() => {
-                                this.send(JSON.stringify({
+                                ws.send(JSON.stringify({
                                     "kind": "sdp",
                                     "payload": JSON.stringify(peer.localDescription),
                                 }));
@@ -196,18 +192,18 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     });
                     break;
                 case "ice_candidate":
-                    self.peer!.addIceCandidate(JSON.parse(message.payload));
+                    peer.addIceCandidate(JSON.parse(message.payload));
                     break;
                 case "driver_ready":
                     let sendObject = {
                         "kind": "request_sdp",
                         "payload": "",
                     };
-                    this.send(JSON.stringify(sendObject));
+                    ws.send(JSON.stringify(sendObject));
 
                     break;
                 case "driver_quit":
-                    self.handleDriverQuit();
+                    this.handleDriverQuit();
                     break;
             }
         };
