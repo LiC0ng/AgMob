@@ -28,6 +28,18 @@ body, button, input, select, textarea {
     height: 100%;
 }
 
+.video-container {
+    position: relative;
+}
+
+.video-container video {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+}
+
 /* HomeApp */
 .content {
     position: absolute;
