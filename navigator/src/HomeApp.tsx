@@ -63,32 +63,29 @@ export default class HomeApp extends React.Component<any, IState> {
         if (platformCode === 0) {
             this.setState({
                 package_version: "v 1.0.0",
-                package_size: "60.00MB",
-                package_date: "2019.10.01",
+                package_size: "61.09MB",
+                package_date: "2019.11.05",
                 package_link: download_link_win,
-                package_new: "1.aaa；\n" +
-                    "2.bbb；\n" +
-                    "3.ccc；"
+                package_new: "1.new function: fluorescent pen\n" +
+                    "2.fix: UI"
             })
         } else if (platformCode === 1) {
             this.setState({
                 package_version: "v 1.0.0",
-                package_size: "60.00MB",
-                package_date: "2019.10.01",
+                package_size: "82.97MB",
+                package_date: "2019.11.05",
                 package_link: download_link_mac,
-                package_new: "<1.aaa；\n" +
-                    "2.bbb；\n" +
-                    "3.ccc"
+                package_new: "1.new function: fluorescent pen\n" +
+                    "2.fix: UI"
             })
         } else if (platformCode === 2) {
             this.setState({
                 package_version: "v 1.0.0",
-                package_size: "60.00MB",
-                package_date: "2019.10.01",
+                package_size: "95.98MB",
+                package_date: "2019.11.05",
                 package_link: download_link_lin,
-                package_new: "1.aaa；\n" +
-                    "2.bbb；\n" +
-                    "3.ccc；"
+                package_new: "1.new function: fluorescent pen\n" +
+                    "2.fix: UI"
             })
         }
         this.changeOpacityOfPlatform(platformCode);
