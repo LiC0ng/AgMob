@@ -4,15 +4,12 @@ import {SessionMode, NavigatorState} from "./types";
 import Chat from "./Chat";
 import Timer from "./Timer"
 
-function getSessionId() {
-    return window.location.pathname.match(/\/session\/([a-z0-9-]+)/)![1];
-}
-
 interface Props {
     history: any;
 }
 
 interface State {
+    sessionId: string;
     state: NavigatorState;
     ws: WebSocket;
     mode: SessionMode;
@@ -55,16 +52,22 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        const id = getSessionId();
+
+        // Just to avoid null reference when accessed without the session ID
+        // For now, let getSessInfo() and sendWebsocket() fail
+        const id_ = window.location.pathname.match(/\/session\/([a-z0-9-]+)/);
+        const id = id_ !== null ? id_[1] : "INVALID-SESSION-ID";
+
         const url = `${Config.WORKSPACE_WEBSOCKET_BASE_ADDRESS}/api/session/${id}/navigator`;
         this.state = {
+            sessionId: id,
             state: NavigatorState.Disconnected,
             ws: new WebSocket(url),
             mode: SessionMode.Free,
             interval: -1,
             begin: -1,
         };
-        this.getSessInfo(id);
+        this.getSessInfo();
         this.sendWebsocket();
     }
 
@@ -74,8 +77,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
         }, 2000);
     }
 
-    private async getSessInfo(id: any) {
-        const ret = await fetch(`${Config.WORKSPACE_BASE_ADDRESS}/api/session/${id}`);
+    private async getSessInfo() {
+        const ret = await fetch(`${Config.WORKSPACE_BASE_ADDRESS}/api/session/${this.state.sessionId}`);
         const obj = await ret.json();
 
         this.setState({
@@ -224,8 +227,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
     // The latter is not always reliable.
     handleDriverQuit = () => {
         this.setState({state: NavigatorState.WaitingDriver});
-        const id = getSessionId();
-        this.getSessInfo(id);
+        this.getSessInfo();
     };
 
     private sendDataChannel(data: any) {
@@ -242,8 +244,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
     };
 
     render() {
-        const token = getSessionId();
-        const driverUrl = `agmob-driver:${token}`;
+        const driverUrl = `agmob-driver:${this.state.sessionId}`;
         return (
             <div className="container-fluid dp-3 d-flex h-100 flex-column">
                 <div className="flex-grow-1 text-center">
