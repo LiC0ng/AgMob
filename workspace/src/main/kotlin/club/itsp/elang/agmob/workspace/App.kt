@@ -45,20 +45,13 @@ class Session(var config: SessionConfiguration) {
     val navigators = HashMap<Int, NavigatorConnection>()
 
     fun addNavigator(conn: NavigatorConnection) {
-        log.debug("[${id}] connecting navigator: ${conn}")
         navigators[conn.id] = conn
-    }
-
-    fun removeNavigator(conn: NavigatorConnection) {
-        log.debug("[${id}] disconnecting navigator: ${conn}")
-        navigators.delete(conn.id)
     }
 
     @Synchronized
     suspend fun setDriver(conn: DriverConnection?) {
         disconnectDriver(driver)
 
-        log.debug("[${id}] connecting driver: ${conn}")
         driver = conn
 
         // Notify already-connected navigators that they can now attempt WebRTC connection
@@ -70,7 +63,6 @@ class Session(var config: SessionConfiguration) {
     suspend fun disconnectDriver(current: DriverConnection?) {
         if (driver != current || current == null)
             return
-        log.debug("[${id}] disconnecting driver: ${driver}")
         current.disconnect()
         driver = null
         navigators.values.forEach { nav -> nav.notifyDriverQuit() }
@@ -185,6 +177,7 @@ fun main(args: Array<String>) {
                     return@webSocket
                 }
                 val conn = NavigatorConnection(sess, this)
+                log.debug("[${sess.id}] connecting navigator: $conn")
                 sess.addNavigator(conn)
 
                 for (frame in incoming) {
@@ -219,7 +212,7 @@ fun main(args: Array<String>) {
                             driver?.sendChatMessage(conn, msg)
                         }
                         else -> {
-                            log.info("[${sess.id}] invalid websocket message ${msg.kind} from nav-${conn.id}")                        }
+                            log.info("[${sess.id}] invalid websocket message ${msg.kind} from nav-${conn.id}")
                         }
                     }
                 }
@@ -232,6 +225,7 @@ fun main(args: Array<String>) {
                     return@webSocket
                 }
                 val conn = DriverConnection(sess, this)
+                log.debug("[${sess.id}] connecting driver: $conn")
                 sess.setDriver(conn)
 
                 try {
