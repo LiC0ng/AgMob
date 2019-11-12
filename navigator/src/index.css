@@ -46,6 +46,10 @@ body, button, input, select, textarea {
     max-height: 100%;
 }
 
+.countdown {
+    font-size: large;
+}
+
 /* HomeApp */
 .content {
     position: absolute;
