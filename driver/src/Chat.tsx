@@ -1,6 +1,8 @@
 import React from "react";
 import {Button, Form, FormControl, InputGroup} from "react-bootstrap";
 
+const regUrl = /((http|ftp|https):\/\/)?[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?/g;
+
 interface IState {
     message: string;
 }
@@ -37,8 +39,18 @@ export default class Chat extends React.Component<IProps, IState> {
         const dateStr = date.getHours() + ":" + date.getMinutes();
         const history = document.getElementById("chatHistory");
         const message = document.createElement("div");
+        let chatMessage = this.state.message;
+
+        chatMessage = chatMessage.replace(regUrl, (a) => {
+            if (!a.indexOf("http")) {
+                return '<a href="' + a + '" target=_blank>' + a + "</a>";
+            } else {
+                return '<a href="http://' + a + '" target=_blank>' + a + "</a>";
+            }
+        });
+
         message.innerHTML = "Driver " + "<span style='font-size: 12px; color: grey'> " + dateStr + "</span>" + ":</br>"
-            + this.state.message;
+            + chatMessage;
         if (history) {
             history.appendChild(message);
             history.scrollTop = history.scrollHeight;
@@ -64,9 +76,18 @@ export default class Chat extends React.Component<IProps, IState> {
             const dateStr = date.getHours() + ":" + date.getMinutes();
             const history = document.getElementById("chatHistory");
             const message = document.createElement("div");
+            let messageStr = navMessage.message;
+
+            messageStr = messageStr.replace(regUrl, (a: any) => {
+                if (!a.indexOf("http")) {
+                    return '<a href="' + a + '" target=_blank>' + a + "</a>";
+                } else {
+                    return '<a href="http://' + a + '" target=_blank>' + a + "</a>";
+                }
+            });
             message.innerHTML = "<span style='color: " + navMessage.color + "'>■</span>" +
-                                nameStr + "<span style='font-size: 12px; color: grey'> " +
-                                dateStr + "</span>" + ":</br>" + navMessage.message;
+                nameStr + "<span style='font-size: 12px; color: grey'> " +
+                dateStr + "</span>" + ":</br>" + messageStr;
             if (history) {
                 history.appendChild(message);
                 history.scrollTop = history.scrollHeight;

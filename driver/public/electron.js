@@ -1,4 +1,5 @@
 const electron = require('electron');
+const shell =  require('electron').shell;
 // Module to control application life.
 const app = electron.app;
 // Module to create native browser window.
@@ -32,6 +33,13 @@ function createWindow() {
     mainWindow.loadURL(startUrl);
     // Open the DevTools.
     // mainWindow.webContents.openDevTools();
+
+    mainWindow.webContents.on('new-window', (event, url) => {
+        // stop Electron from opening another BrowserWindow
+        event.preventDefault()
+        // open the url in the default system browser
+        shell.openExternal(url)
+    })
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
