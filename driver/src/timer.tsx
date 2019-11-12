@@ -1,14 +1,8 @@
 import React from "react";
 import {Button, Col, Container, Row} from "react-bootstrap";
-import Alert from "react-bootstrap/Alert";
-import ButtonToolbar from "react-bootstrap/ButtonToolbar";
-import {FormControl} from "react-bootstrap/es";
 import InputGroup from "react-bootstrap/InputGroup";
-import ToggleButton from "react-bootstrap/ToggleButton";
-import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import {Link} from "react-router-dom";
 import {SessionMode} from "./types";
-import * as Config from "./config";
 import {PropsWithSession, DriverSession} from "./types";
 
 interface IProps extends PropsWithSession {
