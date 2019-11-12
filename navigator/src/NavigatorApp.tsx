@@ -260,10 +260,10 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                 <a href={driverUrl}>{driverUrl}</a>
                             </div>
                         </div>
-                    : <video
-                        style={{height: "100%"}}
-                        className={this.state.state === NavigatorState.Connected ? "" : "d-none"}
-                        autoPlay={true} muted={true} ref={this.setVideoRef}/>}
+                    : this.state.state === NavigatorState.Connected ?
+                        <video
+                            autoPlay={true} muted={true} ref={this.setVideoRef}/>
+                    : <span>UNREACHABLE</span>}
                 </div>
                 <div className="row mt-3">
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
