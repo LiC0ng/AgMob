@@ -1,8 +1,8 @@
 import React from 'react';
 
 const download_link_win = "https://elang.itsp.club/download/agmob-driver Setup 1.0.0.exe";
-const download_link_mac = "https://elang.itsp.club/download/agmob-driver-1.0.0.AppImage";
-const download_link_lin = "https://elang.itsp.club/download/agmob-driver-1.0.0.dmg";
+const download_link_lin = "https://elang.itsp.club/download/agmob-driver-1.0.0.AppImage";
+const download_link_mac = "https://elang.itsp.club/download/agmob-driver-1.0.0.dmg";
 
 interface IState {
     platformCode: number;
@@ -138,8 +138,11 @@ export default class HomeApp extends React.Component<any, IState> {
                         </div>
                         <div className="mod_head_menu">
                             <a href="https://github.com/Linsho/AgMob/issues"
-                               className="mod_head_menu_item">Feedback</a>
-                            <a href="https://github.com/Linsho/AgMob" className="mod_head_menu_item">Source Code</a>
+                               className="mod_head_menu_item"
+                               target="_blank">Feedback</a>
+                            <a href="https://github.com/Linsho/AgMob"
+                               className="mod_head_menu_item"
+                               target="_blank">Source Code</a>
                         </div>
                     </div>
                 </div>
@@ -168,7 +171,8 @@ export default class HomeApp extends React.Component<any, IState> {
                                         </div>
                                     </div>
                                 </div>
-                                <a href={this.state.package_link}>
+                                <a href={this.state.package_link}
+                                   target="_blank">
                                     <div className="download_btn"
                                          data-downloadurl={this.state.package_link}>Download
                                     </div>
