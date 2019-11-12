@@ -70,6 +70,8 @@ function createWindow() {
     // Pipe between mainWindow and overlayWindow (-> only)
     electron.ipcMain.on("overlay", (event, arg) =>
         overlayWindow.webContents.send("overlay", arg));
+    electron.ipcMain.on("overlay-clear", (event, arg) =>
+        overlayWindow.webContents.send("overlay-clear", arg));
 }
 
 // This method will be called when Electron has finished

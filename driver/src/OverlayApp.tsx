@@ -30,12 +30,30 @@ export default class OverlayApp extends React.Component<Props, State> {
         };
 
         electron.ipcRenderer.on("overlay", (event: any, arg: any) => {
-            console.log(`[Overlay] Received laser pointers update: ${arg}`);
             this.update(arg);
+        });
+        electron.ipcRenderer.on("overlay-clear", (event: any) => {
+            console.log(`[Overlay] Received laser pointers clear request`);
+            this.clear();
         });
     }
 
     private statesHistory: LaserPointerState[][] = [];
+
+    private clear() {
+        this.statesHistory = [];
+
+        const canvas = this.canvasRef;
+        if (!canvas)
+            return;
+        const context = canvas.getContext("2d");
+        // How can this happen?
+        if (!context)
+            return;
+
+        // Clear the canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
     private update(ary: LaserPointerState[]) {
         this.statesHistory.push(ary);

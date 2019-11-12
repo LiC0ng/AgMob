@@ -38,7 +38,8 @@ interface IState {
     timeRemainingInMinutes: number;
     sessionId: string;
     chatHistory: string;
-    timer?: number;
+    timerHandle?: number;
+    overlayHandle?: number;
     peers: PeerInfo[];
 }
 
@@ -47,28 +48,17 @@ export default class StartShare extends React.Component<IProps, IState> {
 
     public constructor(props: IProps) {
         super(props);
+
         this.state = {
             timeRemainingInMinutes: props.currentSession!.startTimeInMinutes,
             timeRemainingInSeconds: 0,
             sessionId: props.currentSession!.sessionId,
             chatHistory: "",
-            timer: undefined,
+            timerHandle: undefined,
+            overlayHandle: undefined,
             peers: [],
         };
         this.clickStopHandle = this.clickStopHandle.bind(this);
-
-        setInterval(() => {
-            const ary: LaserPointerState[] = [];
-            this.state.peers.forEach(peer => {
-                if (peer.pointerX !== undefined && peer.pointerY !== undefined)
-                    ary.push({
-                        color: Config.Colors[peer.id % Config.Colors.length],
-                        posX: peer.pointerX,
-                        posY: peer.pointerY,
-                    });
-            });
-            electron.ipcRenderer.send("overlay", ary);
-        }, 1000/60);
     }
 
     public componentDidMount() {
@@ -89,13 +79,33 @@ export default class StartShare extends React.Component<IProps, IState> {
             kind: "driver_ready",
             payload: "",
         });
+
+        const timerHandle = window.setInterval(() => this.startTimerCountdownHandler(), 1000);
+        const overlayHandle = window.setInterval(() => {
+            const ary: LaserPointerState[] = [];
+            this.state.peers.forEach(peer => {
+                if (peer.pointerX !== undefined && peer.pointerY !== undefined)
+                    ary.push({
+                        color: Config.Colors[peer.id % Config.Colors.length],
+                        posX: peer.pointerX,
+                        posY: peer.pointerY,
+                    });
+            });
+            electron.ipcRenderer.send("overlay", ary);
+        }, 1000/60);
+
         this.setState({
-            timer: window.setInterval(() => this.startTimerCountdownHandler(), 1000),
+            timerHandle: timerHandle,
+            overlayHandle: overlayHandle,
         });
     }
 
     public componentWillUnmount() {
+        clearInterval(this.state.timerHandle!);
+        clearInterval(this.state.overlayHandle!)
         this.props.currentSession!.detach(this.onWebSocketMessage);
+
+        electron.ipcRenderer.send("overlay-clear");
     }
 
     public startTimerCountdownHandler() {
@@ -114,14 +124,12 @@ export default class StartShare extends React.Component<IProps, IState> {
     }
 
     public stopSharing() {
-        clearInterval(this.state.timer!);
         this.props.currentSession!.sendMessage({
             kind: "driver_quit",
             payload: "",
         });
         this.state.peers.forEach(peer => peer.hangUp());
         this.setState({
-            timer: undefined,
             peers: [],
         });
         this.props.history.push({pathname: "/end"});
