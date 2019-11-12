@@ -1,4 +1,5 @@
 import React from 'react';
+import {Button} from "react-bootstrap";
 import * as Config from "./config";
 import {SessionMode, NavigatorState} from "./types";
 import Chat from "./Chat";
@@ -16,6 +17,7 @@ interface State {
     interval: number;
     begin: number;
     color: string;
+    fullscreen: boolean;
 }
 
 export default class NavigatorApp extends React.Component<Props, State> {
@@ -68,6 +70,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
             interval: -1,
             begin: -1,
             color: "",
+            fullscreen: false,
         };
         this.getSessInfo();
         this.sendWebsocket();
@@ -246,6 +249,17 @@ export default class NavigatorApp extends React.Component<Props, State> {
             await this.videoRef.play();
     };
 
+    handleChangeFullscreen = (e: any) => {
+        console.log(e);
+        e.preventDefault();
+        const curr = !!document.fullscreenElement;
+        if (curr)
+            document.exitFullscreen();
+        else
+            document.documentElement.requestFullscreen();
+        this.setState({ fullscreen: !curr });
+    }
+
     render() {
         const driverUrl = `agmob-driver://${this.state.sessionId}`;
         return (
@@ -271,6 +285,10 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     : <span>UNREACHABLE</span>}
                 </div>
                 <div className="row mt-3">
+                    <Button value="fullscreen" variant="outline-primary" title="Fullscreen"
+                        active={this.state.fullscreen} onClick={this.handleChangeFullscreen}>
+                        <span className="glyphicon glyphicon-fullscreen">🖵</span>
+                    </Button>
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
                         mode={this.state.mode} state={this.state.state} />
                     <Chat ws={this.state.ws} state={this.state.state}  color={this.state.color}/>
