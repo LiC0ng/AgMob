@@ -54,6 +54,8 @@ export default class Chat extends React.Component<IProps, IState> {
         }
     }
 
+    cancelEvent = (e: any) => e.preventDefault();
+
     public componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
         if (nextProps.nav_message !== this.props.nav_message) {
             const navMessage = JSON.parse(nextProps.nav_message);
@@ -74,7 +76,7 @@ export default class Chat extends React.Component<IProps, IState> {
 
     public render() {
         return (
-            <Form className="flex-grow-1 d-flex flex-column">
+            <Form className="flex-grow-1 d-flex flex-column" onSubmit={this.cancelEvent}>
                 {/*<Form.Group controlId="ChatHistory" className="flex-grow-1 d-flex flex-column">*/}
                 {/*    <Form.Label>Chat History</Form.Label>*/}
                 {/*    <Form.Control as="textarea" className="overflow-auto flex-grow-1"*/}
