@@ -243,13 +243,12 @@ export default class StartShare extends React.Component<IProps, IState> {
                 return;
             }
             const sdp = JSON.parse(obj.payload);
-            try {
-                peer.pc.setRemoteDescription(sdp);
-            } catch(e) {
-                console.log("[WS] peer.pc.setRemoteDescription failed for navigator " +
-                    `id=${obj.navigator_id}`);
-                console.log(e);
-            }
+            peer.pc.setRemoteDescription(sdp)
+                .catch(e => {
+                    console.log("[WS] peer.pc.setRemoteDescription failed for navigator " +
+                        `id=${obj.navigator_id}`);
+                    console.log(e);
+                });
         } else if (obj.kind === "ice_candidate") {
             const peer = this.state.peers.find(peer => peer.id === obj.navigator_id);
             if (!peer) {
