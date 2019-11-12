@@ -17,12 +17,12 @@ export default class Top extends React.Component<Props, State> {
                     </Col>
                 </Row>
                 <Row className={"justify-content-md-center"}>
-                    <Col md={12}>
-                        <Link className={"btn btn-primary btn-lg btn-block"} to={"/new_workspace"}>
-                            {"Create new workspace"}
+                    <Col xs={12}>
+                        <Link className="btn btn-primary btn-lg btn-block" to="/new_workspace">
+                            Create a new workspace
                         </Link>
-                        <Link className={"btn btn-primary btn-lg btn-block"} to={"/join_workspace"}>
-                            {"Join existed workspace"}
+                        <Link className="btn btn-primary btn-lg btn-block" to="/join_workspace">
+                            Sign in to your workspace
                         </Link>
                     </Col>
                 </Row>

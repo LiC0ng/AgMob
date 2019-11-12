@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-    BrowserRouter as Router,
+    HashRouter as Router,
     Route,
     Switch,
 } from "react-router-dom";
@@ -38,6 +38,7 @@ export default class App extends React.Component<Props, State> {
     };
 
     render() {
+        console.log(window.location);
         const componentProps = this.state.componentProps;
         return (
             <Container fluid={true} id="main-root" className="h-100">
@@ -47,6 +48,8 @@ export default class App extends React.Component<Props, State> {
                             <Top {...obj} {...componentProps} />}/>
                         <Route path="/new_workspace/" render={(obj) =>
                             <TimerCountdown {...obj} {...componentProps} />}/>
+                        <Route path="/join_workspace/:id" render={(obj) =>
+                            <Join {...obj} {...componentProps} />}/>
                         <Route path="/join_workspace/" render={(obj) =>
                             <Join {...obj} {...componentProps} />}/>
                         <Route path="/end/" render={(obj) =>

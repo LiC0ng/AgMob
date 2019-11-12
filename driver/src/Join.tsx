@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import {Button, Col, Container, Row} from "react-bootstrap";
-import {log} from "util";
 import {DriverSession} from "./types";
 import * as Config from "./config";
 
@@ -11,7 +10,6 @@ interface State {
 }
 
 export default class Join extends React.Component<any, State> {
-
     public constructor(props: any) {
         super(props);
 
@@ -21,11 +19,19 @@ export default class Join extends React.Component<any, State> {
         };
     }
 
+    componentDidMount() {
+        const match = this.props.match;
+        const id = match && match.params.id;
+        if (id)
+            this.setState({ inputSessionId: id }, () => this.handleStart(null));
+    }
+
     private handleInputSessionIdChange = (e: any) =>
         this.setState({ inputSessionId: e.target.value, error: false });
 
     private handleStart = async (e: any) => {
-        e.preventDefault();
+        if (e !== null)
+            e.preventDefault();
 
         const sess = await DriverSession.join(this.state.inputSessionId);
         if (sess === null) {
@@ -41,7 +47,7 @@ export default class Join extends React.Component<any, State> {
             <Container>
                 <Row className="justify-content-md-center">
                     <Col md="auto">
-                        <h1>Enter existed Workspace</h1>
+                        <h2>Join an existing workspace</h2>
                     </Col>
                 </Row>
                 <Row className="justify-content-md-center">
@@ -59,12 +65,12 @@ export default class Join extends React.Component<any, State> {
                         </div>}
                     </div>
                 </Row>
-                <Row className="justify-content-md-center">
+                <Row className="justify-content-md-center fixed-bottom">
                     <Col xs={"auto"} style={{ padding: 30 }}>
                         <Link className="btn btn-primary btn-lg" to="/">Back</Link>
                     </Col>
                     <Col xs={"auto"} style={{ padding: 30 }}>
-                        <Button className="btn-lg" href="#" onClick={this.handleStart}>Start</Button>
+                        <Button className="btn-lg" href="#" onClick={this.handleStart}>Join</Button>
                     </Col>
                 </Row>
             </Container>

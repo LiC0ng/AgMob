@@ -247,21 +247,21 @@ export default class NavigatorApp extends React.Component<Props, State> {
     };
 
     render() {
-        const driverUrl = `agmob-driver:${this.state.sessionId}`;
+        const driverUrl = `agmob-driver://${this.state.sessionId}`;
         return (
             <div className="container-fluid p-3 d-flex h-100 flex-column">
                 <div className="flex-grow-1 text-center video-container">
                     {this.state.state === NavigatorState.Disconnected ?
                         <div>
-                            <h1>Connecting to server</h1>
+                            <h1>Connecting to the server</h1>
                             <p>Please wait for a little while longer.</p>
                         </div>
                     : this.state.state === NavigatorState.WaitingDriver ?
                         <div>
-                            <h1>Waiting for new driver</h1>
+                            <h1>Waiting for a new driver</h1>
                             <p>Please wait for a little while longer.</p>
                             <div className="mt-3">
-                                <h4>Become a driver</h4>
+                                <h4>Or become a driver</h4>
                                 <a href={driverUrl}>{driverUrl}</a>
                             </div>
                         </div>

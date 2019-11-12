@@ -61,7 +61,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
 
     public handleChangeMode = (e: any) => {
         this.setState({
-            mode: e.toString(),
+            mode: e.target.value,
         });
     };
 
@@ -81,53 +81,54 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         // @ts-ignore
         return (
             <div>
-                <div className="select-mode">
-                    <h3>Select mode</h3>
+                <h2>Create a new workspace</h2>
+                <form className="mt-3">
+                    <h4>Mob Programming Style</h4>
                     <label>Please select mode how you want to develop software through mob programming.</label>
-
-                    <ButtonToolbar>
-                        <ToggleButtonGroup
-                            name="mode"
-                            type="radio"
-                            value={this.state.mode}
-                            onChange={this.handleChangeMode.bind(this)}>
-                            <ToggleButton value={STATE_FREE_MODE}>Free mob mode</ToggleButton>
-                            <ToggleButton value={STATE_STRICT_MODE}>Strict mob mode</ToggleButton>
-                        </ToggleButtonGroup>
-                    </ButtonToolbar>
-
-                    <details style={{marginTop: 5}}>
-                        <summary style={{outline: "none"}}>Details</summary>
-                        <Alert variant={"secondary"}>
-                            <dl>
-                                <dt>Free mob mode</dt>
-                                <dd>The mode has no limit time and you can switch roles freely.</dd>
-                                <dt>Strict mob mode</dt>
-                                <dd>The mode has limit time and drivers are replaced in order.</dd>
-                            </dl>
-                        </Alert>
-                    </details>
-                </div>
-
-                <div className="timer-countdown" style={{marginTop: 30}}>
-                    <h3>Input your desired time</h3>
-                    <InputGroup>
-                        <InputGroup.Prepend>
-                            <Button variant="primary" onClick={this.handleDecrementValue}
-                                    disabled={this.state.mode === STATE_FREE_MODE}>-</Button>
-                        </InputGroup.Prepend>
-                        <input
-                            type={"number"}
-                            value={this.state.inputValue.toString()}
-                            style={{textAlign: "end"}}
-                            disabled={this.state.mode === STATE_FREE_MODE}
-                            onChange={this.handleGetInputValue.bind(this)}/>
-                        <InputGroup.Append>
-                            <Button variant="primary" onClick={this.handleIncrementValue}
-                                    disabled={this.state.mode === STATE_FREE_MODE}>+</Button>
-                        </InputGroup.Append>
-                    </InputGroup>
-                </div>
+                    <label style={{display: "block"}} className={"alert " + (this.state.mode === STATE_STRICT_MODE ? "alert-primary" : "alert-secondary")}>
+                        <div className="custom-control custom-radio">
+                            <input type="radio" className="custom-control-input"
+                                id="strict-mode" name="mode" checked={this.state.mode === STATE_STRICT_MODE}
+                                value={STATE_STRICT_MODE} onChange={this.handleChangeMode.bind(this)} />
+                            <label className="custom-control-label" htmlFor="strict-mode">Strict Mode
+                                <p>
+                                    A driver session is interrupted automatically when
+                                    the timer expires.
+                                </p>
+                                <h5>Driver Session Interval</h5>
+                                <InputGroup>
+                                    <InputGroup.Prepend>
+                                        <Button variant="primary" onClick={this.handleDecrementValue}
+                                                disabled={this.state.mode === STATE_FREE_MODE}>-</Button>
+                                    </InputGroup.Prepend>
+                                    <input
+                                        type={"number"}
+                                        value={this.state.inputValue.toString()}
+                                        style={{textAlign: "end"}}
+                                        disabled={this.state.mode === STATE_FREE_MODE}
+                                        onChange={this.handleGetInputValue.bind(this)}/>
+                                    <InputGroup.Append>
+                                        <Button variant="primary" onClick={this.handleIncrementValue}
+                                                disabled={this.state.mode === STATE_FREE_MODE}>+</Button>
+                                    </InputGroup.Append>
+                                </InputGroup>
+                            </label>
+                        </div>
+                    </label>
+                    <label style={{display: "block"}} className={"alert " + (this.state.mode === STATE_FREE_MODE ? "alert-primary" : "alert-secondary")}>
+                        <div className="custom-control custom-radio">
+                            <input type="radio" className="custom-control-input"
+                                id="free-mode" name="mode" checked={this.state.mode === STATE_FREE_MODE}
+                                value={STATE_FREE_MODE} onChange={this.handleChangeMode.bind(this)} />
+                            <label className="custom-control-label" htmlFor="free-mode">Free Mode
+                                <p>
+                                    The mode has no limit time and you can switch roles freely.
+                                    Measure time in some other way!
+                                </p>
+                            </label>
+                        </div>
+                    </label>
+                </form>
 
                 <Row className="justify-content-md-center fixed-bottom">
                     <Col xs={"auto"} style={{padding: 30}}>

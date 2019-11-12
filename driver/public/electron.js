@@ -43,8 +43,11 @@ function createWindow() {
     });
 
     electron.protocol.registerHttpProtocol("agmob-driver", (req, cb) => {
-        const url = "/driver/" + req.url.substr(13);
-        mainWindow.loadURL(url);
+        let id = req.url.substr(13);
+        if (id.startsWith("//"))
+            id = id.substr(2);
+        const ext = "#/join_workspace/" + id;
+        mainWindow.loadURL(startUrl + ext);
     });
 
     // Setup Agmob overlay window
