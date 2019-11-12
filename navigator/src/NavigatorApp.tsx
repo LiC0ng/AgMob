@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button} from "react-bootstrap";
 import * as Config from "./config";
-import {SessionMode, NavigatorState} from "./types";
+import {NavigatorState, SessionMode} from "./types";
 import Chat from "./Chat";
 import Timer from "./Timer"
 

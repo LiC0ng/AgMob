@@ -1,5 +1,5 @@
 import React from "react";
-import {SessionMode, NavigatorState} from "./types";
+import {NavigatorState, SessionMode} from "./types";
 
 interface IProps {
     startTimeInMinutes: number;
@@ -11,6 +11,7 @@ interface IProps {
 interface IState {
     timeRemainingInSeconds: number;
     timeRemainingInMinutes: number;
+    connectionState: NavigatorState;
 }
 
 export default class TimerCountdown extends React.Component<IProps, IState> {
@@ -21,6 +22,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         this.state = {
             timeRemainingInMinutes: props.startTimeInMinutes,
             timeRemainingInSeconds: 0,
+            connectionState: NavigatorState.Disconnected,
         };
     }
 
@@ -46,12 +48,14 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
     }
 
     componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
-        if (nextProps.begin !== this.props.begin &&
-            nextProps.mode === SessionMode.Strict &&
-            nextProps.state !== NavigatorState.Disconnected) {
+        this.setState({
+            connectionState: nextProps.state
+        });
+        if (nextProps.mode === SessionMode.Strict &&
+            nextProps.state === NavigatorState.Connected) {
             this.setState({
                 timeRemainingInMinutes: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) / 60),
-                timeRemainingInSeconds: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) % 60)
+                timeRemainingInSeconds: Math.floor((nextProps.startTimeInMinutes * 60 - (Math.floor(Date.now() / 1000) - nextProps.begin)) % 60),
             });
             clearInterval(this.timer!);
             this.timer = setInterval(() => {
@@ -62,14 +66,17 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
 
     render() {
         let text: React.ReactNode;
-        switch (this.props.state) {
+        switch (this.state.connectionState) {
             case NavigatorState.Disconnected:
                 text = "Disconnected";
                 break;
             case NavigatorState.WaitingDriver:
+                text = "Waiting Driver";
+                break;
             case NavigatorState.Connected:
                 if (this.props.mode === SessionMode.Strict) {
-                    text = `${this.state.timeRemainingInMinutes} : ${this.state.timeRemainingInSeconds}`;
+                    text = `${this.state.timeRemainingInMinutes < 10 ? "0" + this.state.timeRemainingInMinutes : this.state.timeRemainingInMinutes} : 
+                    ${this.state.timeRemainingInSeconds < 10 ? "0" + this.state.timeRemainingInSeconds : this.state.timeRemainingInSeconds}`;
                 } else {
                     text = "FREE MODE";
                 }
