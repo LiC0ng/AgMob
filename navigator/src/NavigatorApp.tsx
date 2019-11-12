@@ -15,6 +15,7 @@ interface State {
     mode: SessionMode;
     interval: number;
     begin: number;
+    color: string;
 }
 
 export default class NavigatorApp extends React.Component<Props, State> {
@@ -66,6 +67,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
             mode: SessionMode.Free,
             interval: -1,
             begin: -1,
+            color: "",
         };
         this.getSessInfo();
         this.sendWebsocket();
@@ -174,6 +176,9 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         dataChannel.onmessage = (ev: any) => {
                             let navigator_id: number = ev.data;
                             this.color = Config.Colors[navigator_id % Config.Colors.length];
+                            this.setState({
+                                color: this.color
+                            });
                             console.log("received via datachannel");
                         };
                         this.dataChannel = dataChannel;
@@ -268,7 +273,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 <div className="row mt-3">
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
                         mode={this.state.mode} state={this.state.state} />
-                    <Chat ws={this.state.ws} state={this.state.state} />
+                    <Chat ws={this.state.ws} state={this.state.state}  color={this.state.color}/>
                 </div>
             </div>
         );

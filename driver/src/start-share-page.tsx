@@ -37,9 +37,9 @@ interface IState {
     timeRemainingInSeconds: number;
     timeRemainingInMinutes: number;
     sessionId: string;
-    chatHistory: string;
     timerHandle?: number;
     overlayHandle?: number;
+    nav_message: string;
     peers: PeerInfo[];
 }
 
@@ -53,9 +53,9 @@ export default class StartShare extends React.Component<IProps, IState> {
             timeRemainingInMinutes: props.currentSession!.startTimeInMinutes,
             timeRemainingInSeconds: 0,
             sessionId: props.currentSession!.sessionId,
-            chatHistory: "",
             timerHandle: undefined,
             overlayHandle: undefined,
+            nav_message: "",
             peers: [],
         };
         this.clickStopHandle = this.clickStopHandle.bind(this);
@@ -167,7 +167,7 @@ export default class StartShare extends React.Component<IProps, IState> {
                     <Form.Label>Join Session ({this.state.peers.length} connected)</Form.Label>
                     <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus}/>
                 </Form.Group>
-                <Chat history={this.state.chatHistory}/>
+                <Chat nav_message={this.state.nav_message}/>
             </div>
         );
     }
@@ -187,7 +187,7 @@ export default class StartShare extends React.Component<IProps, IState> {
                     this.props.currentSession!.sendMessage({
                         kind: "ice_candidate",
                         payload: JSON.stringify(ev.candidate),
-                        navigator_id,
+                        navigator_id: navigator_id,
                     });
                 } else {
                     console.log(`[RTC-${navigator_id}] ICE candidates complete`);
@@ -224,7 +224,7 @@ export default class StartShare extends React.Component<IProps, IState> {
                     this.props.currentSession!.sendMessage({
                         kind: "sdp",
                         payload: JSON.stringify(peer.localDescription),
-                        navigator_id,
+                        navigator_id: navigator_id,
                     });
                 } catch (err) {
                     console.error(err);
@@ -260,7 +260,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             peer.pc.addIceCandidate(candidate);
         } else if (obj.kind === "chat") {
             this.setState({
-                chatHistory: obj.payload,
+                nav_message: obj.payload,
             });
         }
     };

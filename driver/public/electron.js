@@ -66,7 +66,6 @@ function createWindow() {
     overlayWindow.setIgnoreMouseEvents(true);
     overlayWindow.setAlwaysOnTop(true);
     overlayWindow.loadURL(startUrl + "#overlay");
-
     // Pipe between mainWindow and overlayWindow (-> only)
     electron.ipcMain.on("overlay", (event, arg) =>
         overlayWindow.webContents.send("overlay", arg));

@@ -5,6 +5,7 @@ import {NavigatorState} from "./types";
 interface IProps {
     ws: WebSocket;
     state: NavigatorState;
+    color: string
 }
 
 interface IState {
@@ -42,7 +43,7 @@ export default class Chat extends React.Component<IProps, IState> {
         const date = new Date();
         let sendObject = {
             "kind": "chat",
-            "payload": `{"name":"${this.state.name}","message":"${this.state.message}","date":"${date.toString()}"}`
+            "payload": `{"name":"${this.state.name}","message":"${this.state.message}","date":"${date.toString()}","color":"${this.props.color}"}`
         };
         this.props.ws.send(JSON.stringify(sendObject));
         this.setState({

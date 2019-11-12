@@ -1,20 +1,18 @@
 import React from "react";
-import {Button, Col, Form, FormControl, InputGroup, Row} from "react-bootstrap";
+import {Button, Form, FormControl, InputGroup} from "react-bootstrap";
 
 interface IState {
     message: string;
-    history: string;
 }
 
 interface IProps {
-    history: string;
+    nav_message: string;
 }
 
 export default class Chat extends React.Component<IProps, IState> {
     public constructor(props: IProps) {
         super(props);
         this.state = {
-            history: "",
             message: "",
         };
         this.clickSendHandle = this.clickSendHandle.bind(this);
@@ -37,9 +35,15 @@ export default class Chat extends React.Component<IProps, IState> {
         }
         const date = new Date();
         const dateStr = date.getHours() + ":" + date.getMinutes();
+        const history = document.getElementById("chatHistory");
+        const message = document.createElement("div");
+        message.innerHTML = "Driver " + "<span style='font-size: 12px; color: grey'> " + dateStr + "</span>" + ":</br>"
+            + this.state.message;
+        if (history) {
+            history.appendChild(message);
+            history.scrollTop = history.scrollHeight;
+        }
         this.setState({
-            history: this.state.history + ("Driver " + dateStr + ":\n"
-                + this.state.message + "\n"),
             message: "",
         });
     }
@@ -51,39 +55,33 @@ export default class Chat extends React.Component<IProps, IState> {
     }
 
     public componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
-        if (nextProps.history !== this.props.history) {
-            const message = JSON.parse(nextProps.history);
-            const nameStr = (message.name === "") ? "Navigator" : message.name;
-            const date = new Date(message.date);
+        if (nextProps.nav_message !== this.props.nav_message) {
+            const navMessage = JSON.parse(nextProps.nav_message);
+            const nameStr = (navMessage.name === "") ? "Navigator" : navMessage.name;
+            const date = new Date(navMessage.date);
             const dateStr = date.getHours() + ":" + date.getMinutes();
-            this.setState({
-                history: this.state.history + (nameStr + " " + dateStr + "\n"
-                    + message.message + "\n"),
-            });
+            const history = document.getElementById("chatHistory");
+            const message = document.createElement("div");
+            message.innerHTML = "<span style='color: " + navMessage.color + "'>■</span>" +
+                                nameStr + "<span style='font-size: 12px; color: grey'> " +
+                                dateStr + "</span>" + ":</br>" + navMessage.message;
+            if (history) {
+                history.appendChild(message);
+                history.scrollTop = history.scrollHeight;
+            }
         }
     }
-
-    public componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>, snapshot?: any): void {
-        if (prevProps.history !== this.props.history || prevState.history !== this.state.history) {
-            this.scrollToBottom();
-        }
-    }
-
-
-    public scrollToBottom() {
-        const chatHistory: any = document.getElementById("ChatHistory");
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-    }
-
 
     public render() {
         return (
             <Form className="flex-grow-1 d-flex flex-column">
-                <Form.Group controlId="ChatHistory" className="flex-grow-1 d-flex flex-column">
-                    <Form.Label>Chat History</Form.Label>
-                    <Form.Control as="textarea" className="overflow-auto flex-grow-1"
-                        value={this.state.history} onChange={this.handleHistoryChange}/>
-                </Form.Group>
+                {/*<Form.Group controlId="ChatHistory" className="flex-grow-1 d-flex flex-column">*/}
+                {/*    <Form.Label>Chat History</Form.Label>*/}
+                {/*    <Form.Control as="textarea" className="overflow-auto flex-grow-1"*/}
+                {/*        value={this.state.history} onChange={this.handleHistoryChange}/>*/}
+                {/*</Form.Group>*/}
+                <div id="chatHistory" onChange={this.handleHistoryChange} style={{height: 300, overflow: "auto"}}>
+                </div>
                 <InputGroup>
                     <FormControl
                         placeholder="Input Message Here"
