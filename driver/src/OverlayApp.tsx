@@ -22,6 +22,8 @@ export default class OverlayApp extends React.Component<Props, State> {
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
     };
+    private ySize = 0;
+    private yOffset = 0;
 
     constructor(props: Props) {
         super(props);
@@ -36,6 +38,12 @@ export default class OverlayApp extends React.Component<Props, State> {
             console.log(`[Overlay] Received laser pointers clear request`);
             this.clear();
         });
+
+        // Workaround on macOS, where a window cannot be on the menu bar
+        const remote = electron.remote;
+        this.ySize = remote.screen.getPrimaryDisplay().bounds.height;
+        this.yOffset = this.ySize - remote.screen.getPrimaryDisplay().workArea.height;
+        console.log(`[Overlay] Screen height=${this.ySize}, offset=${this.yOffset}`);
     }
 
     private statesHistory: LaserPointerState[][] = [];
@@ -84,7 +92,7 @@ export default class OverlayApp extends React.Component<Props, State> {
                     b = parseInt(item.color.substr(5, 2), 16);
                 const style = `rgba(${r}, ${g}, ${b}, ${opacity})`;
                 const x = item.posX * canvas.width,
-                    y = item.posY * canvas.height;
+                    y = (item.posY * this.ySize - this.yOffset) / this.ySize * canvas.height;
 
                 const pair = prev[j];
                 if (pair !== undefined) {

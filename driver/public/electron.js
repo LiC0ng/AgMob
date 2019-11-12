@@ -63,7 +63,8 @@ function createWindow() {
     overlayWindow = new BrowserWindow({
         autoHideMenuBar: true,
         transparent: true,
-        frames: false,
+        frame: false,
+        fullscreen: process.platform !== "darwin",
         focusable: false,
         width: width,
         height: height,
