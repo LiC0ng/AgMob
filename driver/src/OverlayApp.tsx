@@ -92,7 +92,7 @@ export default class OverlayApp extends React.Component<Props, State> {
                     b = parseInt(item.color.substr(5, 2), 16);
                 const style = `rgba(${r}, ${g}, ${b}, ${opacity})`;
                 const x = item.posX * canvas.width,
-                    y = (item.posY * this.ySize - this.yOffset) / this.ySize * canvas.height;
+                    y = item.posY * this.ySize - this.yOffset;
 
                 const pair = prev[j];
                 if (pair !== undefined) {
