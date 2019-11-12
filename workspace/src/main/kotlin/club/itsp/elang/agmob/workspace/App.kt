@@ -202,7 +202,7 @@ fun main(args: Array<String>) {
                             driver?.sendChatMessage(conn, msg)
                         }
                         else -> {
-                            log.info("invalid websocket message from navigator")
+                            log.info("invalid websocket message from navigator: " + msg.kind)
                         }
                     }
                 }
@@ -246,7 +246,7 @@ fun main(args: Array<String>) {
                                 driver?.driverChatMessage(msg)
                             }
                             else -> {
-                                log.info("invalid websocket message from navigator")
+                                log.info("invalid websocket message from driver: " + msg.kind)
                             }
                         }
                     }
