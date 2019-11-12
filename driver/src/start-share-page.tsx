@@ -3,7 +3,7 @@ import {Form, InputGroup} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Chat from "./Chat";
 import * as Config from "./config";
-import {PropsWithSession, LaserPointerState} from "./types";
+import {SessionMode, PropsWithSession, LaserPointerState} from "./types";
 
 declare global {
     interface Window {
@@ -34,8 +34,8 @@ interface IProps extends PropsWithSession {
 }
 
 interface IState {
+    mode: SessionMode;
     timeRemainingInSeconds: number;
-    timeRemainingInMinutes: number;
     sessionId: string;
     timerHandle?: number;
     overlayHandle?: number;
@@ -49,19 +49,18 @@ export default class StartShare extends React.Component<IProps, IState> {
     public constructor(props: IProps) {
         super(props);
 
+        const sess = props.currentSession!;
         this.state = {
-            timeRemainingInMinutes: props.currentSession!.startTimeInMinutes,
-            timeRemainingInSeconds: 0,
-            sessionId: props.currentSession!.sessionId,
+            mode: sess.mode,
+            timeRemainingInSeconds: sess.startTimeInMinutes * 60,
+            sessionId: sess.sessionId,
             timerHandle: undefined,
             overlayHandle: undefined,
             nav_message: "",
             peers: [],
         };
         this.clickStopHandle = this.clickStopHandle.bind(this);
-    }
 
-    public componentDidMount() {
         const screenSharingConstraints = {
             mandatory: {
                 chromeMediaSource: "desktop",
@@ -73,7 +72,9 @@ export default class StartShare extends React.Component<IProps, IState> {
             this.stream = stream;
             this.state.peers.forEach(peer => peer.addTracks(stream));
         });
+    }
 
+    public componentDidMount() {
         this.props.currentSession!.attach(this.onWebSocketMessage);
         this.props.currentSession!.sendMessage({
             kind: "driver_ready",
@@ -109,18 +110,14 @@ export default class StartShare extends React.Component<IProps, IState> {
     }
 
     public startTimerCountdownHandler() {
-        if (this.state.timeRemainingInSeconds > 0) {
+        if (this.state.mode !== SessionMode.Strict)
+            return;
+        if (this.state.timeRemainingInSeconds > 0)
             this.setState({
                 timeRemainingInSeconds: this.state.timeRemainingInSeconds - 1,
             });
-        } else if (this.state.timeRemainingInMinutes > 0 && this.state.timeRemainingInSeconds <= 0) {
-            this.setState({
-                timeRemainingInMinutes: this.state.timeRemainingInMinutes - 1,
-                timeRemainingInSeconds: 59,
-            });
-        } else if (this.state.timeRemainingInMinutes !== -1) {
+        else
             this.stopSharing();
-        }
     }
 
     public stopSharing() {
@@ -152,10 +149,9 @@ export default class StartShare extends React.Component<IProps, IState> {
             <div className="h-100 d-flex flex-column">
                 <div className="start">
                     <h1 className="d-inline">
-                        {this.state.timeRemainingInMinutes !== -1 ?
-                            `${this.state.timeRemainingInMinutes} : ${this.state.timeRemainingInSeconds}`
-                            : "Free mode"
-                        }
+                        {this.state.mode === SessionMode.Strict
+                            ? `${Math.floor(this.state.timeRemainingInSeconds / 60)} : ${this.state.timeRemainingInSeconds % 60}`
+                            : "Free mode"}
                     </h1>
                     <Button style={{marginLeft: 30}} variant="primary"
                         onClick={this.clickStopHandle}>Stop</Button>

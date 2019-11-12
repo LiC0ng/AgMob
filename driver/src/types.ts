@@ -9,6 +9,7 @@ export class DriverSession {
     private constructor(
         public sessionId: string,
         private websocket: WebSocket,
+        public mode: SessionMode,
         public startTimeInMinutes: number
     ) {
         this.setupConnection();
@@ -31,7 +32,7 @@ export class DriverSession {
         const conn = await this.createWebSocket(obj.id);
         const time = startTimeInMinutes;
 
-        return new DriverSession(obj.id, conn, time);
+        return new DriverSession(obj.id, conn, mode, time);
     }
 
     public static async join(sessionId: string) {
@@ -63,13 +64,11 @@ export class DriverSession {
         console.log(obj);
 
         const conn = await this.createWebSocket(obj.id);
-        const time = obj.config.mode === SessionMode.Strict ? obj.config.interval : -1;
-
-        return new DriverSession(obj.id, conn, time);
+        return new DriverSession(obj.id, conn, obj.config.mode, obj.config.interval);
     }
 
     public static dummy() {
-        return new DriverSession("DUMMY", new WebSocket("DUMMY"), 5);
+        return new DriverSession("DUMMY", new WebSocket("DUMMY"), SessionMode.Free, 5);
     }
 
     private static createWebSocket(sessionId: string) {

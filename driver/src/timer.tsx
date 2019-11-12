@@ -64,14 +64,8 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
     };
 
     public async clickSetHandle() {
-        let sess: any;
-        if (this.state.mode === SessionMode.Free) {
-            sess = await DriverSession.create(this.state.mode, -1);
-        } else {
-            sess = await DriverSession.create(this.state.mode, this.state.inputValue);
-        }
+        const sess = await DriverSession.create(this.state.mode, this.state.inputValue);
         this.props.onUpdateSession(sess);
-
         this.props.history.push({pathname: "/start_page"});
     }
 
