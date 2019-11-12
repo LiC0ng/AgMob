@@ -60,7 +60,7 @@ export default class Chat extends React.Component<IProps, IState> {
 
     public render() {
         return (
-            <Form className="chat col row">
+            <Form className="chat col row m-0">
                 <FormControl
                     className="col-3"
                     required
