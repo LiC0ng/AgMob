@@ -45,12 +45,20 @@ class Session(var config: SessionConfiguration) {
     val navigators = HashMap<Int, NavigatorConnection>()
 
     fun addNavigator(conn: NavigatorConnection) {
+        log.debug("[${id}] connecting navigator: ${conn}")
         navigators[conn.id] = conn
+    }
+
+    fun removeNavigator(conn: NavigatorConnection) {
+        log.debug("[${id}] disconnecting navigator: ${conn}")
+        navigators.delete(conn.id)
     }
 
     @Synchronized
     suspend fun setDriver(conn: DriverConnection?) {
         disconnectDriver(driver)
+
+        log.debug("[${id}] connecting driver: ${conn}")
         driver = conn
 
         // Notify already-connected navigators that they can now attempt WebRTC connection
@@ -62,6 +70,7 @@ class Session(var config: SessionConfiguration) {
     suspend fun disconnectDriver(current: DriverConnection?) {
         if (driver != current || current == null)
             return
+        log.debug("[${id}] disconnecting driver: ${driver}")
         current.disconnect()
         driver = null
         navigators.values.forEach { nav -> nav.notifyDriverQuit() }
@@ -187,22 +196,30 @@ fun main(args: Array<String>) {
                     when (msg.kind) {
                         "request_sdp" -> {
                             val driver = sess.driver
+                            if (driver == null)
+                                log.debug("[${sess.id}] ignoring request_sdp from nav-${conn.id}")
                             driver?.requestSdpOffer(conn, msg)
                         }
                         "sdp" -> {
                             val driver = sess.driver
+                            if (driver == null)
+                                log.debug("[${sess.id}] ignoring sdp from nav-${conn.id}")
                             driver?.receiveSdpAnswer(conn, msg)
                         }
                         "ice_candidate" -> {
                             val driver = sess.driver
+                            if (driver == null)
+                                log.debug("[${sess.id}] ignoring ice_candidate from nav-${conn.id}")
                             driver?.receiveIceCandidate(conn, msg)
                         }
                         "chat" -> {
                             val driver = sess.driver
+                            if (driver == null)
+                                log.debug("[${sess.id}] ignoring chat from nav-${conn.id}")
                             driver?.sendChatMessage(conn, msg)
                         }
                         else -> {
-                            log.info("invalid websocket message from navigator: " + msg.kind)
+                            log.info("[${sess.id}] invalid websocket message ${msg.kind} from nav-${conn.id}")                        }
                         }
                     }
                 }
@@ -227,10 +244,14 @@ fun main(args: Array<String>) {
                         when (msg.kind) {
                             "sdp" -> {
                                 val navConn = sess.navigators[msg.navigator_id]
+                                if (navConn == null)
+                                    log.debug("[${sess.id}] ignoring sdp to nav-${msg.navigator_id}")
                                 navConn?.receiveSdpOffer(msg)
                             }
                             "ice_candidate" -> {
                                 val navConn = sess.navigators[msg.navigator_id]
+                                if (navConn == null)
+                                    log.debug("[${sess.id}] ignoring ice_candidate to nav-${msg.navigator_id}")
                                 navConn?.receiveIceCandidate(msg)
                             }
                             "quit" -> {
