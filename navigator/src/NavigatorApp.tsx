@@ -25,6 +25,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
     private peer?: RTCPeerConnection;
     private dataChannel?: RTCDataChannel;
     private videoRef?: HTMLVideoElement;
+    private canvasRef?: HTMLCanvasElement;
     private color?: string;
     private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
         this.videoRef = videoRef;
@@ -32,27 +33,43 @@ export default class NavigatorApp extends React.Component<Props, State> {
             return;
         if (this.stream)
             videoRef.srcObject = this.stream;
+        videoRef.addEventListener("resize", this.setCanvasSize);
+    };
+    private readonly setCanvasRef = (canvasRef: HTMLCanvasElement) => {
+        this.canvasRef = canvasRef;
+        if (canvasRef === null)
+            return;
 
         const sendPointer = (e: any) => {
-            const rect = videoRef.getBoundingClientRect();
+            const rect = canvasRef.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width,
                 y = (e.clientY - rect.top) / rect.height;
             this.sendDataChannel({x, y});
-        }
+        };
         let mousePressed = false;
-        videoRef.addEventListener("mousedown", (e: any) => {
+        canvasRef.addEventListener("mousedown", (e: any) => {
             mousePressed = true;
+            console.log("mousedown");
             sendPointer(e);
+            this.updateCanvas(e.clientX, e.clientY);
         }, false);
-        videoRef.addEventListener("mouseup", () => {
+        canvasRef.addEventListener("mouseup", () => {
             mousePressed = false;
+            const canvas = this.canvasRef;
+            console.log("mouseup");
+            if (!canvas)
+                return;
+            const context = canvas.getContext("2d");
+            if (!context)
+                return;
+            context.clearRect(0, 0, canvas.width, canvas.height);
         }, false);
-        videoRef.addEventListener("mousemove", (e: any) => {
-            if (mousePressed)
+        canvasRef.addEventListener("mousemove", (e: any) => {
+            if (mousePressed) {
                 sendPointer(e);
-        }, false);
-        videoRef.addEventListener("touchmove", (e: any) => {
-            sendPointer(e.targetTouches[0]);
+                console.log("mousemove");
+                this.updateCanvas(e.clientX, e.clientY);
+            }
         }, false);
     };
 
@@ -252,6 +269,37 @@ export default class NavigatorApp extends React.Component<Props, State> {
             await this.videoRef.play();
     };
 
+    private setCanvasSize() {
+        if (this.canvasRef && this.videoRef){
+            this.canvasRef.width = this.videoRef.clientWidth;
+            this.canvasRef.height = this.videoRef.clientHeight;
+        }
+    }
+
+    private updateCanvas(mx: number, my: number) {
+        const canvas = this.canvasRef, video = this.videoRef;
+        if (!canvas || !video)
+            return;
+        const context = canvas.getContext("2d");
+        if (!context)
+            return;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (!this.color)
+            return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (mx- rect.left),
+            y = (my - rect.top);
+        const r = parseInt(this.color.substr(1, 2), 16),
+            g = parseInt(this.color.substr(3, 2), 16),
+            b = parseInt(this.color.substr(5, 2), 16);
+        const style = `rgba(${r}, ${g}, ${b})`;
+        context.beginPath();
+        context.arc(x, y, 5, 0, 2 * Math.PI);
+        context.fillStyle = style;
+        context.fill();
+    }
+
     handleChangeFullscreen = (e: any) => {
         console.log(e);
         e.preventDefault();
@@ -267,7 +315,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
         const driverUrl = `agmob-driver://${this.state.sessionId}`;
         return (
             <div className="container-fluid p-3 d-flex h-100 flex-column">
-                <div className="flex-grow-1 text-center video-container">
+                <div className="flex-grow-1 text-center">
                     {this.state.state === NavigatorState.Disconnected ?
                         <div>
                             <h1>Connecting to the server</h1>
@@ -283,8 +331,13 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             </div>
                         </div>
                     : this.state.state === NavigatorState.Connected ?
-                        <video
-                            autoPlay={true} muted={true} ref={this.setVideoRef}/>
+                        <div className="video-container">
+                            <video
+                                onCanPlay={this.setCanvasSize.bind(this)}
+                                autoPlay={true} muted={true} ref={this.setVideoRef}/>
+                            <canvas
+                                ref={this.setCanvasRef}/>
+                        </div>
                     : <span>UNREACHABLE</span>}
                 </div>
                 <div className="row mt-3">
