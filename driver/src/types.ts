@@ -1,8 +1,9 @@
 import * as Config from "./config";
 
-// TODO: Convert into enum?
-const STATE_FREE_MODE = "Free Mode";
-const STATE_STRICT_MODE = "Strict Mode";
+export enum SessionMode {
+    Strict = "Strict Mode",
+    Free = "Free Mode",
+};
 
 export class DriverSession {
     private constructor(
@@ -13,7 +14,7 @@ export class DriverSession {
         this.setupConnection();
     }
 
-    public static async create(mode: string, startTimeInMinutes: number) {
+    public static async create(mode: SessionMode, startTimeInMinutes: number) {
         console.log("[DriverSession] POST /api/session =>");
         const ret = await fetch(`${Config.WORKSPACE_BASE_ADDRESS}/api/session`, {
             method: "POST",
@@ -38,7 +39,7 @@ export class DriverSession {
             `/api/session/${sessionId}`;
         // TODO: This doesn't look pretty. Can this GET request be removed?
         const retGet = await fetch(resId);
-        if (retGet.status != 200) {
+        if (retGet.status !== 200) {
             console.log("GET /api/session/{id} => " + retGet.text());
             return null;
         }
@@ -53,7 +54,7 @@ export class DriverSession {
                 state: "Connected",
             }),
         });
-        if (ret.status != 200) {
+        if (ret.status !== 200) {
             console.log("PUT /api/session/{id} => " + ret.text());
             return null;
         }
@@ -62,7 +63,7 @@ export class DriverSession {
         console.log(obj);
 
         const conn = await this.createWebSocket(obj.id);
-        const time = obj.config.mode === STATE_STRICT_MODE ? obj.config.interval : -1;
+        const time = obj.config.mode === SessionMode.Strict ? obj.config.interval : -1;
 
         return new DriverSession(obj.id, conn, time);
     }

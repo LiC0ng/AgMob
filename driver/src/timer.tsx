@@ -7,11 +7,9 @@ import InputGroup from "react-bootstrap/InputGroup";
 import ToggleButton from "react-bootstrap/ToggleButton";
 import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import {Link} from "react-router-dom";
+import {SessionMode} from "./types";
 import * as Config from "./config";
 import {PropsWithSession, DriverSession} from "./types";
-
-const STATE_FREE_MODE = "Free Mode";
-const STATE_STRICT_MODE = "Strict Mode";
 
 interface IProps extends PropsWithSession {
     history: any;
@@ -19,7 +17,7 @@ interface IProps extends PropsWithSession {
 
 interface IState {
     inputValue: number;
-    mode: any;
+    mode: SessionMode;
 }
 
 export default class TimerCountdown extends React.Component<IProps, IState> {
@@ -28,7 +26,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         super(props);
         this.state = {
             inputValue: 10,
-            mode: STATE_FREE_MODE,
+            mode: SessionMode.Strict,
         };
         this.clickSetHandle = this.clickSetHandle.bind(this);
     }
@@ -61,13 +59,13 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
 
     public handleChangeMode = (e: any) => {
         this.setState({
-            mode: e.target.value,
+            mode: e.target.value as SessionMode, // XXX
         });
     };
 
     public async clickSetHandle() {
         let sess: any;
-        if (this.state.mode === STATE_FREE_MODE) {
+        if (this.state.mode === SessionMode.Free) {
             sess = await DriverSession.create(this.state.mode, -1);
         } else {
             sess = await DriverSession.create(this.state.mode, this.state.inputValue);
@@ -85,11 +83,11 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
                 <form className="mt-3">
                     <h4>Mob Programming Style</h4>
                     <label>Please select mode how you want to develop software through mob programming.</label>
-                    <label style={{display: "block"}} className={"alert " + (this.state.mode === STATE_STRICT_MODE ? "alert-primary" : "alert-secondary")}>
+                    <label style={{display: "block"}} className={"alert " + (this.state.mode === SessionMode.Strict ? "alert-primary" : "alert-secondary")}>
                         <div className="custom-control custom-radio">
                             <input type="radio" className="custom-control-input"
-                                id="strict-mode" name="mode" checked={this.state.mode === STATE_STRICT_MODE}
-                                value={STATE_STRICT_MODE} onChange={this.handleChangeMode.bind(this)} />
+                                id="strict-mode" name="mode" checked={this.state.mode === SessionMode.Strict}
+                                value={SessionMode.Strict} onChange={this.handleChangeMode.bind(this)} />
                             <label className="custom-control-label" htmlFor="strict-mode">Strict Mode
                                 <p>
                                     A driver session is interrupted automatically when
@@ -99,27 +97,27 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
                                 <InputGroup>
                                     <InputGroup.Prepend>
                                         <Button variant="primary" onClick={this.handleDecrementValue}
-                                                disabled={this.state.mode === STATE_FREE_MODE}>-</Button>
+                                                disabled={this.state.mode !== SessionMode.Strict}>-</Button>
                                     </InputGroup.Prepend>
                                     <input
                                         type={"number"}
                                         value={this.state.inputValue.toString()}
                                         style={{textAlign: "end"}}
-                                        disabled={this.state.mode === STATE_FREE_MODE}
+                                        disabled={this.state.mode !== SessionMode.Strict}
                                         onChange={this.handleGetInputValue.bind(this)}/>
                                     <InputGroup.Append>
                                         <Button variant="primary" onClick={this.handleIncrementValue}
-                                                disabled={this.state.mode === STATE_FREE_MODE}>+</Button>
+                                                disabled={this.state.mode !== SessionMode.Strict}>+</Button>
                                     </InputGroup.Append>
                                 </InputGroup>
                             </label>
                         </div>
                     </label>
-                    <label style={{display: "block"}} className={"alert " + (this.state.mode === STATE_FREE_MODE ? "alert-primary" : "alert-secondary")}>
+                    <label style={{display: "block"}} className={"alert " + (this.state.mode === SessionMode.Free ? "alert-primary" : "alert-secondary")}>
                         <div className="custom-control custom-radio">
                             <input type="radio" className="custom-control-input"
-                                id="free-mode" name="mode" checked={this.state.mode === STATE_FREE_MODE}
-                                value={STATE_FREE_MODE} onChange={this.handleChangeMode.bind(this)} />
+                                id="free-mode" name="mode" checked={this.state.mode === SessionMode.Free}
+                                value={SessionMode.Free} onChange={this.handleChangeMode.bind(this)} />
                             <label className="custom-control-label" htmlFor="free-mode">Free Mode
                                 <p>
                                     The mode has no limit time and you can switch roles freely.
