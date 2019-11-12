@@ -51,6 +51,9 @@ export default class NavigatorApp extends React.Component<Props, State> {
             if (mousePressed)
                 sendPointer(e);
         }, false);
+        videoRef.addEventListener("touchmove", (e: any) => {
+            sendPointer(e.targetTouches[0]);
+        }, false);
     };
 
     constructor(props: Props) {
