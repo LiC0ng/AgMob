@@ -145,12 +145,15 @@ export default class StartShare extends React.Component<IProps, IState> {
 
     public render() {
         const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
+        const zeroPadding = function (num: number) {
+          return ("0000000000" + num).slice(-2);
+        }
         return (
             <div className="h-100 d-flex flex-column">
                 <div className="start">
                     <h1 className="d-inline">
                         {this.state.mode === SessionMode.Strict
-                            ? `${Math.floor(this.state.timeRemainingInSeconds / 60)} : ${this.state.timeRemainingInSeconds % 60}`
+                            ? `${zeroPadding(Math.floor(this.state.timeRemainingInSeconds / 60))} : ${zeroPadding(this.state.timeRemainingInSeconds % 60)}`
                             : "Free mode"}
                     </h1>
                     <Button style={{marginLeft: 30}} variant="primary"
