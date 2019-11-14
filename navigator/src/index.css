@@ -106,11 +106,18 @@ body, button, input, select, textarea {
 }
 
 .mod_head .mod_head_logo {
-    position: relative;
     display: inline-block;
-    font-size: 20px;
-    color: #fff;
-    line-height: 80px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 40px;
+    height: 40px;
+    float: left;
+    background-image: url(img/AgMob.png);
+    background-repeat: no-repeat;
+    background-size: 40px 40px;
+    background-position: left;
 }
 
 .mod_head .mod_head_menu {
@@ -119,11 +126,13 @@ body, button, input, select, textarea {
 }
 
 .mod_head .mod_head_logo_word {
-    position: relative;
+    position: absolute;
     display: inline-block;
-    font-size: 20px;
+    font-size: 28px;
+    width: 120px;
     color: #fff;
-    line-height: 80px;
+    line-height: 40px;
+    margin-left: 45px;
 }
 
 .mod_head .mod_head_menu_item {

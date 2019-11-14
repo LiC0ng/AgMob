@@ -63,8 +63,8 @@ export default class HomeApp extends React.Component<any, IState> {
         if (platformCode === 0) {
             this.setState({
                 package_version: "v 1.0.0",
-                package_size: "61.09MB",
-                package_date: "2019.11.05",
+                package_size: "62.58MB",
+                package_date: "2019.11.08",
                 package_link: download_link_win,
                 package_new: "1.new function: fluorescent pen\n" +
                     "2.fix: UI"
@@ -72,8 +72,8 @@ export default class HomeApp extends React.Component<any, IState> {
         } else if (platformCode === 1) {
             this.setState({
                 package_version: "v 1.0.0",
-                package_size: "82.97MB",
-                package_date: "2019.11.05",
+                package_size: "87.21MB",
+                package_date: "2019.11.08",
                 package_link: download_link_mac,
                 package_new: "1.new function: fluorescent pen\n" +
                     "2.fix: UI"
@@ -81,8 +81,8 @@ export default class HomeApp extends React.Component<any, IState> {
         } else if (platformCode === 2) {
             this.setState({
                 package_version: "v 1.0.0",
-                package_size: "95.98MB",
-                package_date: "2019.11.05",
+                package_size: "96.98MB",
+                package_date: "2019.11.08",
                 package_link: download_link_lin,
                 package_new: "1.new function: fluorescent pen\n" +
                     "2.fix: UI"
@@ -132,8 +132,6 @@ export default class HomeApp extends React.Component<any, IState> {
                 <div className="mod_head">
                     <div className="mod_head_inner max_width">
                         <div className="mod_head_logo">
-                            {/*put logo here*/}
-                            （Icon)
                             <a href="https://elang.itsp.club" className="mod_head_logo_word">AgMob</a>
                         </div>
                         <div className="mod_head_menu">
