@@ -340,7 +340,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         </div>
                     : <span>UNREACHABLE</span>}
                 </div>
-                <div className="row mt-3">
+                <div className="row m-0 mt-3">
                     <Button value="fullscreen" variant="outline-primary" title="Fullscreen"
                         active={this.state.fullscreen} onClick={this.handleChangeFullscreen}>
                         <span className="glyphicon glyphicon-fullscreen">🖵</span>

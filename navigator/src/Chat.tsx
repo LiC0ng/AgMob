@@ -61,7 +61,7 @@ export default class Chat extends React.Component<IProps, IState> {
 
     public render() {
         return (
-            <Form className="chat col row m-0">
+            <Form className="chat col row m-0 p-0">
                 <FormControl
                     className="col-3"
                     required
@@ -70,7 +70,7 @@ export default class Chat extends React.Component<IProps, IState> {
                     value={this.state.name}
                     onChange={this.handleNameChange}
                 />
-                <InputGroup className="col">
+                <InputGroup className="col p-0">
                     <FormControl
                         placeholder="Input Message Here"
                         aria-label="Input Message Here"
