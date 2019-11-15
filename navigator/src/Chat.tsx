@@ -83,7 +83,7 @@ export default class Chat extends React.Component<IProps, IState> {
                         <Button variant="primary"
                             disabled={this.props.state === NavigatorState.Disconnected}
                             onClick={this.clickSendHandle}>
-                            Send Message
+                            &gt;
                         </Button>
                     </InputGroup.Append>
                 </InputGroup>
