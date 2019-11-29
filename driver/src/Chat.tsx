@@ -73,7 +73,8 @@ export default class Chat extends React.Component<IProps, IState> {
         if (this.props.chatHistory !== "") {
             const history = document.getElementById("chatHistory");
             if (history) {
-            history.innerHTML = this.props.chatHistory;
+                history.innerHTML = this.props.chatHistory;
+                history.scrollTop = history.scrollHeight;
             }
         }
     }
