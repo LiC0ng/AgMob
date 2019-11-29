@@ -33,6 +33,8 @@ class SessionConfiguration(
         var mode: String = "Free Mode",
         // The state of a mob 'session'
         var state: String = "No Connection"
+        // The history of chat
+        var history: String = ""
 )
 
 @Serializable
@@ -255,6 +257,9 @@ fun main(args: Array<String>) {
                             }
                             "driver_quit" -> {
                                 sess.config.state = "No Connection"
+                            }
+                            "chat_history" -> {
+                                sess.config.history += msg.payload
                             }
                             "chat" -> {
                                 val driver = sess.driver
