@@ -45,6 +45,7 @@ interface IState {
 
 export default class StartShare extends React.Component<IProps, IState> {
     private stream?: MediaStream;
+    private chatHistory: string = "";
 
     public constructor(props: IProps) {
         super(props);
@@ -103,7 +104,7 @@ export default class StartShare extends React.Component<IProps, IState> {
 
     public componentWillUnmount() {
         clearInterval(this.state.timerHandle!);
-        clearInterval(this.state.overlayHandle!)
+        clearInterval(this.state.overlayHandle!);
         this.props.currentSession!.detach(this.onWebSocketMessage);
 
         electron.ipcRenderer.send("overlay-clear");
@@ -121,6 +122,10 @@ export default class StartShare extends React.Component<IProps, IState> {
     }
 
     public stopSharing() {
+        this.props.currentSession!.sendMessage({
+            kind: "chat_history",
+            payload: this.chatHistory,
+        });
         this.props.currentSession!.sendMessage({
             kind: "driver_quit",
             payload: "",
@@ -142,6 +147,8 @@ export default class StartShare extends React.Component<IProps, IState> {
         const remote = electron.remote;
         remote.getCurrentWindow().setAlwaysOnTop(event.target.checked);
     };
+
+    public setChatHistory = (chatHistory: string) => this.chatHistory = chatHistory;
 
     public render() {
         const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
@@ -166,7 +173,7 @@ export default class StartShare extends React.Component<IProps, IState> {
                     <Form.Label>Join Session ({this.state.peers.length} connected)</Form.Label>
                     <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus}/>
                 </Form.Group>
-                <Chat nav_message={this.state.nav_message}/>
+                <Chat nav_message={this.state.nav_message} setChatHistoryToParent={this.setChatHistory}/>
             </div>
         );
     }

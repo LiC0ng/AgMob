@@ -9,6 +9,7 @@ interface IState {
 
 interface IProps {
     nav_message: string;
+    setChatHistoryToParent: any;
 }
 
 export default class Chat extends React.Component<IProps, IState> {
@@ -54,6 +55,7 @@ export default class Chat extends React.Component<IProps, IState> {
         if (history) {
             history.appendChild(message);
             history.scrollTop = history.scrollHeight;
+            this.props.setChatHistoryToParent(history.innerHTML.toString());
         }
         this.setState({
             message: "",
