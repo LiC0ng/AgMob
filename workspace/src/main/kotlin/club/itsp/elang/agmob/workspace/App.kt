@@ -33,13 +33,15 @@ class SessionConfiguration(
         var mode: String = "Free Mode",
         // The state of a mob 'session'
         var state: String = "No Connection"
-        // The history of chat
-        var history: String = ""
 )
 
 @Serializable
 class Session(var config: SessionConfiguration) {
     val id = UUID.randomUUID().toString()
+
+    // The history of chat
+    var history: String = ""
+
     @Transient
     var driver: DriverConnection? = null
         private set
@@ -99,7 +101,6 @@ class DriverConnection(session: Session, private val wsSession: WebSocketServerS
     suspend fun driverChatMessage(message: WebSocketMessage) {
         wsSession.send(WebSocketMessage("chat", message.payload).toJson())
     }
-
 
     suspend fun disconnect() {
         wsSession.close()
@@ -259,7 +260,7 @@ fun main(args: Array<String>) {
                                 sess.config.state = "No Connection"
                             }
                             "chat_history" -> {
-                                sess.config.history += msg.payload
+                                sess.history += msg.payload
                             }
                             "chat" -> {
                                 val driver = sess.driver
