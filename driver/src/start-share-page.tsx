@@ -59,7 +59,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             timerHandle: undefined,
             overlayHandle: undefined,
             nav_message: "",
-            chatHistory: "",
+            chatHistory: sess.chatHistory,
             peers: [],
         };
         this.clickStopHandle = this.clickStopHandle.bind(this);
@@ -126,7 +126,8 @@ export default class StartShare extends React.Component<IProps, IState> {
     public stopSharing() {
         this.props.currentSession!.sendMessage({
             kind: "chat_history",
-            payload: this.chatHistory,
+            // diff
+            payload: this.chatHistory.substring(this.props.currentSession!.chatHistory.length),
         });
         this.props.currentSession!.sendMessage({
             kind: "driver_quit",
@@ -156,7 +157,7 @@ export default class StartShare extends React.Component<IProps, IState> {
         const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
         const zeroPadding = function (num: number) {
           return ("0000000000" + num).slice(-2);
-        }
+        };
         return (
             <div className="h-100 d-flex flex-column">
                 <div className="start">
