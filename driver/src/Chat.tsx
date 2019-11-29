@@ -10,6 +10,7 @@ interface IState {
 interface IProps {
     nav_message: string;
     setChatHistoryToParent: any;
+    chatHistory: string;
 }
 
 export default class Chat extends React.Component<IProps, IState> {
@@ -68,6 +69,15 @@ export default class Chat extends React.Component<IProps, IState> {
         }
     }
 
+    public handleChatHistory() {
+        if (this.props.chatHistory !== "") {
+            const history = document.getElementById("chatHistory");
+            if (history) {
+            history.innerHTML = this.props.chatHistory;
+            }
+        }
+    }
+
     cancelEvent = (e: any) => e.preventDefault();
 
     public componentWillReceiveProps(nextProps: Readonly<IProps>, nextContext: any): void {
@@ -95,6 +105,10 @@ export default class Chat extends React.Component<IProps, IState> {
                 history.scrollTop = history.scrollHeight;
             }
         }
+    }
+
+    public componentDidMount(): void {
+        this.handleChatHistory();
     }
 
     public render() {

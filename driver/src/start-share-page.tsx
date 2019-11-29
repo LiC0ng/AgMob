@@ -40,6 +40,7 @@ interface IState {
     timerHandle?: number;
     overlayHandle?: number;
     nav_message: string;
+    chatHistory: string;
     peers: PeerInfo[];
 }
 
@@ -58,6 +59,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             timerHandle: undefined,
             overlayHandle: undefined,
             nav_message: "",
+            chatHistory: "",
             peers: [],
         };
         this.clickStopHandle = this.clickStopHandle.bind(this);
@@ -173,7 +175,7 @@ export default class StartShare extends React.Component<IProps, IState> {
                     <Form.Label>Join Session ({this.state.peers.length} connected)</Form.Label>
                     <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus}/>
                 </Form.Group>
-                <Chat nav_message={this.state.nav_message} setChatHistoryToParent={this.setChatHistory}/>
+                <Chat nav_message={this.state.nav_message} setChatHistoryToParent={this.setChatHistory} chatHistory={this.state.chatHistory}/>
             </div>
         );
     }
