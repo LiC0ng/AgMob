@@ -1,11 +1,14 @@
 import React from "react";
 import {Link} from "react-router-dom";
-import {Col, Row} from "react-bootstrap";
+import {Button, Col, Row} from "react-bootstrap";
+import * as Config from "./config";
 import {PropsWithSession} from "./types";
 
-interface Props extends PropsWithSession { }
+interface Props extends PropsWithSession {
+}
 
-interface State { }
+interface State {
+}
 
 export default class End extends React.Component<Props, State> {
     public constructor(props: Props) {
@@ -18,6 +21,7 @@ export default class End extends React.Component<Props, State> {
         const sess = this.props.currentSession;
         const token = sess ? sess.sessionId : "DUMMY";
         const driverUrl = `agmob-driver://${token}`;
+        const navigatorUrl = Config.WORKSPACE_BASE_ADDRESS + "/session/" + token;
         return (
             <div>
                 <Row className="justify-content-md-center">
@@ -25,8 +29,15 @@ export default class End extends React.Component<Props, State> {
                         <h1 className="text-center">Well done!</h1>
                         <div className="mt-3 text-center">
                             <h4>It's time to hand over the driver role.</h4>
-                            <hr />
-                            <a href={driverUrl}>{driverUrl}</a>
+                            <hr/>
+                            <Button className="btn-lg" href={driverUrl}>
+                                Continue as driver
+                            </Button>
+                        </div>
+                        <div className="mt-3 text-center">
+                            <Button className="btn-lg" href={navigatorUrl}>
+                                Become Navigator
+                            </Button>
                         </div>
                     </Col>
                 </Row>

@@ -3,6 +3,7 @@ import {Button, Col, Container, Row} from "react-bootstrap";
 import {Link} from "react-router-dom";
 import * as Config from "./config";
 
+
 interface IState {
     inputSessionId: string;
     error: boolean;
