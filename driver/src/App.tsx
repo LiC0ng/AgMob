@@ -5,6 +5,7 @@ import {
     Switch,
 } from "react-router-dom";
 import {Container} from "react-bootstrap";
+import BeNavigator from "./become_navigator"
 import {DriverSession, PropsWithSession} from "./types";
 import End from "./End";
 import TimerCountdown from "./timer";
@@ -52,6 +53,8 @@ export default class App extends React.Component<Props, State> {
                             <Join {...obj} {...componentProps} />}/>
                         <Route path="/join_workspace/" render={(obj) =>
                             <Join {...obj} {...componentProps} />}/>
+                        <Route path="/become_navigator/" render={(obj) =>
+                            <BeNavigator {...obj} {...componentProps} />}/>
                         <Route path="/end/" render={(obj) =>
                             <End {...obj} {...componentProps} />}/>
                         <Route path="/start_page/" render={(obj) =>

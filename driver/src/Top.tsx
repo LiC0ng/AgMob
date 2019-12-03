@@ -24,6 +24,9 @@ export default class Top extends React.Component<Props, State> {
                         <Link className="btn btn-primary btn-lg btn-block" to="/join_workspace">
                             Sign in to your workspace
                         </Link>
+                        <Link className="btn btn-primary btn-lg btn-block" to="/become_navigator">
+                            Become navigator
+                        </Link>
                     </Col>
                 </Row>
 
