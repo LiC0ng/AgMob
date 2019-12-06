@@ -20,6 +20,7 @@ import io.ktor.websocket.webSocket
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -48,6 +49,9 @@ class Session(var config: SessionConfiguration) {
     @Transient
     val navigators = HashMap<Int, NavigatorConnection>()
 
+    @Transient
+    val log = LoggerFactory.getLogger(this.javaClass)!!
+
     fun addNavigator(conn: NavigatorConnection) {
         navigators[conn.id] = conn
     }
@@ -56,20 +60,27 @@ class Session(var config: SessionConfiguration) {
     suspend fun setDriver(conn: DriverConnection?) {
         disconnectDriver(driver)
 
+        log.debug("[$id] connecting driver: $conn")
         driver = conn
 
         // Notify already-connected navigators that they can now attempt WebRTC connection
+        log.debug("[$id] notifying navigators connection of driver: $conn")
         navigators.values.forEach { nav -> nav.notifyDriverReady() }
+        log.debug("[$id] done notifying navigators connection of driver: $conn")
     }
 
     // Yucks
     @Synchronized
     suspend fun disconnectDriver(current: DriverConnection?) {
+        log.debug("[$id] disconnecting driver: $current")
         if (driver != current || current == null)
             return
+        log.debug("[$id] disconnecting WebSocket with driver: $current")
         current.disconnect()
         driver = null
+        log.debug("[$id] notifying navigators disconnection of driver: $current")
         navigators.values.forEach { nav -> nav.notifyDriverQuit() }
+        log.debug("[$id] done notifying disconnection: $current")
     }
 }
 
