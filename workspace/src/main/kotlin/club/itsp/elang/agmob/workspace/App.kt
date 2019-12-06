@@ -66,7 +66,7 @@ class Session(var config: SessionConfiguration) {
 
         // Notify already-connected navigators that they can now attempt WebRTC connection
         log.debug("[$id] notifying navigators connection of driver: $conn")
-        navigators.values.forEach { nav ->
+        ArrayList(navigators.values).forEach { nav ->
             try {
                 nav.notifyDriverReady()
             } catch (e: Exception) {
@@ -87,7 +87,7 @@ class Session(var config: SessionConfiguration) {
         current.disconnect()
         driver = null
         log.debug("[$id] notifying navigators disconnection of driver: $current")
-        navigators.values.forEach { nav ->
+        ArrayList(navigators.values).forEach { nav ->
             try {
                 nav.notifyDriverQuit()
             } catch (e: Exception) {
