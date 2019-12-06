@@ -52,6 +52,7 @@ class Session(var config: SessionConfiguration) {
     @Transient
     val log = LoggerFactory.getLogger(this.javaClass)!!
 
+    @Synchronized
     fun addNavigator(conn: NavigatorConnection) {
         navigators[conn.id] = conn
     }
@@ -65,7 +66,14 @@ class Session(var config: SessionConfiguration) {
 
         // Notify already-connected navigators that they can now attempt WebRTC connection
         log.debug("[$id] notifying navigators connection of driver: $conn")
-        navigators.values.forEach { nav -> nav.notifyDriverReady() }
+        navigators.values.forEach { nav ->
+            try {
+                nav.notifyDriverReady()
+            } catch (e: Exception) {
+                log.debug("[$id] could not notify navigator $nav; probably the navigator is dead already")
+                navigators.remove(nav.id)
+            }
+        }
         log.debug("[$id] done notifying navigators connection of driver: $conn")
     }
 
@@ -79,7 +87,14 @@ class Session(var config: SessionConfiguration) {
         current.disconnect()
         driver = null
         log.debug("[$id] notifying navigators disconnection of driver: $current")
-        navigators.values.forEach { nav -> nav.notifyDriverQuit() }
+        navigators.values.forEach { nav ->
+            try {
+                nav.notifyDriverQuit()
+            } catch (e: Exception) {
+                log.debug("[$id] could not notify navigator $nav; probably the navigator is dead already")
+                navigators.remove(nav.id)
+            }
+        }
         log.debug("[$id] done notifying disconnection: $current")
     }
 }
