@@ -4,6 +4,7 @@ import * as Config from "./config";
 import {NavigatorState, SessionMode} from "./types";
 import Chat from "./Chat";
 import Timer from "./Timer"
+require("webrtc-adapter");
 
 interface Props {
     history: any;
@@ -128,7 +129,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
             this.setState({state: NavigatorState.WaitingDriver});
         };
-        ws.onmessage = evt => {
+        ws.onmessage = async evt => {
             const message = JSON.parse(evt.data);
             switch (message.kind) {
                 case "sdp":
@@ -207,17 +208,14 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         this.dataChannel = dataChannel;
                     };
 
-                    peer.setRemoteDescription(JSON.parse(sdp.payload)).then(() => {
-                        console.log('setRemoteDescription(answer) success in promise');
-                        peer.createAnswer().then((answer) => {
-                            peer.setLocalDescription(answer).then(() => {
-                                ws.send(JSON.stringify({
-                                    "kind": "sdp",
-                                    "payload": JSON.stringify(peer.localDescription),
-                                }));
-                            })
-                        })
-                    });
+                    await peer.setRemoteDescription(JSON.parse(sdp.payload));
+                    console.log('setRemoteDescription(answer) success in promise');
+                    const answer = await peer.createAnswer();
+                    await peer.setLocalDescription(answer)
+                    ws.send(JSON.stringify({
+                        "kind": "sdp",
+                        "payload": JSON.stringify(peer.localDescription),
+                    }));
                     break;
                 case "ice_candidate":
                     peer.addIceCandidate(JSON.parse(message.payload));
