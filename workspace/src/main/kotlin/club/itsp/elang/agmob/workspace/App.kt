@@ -66,15 +66,8 @@ class Session(var config: SessionConfiguration) {
 
         // Notify already-connected navigators that they can now attempt WebRTC connection
         log.debug("[$id] notifying navigators connection of driver: $conn")
-        ArrayList(navigators.values).forEach { nav ->
-            try {
-                nav.notifyDriverReady()
-            } catch (e: Exception) {
-                log.debug("[$id] could not notify navigator $nav; probably the navigator is dead already")
-                navigators.remove(nav.id)
-            }
-        }
-        log.debug("[$id] done notifying navigators connection of driver: $conn")
+        navigators.values.forEach { nav -> if (!nav.dead) nav.notifyDriverReady() }
+        pruneDeadNavigators()
     }
 
     // Yucks
@@ -87,67 +80,85 @@ class Session(var config: SessionConfiguration) {
         current.disconnect()
         driver = null
         log.debug("[$id] notifying navigators disconnection of driver: $current")
-        ArrayList(navigators.values).forEach { nav ->
-            try {
-                nav.notifyDriverQuit()
-            } catch (e: Exception) {
-                log.debug("[$id] could not notify navigator $nav; probably the navigator is dead already")
-                navigators.remove(nav.id)
-            }
+        navigators.values.forEach { nav -> if (!nav.dead) nav.notifyDriverQuit() }
+    }
+
+    @Synchronized
+    private fun pruneDeadNavigators() {
+        ArrayList(navigators.values).forEach {
+            if (it.dead)
+                navigators.remove(it.id)
         }
-        log.debug("[$id] done notifying disconnection: $current")
     }
 }
 
-abstract class BaseConnection(val session: Session) {
+abstract class BaseConnection(val session: Session, protected val wsSession: WebSocketServerSession) {
     val id = idBase++
+    var dead = false
+        private set
+
+    protected fun markAsDead() {
+        dead = true
+    }
+
+    protected suspend fun sendMessage(m: WebSocketMessage) {
+        if (dead)
+            session.log.info("[BUG] sendMessage called on a dead connection: ${Exception().stackTrace}")
+        val s = m.toJson()
+        try {
+            wsSession.send(s)
+        } catch (e: Exception) {
+            session.log.debug("[${session.id}] dead connection detected during sendMessage: $this")
+            markAsDead()
+        }
+    }
+
+    suspend fun disconnect() {
+        wsSession.close()
+    }
 
     companion object {
         private var idBase = 0
     }
 }
 
-class DriverConnection(session: Session, private val wsSession: WebSocketServerSession) : BaseConnection(session) {
+class DriverConnection(session: Session, wsSession: WebSocketServerSession) : BaseConnection(session, wsSession) {
     suspend fun requestSdpOffer(navConn: NavigatorConnection, message: WebSocketMessage) {
-        wsSession.send(WebSocketMessage("request_sdp", message.payload, navConn.id).toJson())
+        sendMessage(WebSocketMessage("request_sdp", message.payload, navConn.id))
     }
 
     suspend fun receiveSdpAnswer(navConn: NavigatorConnection, message: WebSocketMessage) {
-        wsSession.send(WebSocketMessage("sdp", message.payload, navConn.id).toJson())
+        sendMessage(WebSocketMessage("sdp", message.payload, navConn.id))
     }
 
     suspend fun receiveIceCandidate(navConn: NavigatorConnection, message: WebSocketMessage) {
-        wsSession.send(WebSocketMessage("ice_candidate", message.payload, navConn.id).toJson())
+        sendMessage(WebSocketMessage("ice_candidate", message.payload, navConn.id))
     }
 
     suspend fun sendChatMessage(navConn: NavigatorConnection, message: WebSocketMessage) {
-        wsSession.send(WebSocketMessage("chat", message.payload, navConn.id).toJson())
+        sendMessage(WebSocketMessage("chat", message.payload, navConn.id))
     }
 
     suspend fun driverChatMessage(message: WebSocketMessage) {
-        wsSession.send(WebSocketMessage("chat", message.payload).toJson())
-    }
-
-    suspend fun disconnect() {
-        wsSession.close()
+        sendMessage(WebSocketMessage("chat", message.payload))
     }
 }
 
-class NavigatorConnection(session: Session, private val wsSession: WebSocketServerSession) : BaseConnection(session) {
+class NavigatorConnection(session: Session, wsSession: WebSocketServerSession) : BaseConnection(session, wsSession) {
     suspend fun receiveSdpOffer(message: WebSocketMessage) {
-        wsSession.send(WebSocketMessage("sdp", message.payload).toJson())
+        sendMessage(WebSocketMessage("sdp", message.payload))
     }
 
     suspend fun receiveIceCandidate(message: WebSocketMessage) {
-        wsSession.send(WebSocketMessage("ice_candidate", message.payload).toJson())
+        sendMessage(WebSocketMessage("ice_candidate", message.payload))
     }
 
     suspend fun notifyDriverReady() {
-        wsSession.send(WebSocketMessage("driver_ready", "").toJson())
+        sendMessage(WebSocketMessage("driver_ready", ""))
     }
 
     suspend fun notifyDriverQuit() {
-        wsSession.send(WebSocketMessage("driver_quit", "").toJson())
+        sendMessage(WebSocketMessage("driver_quit", ""))
     }
 }
 
