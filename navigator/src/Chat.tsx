@@ -51,8 +51,9 @@ export default class Chat extends React.Component<IProps, IState> {
         })
     };
 
+    preventSubmit = (e: any) => e.preventDefault();
+
     public pressSendHandle(e: any) {
-        e.preventDefault();
         if (this.props.state === NavigatorState.Disconnected)
             return;
         if (e.charCode === 13 && e.ctrlKey) {
@@ -62,7 +63,7 @@ export default class Chat extends React.Component<IProps, IState> {
 
     public render() {
         return (
-            <Form className="chat col row m-0 p-0" onSubmit={this.clickSendHandle}>
+            <Form className="chat col row m-0 p-0" onSubmit={this.preventSubmit}>
                 <InputGroup className="col p-0">
                     <FormControl
                         placeholder="Input Message Here"
