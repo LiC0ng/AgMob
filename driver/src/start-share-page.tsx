@@ -64,9 +64,25 @@ export default class StartShare extends React.Component<IProps, IState> {
         };
         this.clickStopHandle = this.clickStopHandle.bind(this);
 
+        const remote = electron.remote;
+        let clientX = remote.getCurrentWindow().getBounds().x;
+        let clientY = remote.getCurrentWindow().getBounds().y;
+
+        let display;
+        let displays = electron.screen.getAllDisplays();
+        for (let i = 0; i < displays.length; ++i) {
+            if (displays[i].bounds.x <= clientX && displays[i].bounds.y <= clientY
+                && displays[i].bounds.x + displays[i].size.width >= clientX
+                && displays[i].bounds.y + displays[i].size.height >= clientY) {
+                display = displays[i];
+                break;
+            }
+        }
+
         const screenSharingConstraints = {
             mandatory: {
                 chromeMediaSource: "desktop",
+                chromeMediaSourceId : "screen:" + display.id,
             },
         };
         navigator.mediaDevices.getUserMedia({
