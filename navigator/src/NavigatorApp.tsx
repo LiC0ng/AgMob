@@ -1,5 +1,6 @@
 import React from 'react';
 import {Button} from "react-bootstrap";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import * as Config from "./config";
 import {NavigatorState, SessionMode} from "./types";
 import Chat from "./Chat";
@@ -332,14 +333,14 @@ export default class NavigatorApp extends React.Component<Props, State> {
         const driverUrl = `agmob-driver://${this.state.sessionId}`;
         return (
             <div className="container-fluid p-3 d-flex h-100 flex-column">
-                <div className="flex-grow-1 text-center">
+                <div className="flex-grow-1">
                     {this.state.state === NavigatorState.Disconnected ?
-                        <div>
+                        <div className="text-center">
                             <h1>Connecting to the server</h1>
                             <p>Please wait for a little while longer.</p>
                         </div>
                     : this.state.state === NavigatorState.WaitingDriver ?
-                        <div>
+                        <div className="text-center">
                             <h1>Waiting for a new driver</h1>
                             <p>Please wait for a little while longer.</p>
                             <div className="mt-3">
@@ -369,15 +370,15 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                                 value={this.state.name} onChange={this.handleNameChange} />
                                         </div>
                                         <div className="form-group">
-                                            <label htmlFor="navig-fullscreen">Fullscreen</label>
-                                            <Button id="navig-fullscreen"
+                                            <label htmlFor="navig-fullscreen">Toggle Fullscreen</label>
+                                            <Button id="navig-fullscreen" className="d-block"
                                                 value="fullscreen" variant="outline-primary" title="Fullscreen"
                                                 active={this.state.fullscreen} onClick={this.handleChangeFullscreen}>
                                                 <span className="glyphicon glyphicon-fullscreen">🖵</span>
                                             </Button>
                                         </div>
                                         <button className="form-control btn btn-primary" type="submit">
-                                            Join
+                                            Close
                                         </button>
                                     </form>
                                 </div>
@@ -387,8 +388,9 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 </div>
                 <div className="row m-0 mt-3">
                     <Button variant="primary" title="Settings"
+                        disabled={this.state.state === NavigatorState.Disconnected}
                         onClick={this.handleOpenSettings}>
-                        <i className="fas fa-cog" />
+                        <FontAwesomeIcon icon="cogs" />
                     </Button>
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
                         mode={this.state.mode} state={this.state.state} />
