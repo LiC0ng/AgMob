@@ -59,17 +59,14 @@ function createWindow() {
     });
 
     // Setup Agmob overlay window
-    const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize;
+    const displayBounds = electron.screen.getPrimaryDisplay().workArea;
     overlayWindow = new BrowserWindow({
         autoHideMenuBar: true,
         transparent: true,
         frame: false,
         fullscreen: process.platform !== "darwin",
         focusable: false,
-        width: width,
-        height: height,
-        x: 0,
-        y: 0,
+        ...displayBounds,
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false, // FIXME!!!!!!
@@ -83,6 +80,17 @@ function createWindow() {
         overlayWindow.webContents.send("overlay", arg));
     electron.ipcMain.on("overlay-clear", (event, arg) =>
         overlayWindow.webContents.send("overlay-clear", arg));
+
+    // Move overlay window to the same display on which the main window is
+    mainWindow.on("move", () => {
+        const mBounds = mainWindow.getBounds();
+        const mDisp = electron.screen.getDisplayNearestPoint({ x: mBounds.x, y: mBounds.y });
+        const oBounds = overlayWindow.getBounds();
+        const oDisp = electron.screen.getDisplayNearestPoint({ x: oBounds.x, y: oBounds.y });
+        if (mDisp !== oDisp) {
+            overlayWindow.setBounds(mDisp.workArea);
+        }
+    });
 }
 
 // This method will be called when Electron has finished
