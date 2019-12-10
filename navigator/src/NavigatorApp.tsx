@@ -354,13 +354,13 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             {!this.state.videoPlaying &&
                             <div className="video-start-confirm card">
                                 <div className="card-body">
-                                    <h3 className="card-title">h</h3>
+                                    <h3 className="card-title">iikanjino messe-ji</h3>
                                     <form onSubmit={this.startVideoPlaying}>
                                         <input className="form-control" type="text"
                                             placeholder="Input your name"
                                             value={this.state.name} onChange={this.handleNameChange} />
-                                        <button className="form-control" type="submit">
-                                            Start
+                                        <button className="form-control btn btn-primary" type="submit">
+                                            Join
                                         </button>
                                     </form>
                                 </div>
