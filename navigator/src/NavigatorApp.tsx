@@ -310,6 +310,11 @@ export default class NavigatorApp extends React.Component<Props, State> {
         this.setState({ fullscreen: !curr });
     }
 
+    handleOpenSettings = (e: any) => {
+        e.preventDefault();
+        this.setState({ videoPlaying: false });
+    }
+
     handleNameChange = (e: any) => {
         this.setState({
             name: e.target.value,
@@ -354,11 +359,23 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             {!this.state.videoPlaying &&
                             <div className="video-start-confirm card">
                                 <div className="card-body">
-                                    <h3 className="card-title">iikanjino messe-ji</h3>
+                                    <h3 className="card-title">Settings</h3>
                                     <form onSubmit={this.startVideoPlaying}>
-                                        <input className="form-control" type="text"
-                                            placeholder="Input your name"
-                                            value={this.state.name} onChange={this.handleNameChange} />
+                                        <div className="form-group">
+                                            <label htmlFor="navig-name">Display Name</label>
+                                            <input id="navig-name"
+                                                className="form-control" type="text"
+                                                placeholder="Input your name"
+                                                value={this.state.name} onChange={this.handleNameChange} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label htmlFor="navig-fullscreen">Fullscreen</label>
+                                            <Button id="navig-fullscreen"
+                                                value="fullscreen" variant="outline-primary" title="Fullscreen"
+                                                active={this.state.fullscreen} onClick={this.handleChangeFullscreen}>
+                                                <span className="glyphicon glyphicon-fullscreen">🖵</span>
+                                            </Button>
+                                        </div>
                                         <button className="form-control btn btn-primary" type="submit">
                                             Join
                                         </button>
@@ -369,9 +386,9 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     : <span>UNREACHABLE</span>}
                 </div>
                 <div className="row m-0 mt-3">
-                    <Button value="fullscreen" variant="outline-primary" title="Fullscreen"
-                        active={this.state.fullscreen} onClick={this.handleChangeFullscreen}>
-                        <span className="glyphicon glyphicon-fullscreen">🖵</span>
+                    <Button variant="primary" title="Settings"
+                        onClick={this.handleOpenSettings}>
+                        <i className="fas fa-cog" />
                     </Button>
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
                         mode={this.state.mode} state={this.state.state} />
