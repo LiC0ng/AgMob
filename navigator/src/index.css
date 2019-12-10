@@ -57,6 +57,23 @@ body, button, input, select, textarea {
     z-index: 2;
 }
 
+.video-start-confirm-backdrop {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: black;
+    opacity: 0.5;
+    z-index: 3;
+}
+
+.video-start-confirm {
+    position: absolute;
+    height: 50%;
+    width: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+}
+
 .countdown {
     font-size: large;
 }

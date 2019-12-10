@@ -17,7 +17,9 @@ interface State {
     mode: SessionMode;
     interval: number;
     begin: number;
+    name?: string;
     color: string;
+    videoPlaying: boolean;
     fullscreen: boolean;
 }
 
@@ -32,8 +34,10 @@ export default class NavigatorApp extends React.Component<Props, State> {
         this.videoRef = videoRef;
         if (videoRef === null)
             return;
-        if (this.stream)
+        if (this.stream) {
             videoRef.srcObject = this.stream;
+            this.setState({ videoPlaying: false });
+        }
         videoRef.addEventListener("resize", this.setCanvasSize);
     };
     private readonly setCanvasRef = (canvasRef: HTMLCanvasElement) => {
@@ -91,6 +95,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
             interval: -1,
             begin: -1,
             color: "",
+            videoPlaying: false,
             fullscreen: false,
         };
         this.getSessInfo();
@@ -142,8 +147,10 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         console.log(evt.streams);
                         evt.streams[0].addTrack(evt.track);
                         this.stream = evt.streams[0];
-                        if (this.videoRef)
+                        if (this.videoRef) {
                             this.videoRef.srcObject = this.stream;
+                            this.setState({ videoPlaying: false });
+                        }
                     };
 
                     // ICE Candidateを収集したときのイベント
@@ -261,12 +268,6 @@ export default class NavigatorApp extends React.Component<Props, State> {
         }
     }
 
-    handleStart = async (event: any) => {
-        event.preventDefault();
-        if (this.videoRef)
-            await this.videoRef.play();
-    };
-
     private setCanvasSize() {
         if (this.canvasRef && this.videoRef){
             this.canvasRef.width = this.videoRef.clientWidth;
@@ -309,6 +310,19 @@ export default class NavigatorApp extends React.Component<Props, State> {
         this.setState({ fullscreen: !curr });
     }
 
+    handleNameChange = (e: any) => {
+        this.setState({
+            name: e.target.value,
+        })
+    };
+
+    startVideoPlaying = async (event: any) => {
+        event.preventDefault();
+        this.setState({ videoPlaying: true });
+        if (this.videoRef)
+            await this.videoRef.play();
+    };
+
     render() {
         const driverUrl = `agmob-driver://${this.state.sessionId}`;
         return (
@@ -332,9 +346,25 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         <div className="video-container">
                             <video
                                 onCanPlay={this.setCanvasSize.bind(this)}
-                                autoPlay={true} muted={true} ref={this.setVideoRef}/>
+                                ref={this.setVideoRef}/>
                             <canvas
                                 ref={this.setCanvasRef}/>
+                            {!this.state.videoPlaying &&
+                                <div className="video-start-confirm-backdrop" />}
+                            {!this.state.videoPlaying &&
+                            <div className="video-start-confirm card">
+                                <div className="card-body">
+                                    <h3 className="card-title">h</h3>
+                                    <form onSubmit={this.startVideoPlaying}>
+                                        <input className="form-control" type="text"
+                                            placeholder="Input your name"
+                                            value={this.state.name} onChange={this.handleNameChange} />
+                                        <button className="form-control" type="submit">
+                                            Start
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>}
                         </div>
                     : <span>UNREACHABLE</span>}
                 </div>
@@ -345,7 +375,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     </Button>
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
                         mode={this.state.mode} state={this.state.state} />
-                    <Chat ws={this.state.ws} state={this.state.state}  color={this.state.color}/>
+                    <Chat ws={this.state.ws} state={this.state.state} name={this.state.name} color={this.state.color}/>
                 </div>
             </div>
         );
