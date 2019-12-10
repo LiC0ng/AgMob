@@ -47,6 +47,7 @@ interface IState {
 export default class StartShare extends React.Component<IProps, IState> {
     private stream?: MediaStream;
     private chatHistory: string = "";
+    private preDisplayId: number = -1;
 
     public constructor(props: IProps) {
         super(props);
@@ -64,33 +65,10 @@ export default class StartShare extends React.Component<IProps, IState> {
         };
         this.clickStopHandle = this.clickStopHandle.bind(this);
 
+        this.setupSharedDisplay();
+
         const remote = electron.remote;
-        let clientX = remote.getCurrentWindow().getBounds().x;
-        let clientY = remote.getCurrentWindow().getBounds().y;
-
-        let display;
-        let displays = electron.screen.getAllDisplays();
-        for (let i = 0; i < displays.length; ++i) {
-            if (displays[i].bounds.x <= clientX && displays[i].bounds.y <= clientY
-                && displays[i].bounds.x + displays[i].size.width >= clientX
-                && displays[i].bounds.y + displays[i].size.height >= clientY) {
-                display = displays[i];
-                break;
-            }
-        }
-
-        const screenSharingConstraints = {
-            mandatory: {
-                chromeMediaSource: "desktop",
-                chromeMediaSourceId : "screen:" + display.id,
-            },
-        };
-        navigator.mediaDevices.getUserMedia({
-            video: screenSharingConstraints as any,
-        }).then((stream) => {
-            this.stream = stream;
-            this.state.peers.forEach(peer => peer.addTracks(stream));
-        });
+        remote.getCurrentWindow().on("move", this.moveHandler);
     }
 
     public componentDidMount() {
@@ -140,6 +118,9 @@ export default class StartShare extends React.Component<IProps, IState> {
     }
 
     public stopSharing() {
+        const remote = electron.remote;
+        remote.getCurrentWindow().removeListener("move", this.moveHandler);
+
         this.props.currentSession!.sendMessage({
             kind: "chat_history",
             // diff
@@ -168,6 +149,44 @@ export default class StartShare extends React.Component<IProps, IState> {
     };
 
     public setChatHistory = (chatHistory: string) => this.chatHistory = chatHistory;
+
+    public setupSharedDisplay() {
+        const remote = electron.remote;
+        let clientX = remote.getCurrentWindow().getBounds().x;
+        let clientY = remote.getCurrentWindow().getBounds().y;
+
+        let display;
+        let displays = electron.screen.getAllDisplays();
+        for (let i = 0; i < displays.length; ++i) {
+            if (displays[i].bounds.x <= clientX && displays[i].bounds.y <= clientY
+                && displays[i].bounds.x + displays[i].size.width >= clientX
+                && displays[i].bounds.y + displays[i].size.height >= clientY
+                && displays[i].id !== this.preDisplayId) {
+                display = displays[i];
+                break;
+            }
+        }
+        if (display === undefined) return;
+
+        this.preDisplayId = display.id;
+        const screenSharingConstraints = {
+            mandatory: {
+                chromeMediaSource: "desktop",
+                chromeMediaSourceId : "screen:" + display.id,
+            },
+        };
+
+        navigator.mediaDevices.getUserMedia({
+            video: screenSharingConstraints as any,
+        }).then((stream) => {
+            this.stream = stream;
+            this.state.peers.forEach(peer => peer.addTracks(stream));
+        });
+    }
+
+    moveHandler = () => {
+        this.setupSharedDisplay();
+    };
 
     public render() {
         const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
