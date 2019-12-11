@@ -180,7 +180,13 @@ export default class StartShare extends React.Component<IProps, IState> {
             video: screenSharingConstraints as any,
         }).then((stream) => {
             this.stream = stream;
-            this.state.peers.forEach(peer => peer.addTracks(stream));
+            navigator.mediaDevices.getUserMedia({
+                audio: true,
+            }).then((audioStream) => {
+                stream.addTrack(audioStream.getTracks()[0]);
+                this.state.peers.forEach(peer => peer.addTracks(stream));
+                this.stream = stream;
+            });
         });
     }
 
