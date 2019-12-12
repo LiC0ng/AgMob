@@ -20,7 +20,8 @@ class PeerInfo {
     }
 
     addTracks(stream: MediaStream) {
-        stream.getTracks().forEach(track => this.pc.addTrack(track, stream));
+        this.pc.getSenders().forEach((sender) => this.pc.removeTrack(sender));
+        stream.getTracks().forEach((track) => this.pc.addTrack(track, stream));
     }
 
     hangUp() {
@@ -46,8 +47,10 @@ interface IState {
 
 export default class StartShare extends React.Component<IProps, IState> {
     private stream?: MediaStream;
+    private audioStream?: MediaStream;
     private chatHistory: string = "";
     private preDisplayId: number = -1;
+    private audioRef?: HTMLAudioElement;
 
     public constructor(props: IProps) {
         super(props);
@@ -183,7 +186,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             navigator.mediaDevices.getUserMedia({
                 audio: true,
             }).then((audioStream) => {
-                stream.addTrack(audioStream.getTracks()[0]);
+                // stream.addTrack(audioStream.getTracks()[0]);
                 this.state.peers.forEach(peer => peer.addTracks(stream));
                 this.stream = stream;
             });
@@ -218,6 +221,7 @@ export default class StartShare extends React.Component<IProps, IState> {
                     <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus}/>
                 </Form.Group>
                 <Chat nav_message={this.state.nav_message} setChatHistoryToParent={this.setChatHistory} chatHistory={this.state.chatHistory}/>
+                <audio autoPlay={true} ref={this.setAudioRef}/>
             </div>
         );
     }
@@ -229,6 +233,16 @@ export default class StartShare extends React.Component<IProps, IState> {
             console.log(`[WS] Received 'request_sdp' from ${navigator_id}`);
             const peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
             const peerInfo = new PeerInfo(navigator_id, peer);
+
+            peer.ontrack = (ev) => {
+                console.log("-- peer.ontrack()");
+                console.log(ev.track);
+                this.audioStream = new MediaStream([ev.track]);
+                console.log(this.audioStream.getAudioTracks().length);
+                if (this.audioRef) {
+                    this.audioRef.srcObject = this.audioStream;
+                }
+            };
 
             peer.onicecandidate = (ev) => {
                 if (ev.candidate) {
@@ -246,7 +260,9 @@ export default class StartShare extends React.Component<IProps, IState> {
 
             peer.onnegotiationneeded = async () => {
                 try {
-                    const offer = await peer.createOffer();
+                    const offer = await peer.createOffer({
+                        offerToReceiveAudio: true,
+                    });
                     await peer.setLocalDescription(offer);
 
                     const dataChannel = peer.createDataChannel('pointer');
@@ -314,4 +330,14 @@ export default class StartShare extends React.Component<IProps, IState> {
             });
         }
     };
+
+    private readonly setAudioRef = (audioRef: HTMLAudioElement) => {
+        this.audioRef = audioRef;
+        if (audioRef === null) {
+            return;
+        }
+        if (this.audioStream) {
+            audioRef.srcObject = this.audioStream;
+        }
+    }
 }

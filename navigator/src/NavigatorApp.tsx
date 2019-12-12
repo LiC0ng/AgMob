@@ -26,6 +26,7 @@ interface State {
 
 export default class NavigatorApp extends React.Component<Props, State> {
     private stream?: MediaStream;
+    private audioStream?: MediaStream;
     private peer?: RTCPeerConnection;
     private dataChannel?: RTCDataChannel;
     private videoRef?: HTMLVideoElement;
@@ -142,11 +143,10 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     console.log(message);
                     const sdp = message;
                     peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
+
                     peer.ontrack = evt => {
                         console.log('-- peer.ontrack()');
                         console.log(evt.track);
-                        console.log(evt.streams);
-                        evt.streams[0].addTrack(evt.track);
                         this.stream = evt.streams[0];
                         if (this.videoRef) {
                             this.videoRef.srcObject = this.stream;
@@ -216,14 +216,33 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         this.dataChannel = dataChannel;
                     };
 
-                    await peer.setRemoteDescription(JSON.parse(sdp.payload));
-                    console.log('setRemoteDescription(answer) success in promise');
-                    const answer = await peer.createAnswer();
-                    await peer.setLocalDescription(answer)
-                    ws.send(JSON.stringify({
-                        "kind": "sdp",
-                        "payload": JSON.stringify(peer.localDescription),
-                    }));
+                    if(peer.signalingState === "stable" ) {
+                        peer.setRemoteDescription(JSON.parse(sdp.payload))
+                            .then(() => navigator.mediaDevices.getUserMedia({
+                                audio: true,
+                            }).then((stream) => {
+                                this.audioStream = stream;
+                                // peer.addTrack(stream.getTracks()[0], stream);
+                                peer.getTransceivers().forEach((transciver) => {
+                                    if(transciver.receiver.track.kind === "audio") {
+                                        let track = stream.getTracks()[0];
+                                        console.log(stream.getTracks().length)
+                                        track.enabled = true;
+                                        transciver.sender.replaceTrack(track);
+                                        transciver.direction = "sendonly";
+                                    }
+                                });
+                            })).then(() => peer.createAnswer())
+                            .then((answer) => peer.setLocalDescription(answer))
+                            .then(() => {
+                                ws.send(JSON.stringify({
+                                    "kind": "sdp",
+                                    "payload": JSON.stringify(peer.localDescription),
+                                }));
+                            }).catch(e => {
+                            console.log(e);
+                        })
+                    }
                     break;
                 case "ice_candidate":
                     peer.addIceCandidate(JSON.parse(message.payload));
