@@ -11,6 +11,7 @@ declare global {
     }
 }
 const electron = window.require("electron");
+const os = window.require("os");
 
 class PeerInfo {
     public pointerX?: number;
@@ -179,16 +180,19 @@ export default class StartShare extends React.Component<IProps, IState> {
             },
         };
 
-        navigator.mediaDevices.getUserMedia({
-            video: screenSharingConstraints as any,
-        }).then((stream) => {
-            this.stream = stream;
+        console.log(os.type)
+        askForMediaAccess().then(() =>{
             navigator.mediaDevices.getUserMedia({
-                audio: true,
-            }).then((audioStream) => {
-                stream.addTrack(audioStream.getTracks()[0]);
-                this.state.peers.forEach(peer => peer.addTracks(stream));
+                video: screenSharingConstraints as any,
+            }).then((stream) => {
                 this.stream = stream;
+                navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                }).then((audioStream) => {
+                    stream.addTrack(audioStream.getTracks()[0]);
+                    this.state.peers.forEach(peer => peer.addTracks(stream));
+                    this.stream = stream;
+                });
             });
         });
     }
@@ -340,4 +344,27 @@ export default class StartShare extends React.Component<IProps, IState> {
             audioRef.srcObject = this.audioStream;
         }
     }
+}
+
+async function askForMediaAccess(): Promise<boolean> {
+    try {
+        if (os.type() !== "Darwin") {
+            return true;
+        }
+
+        const {systemPreferences} = electron.remote.require('electron');
+        const status = await systemPreferences.getMediaAccessStatus("microphone");
+        console.log("Current microphone access status:", status);
+
+        if (status === "not-determined" || status === "denied") {
+            const success = await systemPreferences.askForMediaAccess("microphone");
+            console.log("Result of microphone access:", success.valueOf() ? "granted" : "denied");
+            return success.valueOf();
+        }
+
+        return status === "granted";
+    } catch (error) {
+        console.error("Could not get microphone permission:", error.message);
+    }
+    return false;
 }
