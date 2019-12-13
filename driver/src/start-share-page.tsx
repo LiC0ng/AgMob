@@ -11,7 +11,6 @@ declare global {
     }
 }
 const electron = window.require("electron");
-const systemPreferences  = window.require("electron");
 const os = window.require("os");
 
 class PeerInfo {
@@ -181,6 +180,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             },
         };
 
+        console.log(os.type)
         askForMediaAccess().then(() =>{
             navigator.mediaDevices.getUserMedia({
                 video: screenSharingConstraints as any,
@@ -348,14 +348,15 @@ export default class StartShare extends React.Component<IProps, IState> {
 
 async function askForMediaAccess(): Promise<boolean> {
     try {
-        if (os.type !== "Darwin") {
+        if (os.type() !== "Darwin") {
             return true;
         }
 
+        const {systemPreferences} = electron.remote.require('electron');
         const status = await systemPreferences.getMediaAccessStatus("microphone");
         console.log("Current microphone access status:", status);
 
-        if (status === "not-determined") {
+        if (status === "not-determined" || status === "denied") {
             const success = await systemPreferences.askForMediaAccess("microphone");
             console.log("Result of microphone access:", success.valueOf() ? "granted" : "denied");
             return success.valueOf();
