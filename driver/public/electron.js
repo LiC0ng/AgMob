@@ -91,6 +91,16 @@ function createWindow() {
             overlayWindow.setBounds(mDisp.workArea);
         }
     });
+
+    mainWindow.on("display-metrics-changed", () => {
+        const mBounds = mainWindow.getBounds();
+        const mDisp = electron.screen.getDisplayNearestPoint({ x: mBounds.x, y: mBounds.y });
+        const oBounds = overlayWindow.getBounds();
+        const oDisp = electron.screen.getDisplayNearestPoint({ x: oBounds.x, y: oBounds.y });
+        if (mDisp !== oDisp) {
+            overlayWindow.setBounds(mDisp.workArea);
+        }
+    });
 }
 
 // This method will be called when Electron has finished
