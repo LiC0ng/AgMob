@@ -229,7 +229,6 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                         console.log(stream.getTracks().length)
                                         track.enabled = true;
                                         transciver.sender.replaceTrack(track);
-                                        transciver.direction = "sendonly";
                                     }
                                 });
                             })).then(() => peer.createAnswer())

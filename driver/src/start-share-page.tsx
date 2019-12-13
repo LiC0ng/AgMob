@@ -175,7 +175,7 @@ export default class StartShare extends React.Component<IProps, IState> {
         const screenSharingConstraints = {
             mandatory: {
                 chromeMediaSource: "desktop",
-                chromeMediaSourceId : "screen:" + display.id,
+                // chromeMediaSourceId : "screen:" + display.id,
             },
         };
 
