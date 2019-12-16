@@ -1,3 +1,4 @@
+import {disconnect} from "cluster";
 import React from "react";
 import {Form, InputGroup} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
@@ -259,6 +260,20 @@ export default class StartShare extends React.Component<IProps, IState> {
                     });
                 } else {
                     console.log(`[RTC-${navigator_id}] ICE candidates complete`);
+                }
+            };
+
+            peer.onconnectionstatechange = (evt) => {
+                switch (peer.connectionState) {
+                    case "disconnected":
+                        console.log("peer disconnect");
+                        for (let i: number  = 0; i < this.state.peers.length; i++) {
+                            if (this.state.peers[i].pc.connectionState === "failed" ||
+                                this.state.peers[i].pc.connectionState === "disconnected") {
+                                this.state.peers.splice(i, 1);
+                            }
+                        }
+                        break;
                 }
             };
 
