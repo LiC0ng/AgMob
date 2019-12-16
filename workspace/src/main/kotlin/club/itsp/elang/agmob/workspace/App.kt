@@ -145,12 +145,12 @@ class DriverConnection(session: Session, wsSession: WebSocketServerSession) : Ba
 }
 
 class NavigatorConnection(session: Session, wsSession: WebSocketServerSession) : BaseConnection(session, wsSession) {
-    suspend fun receiveSdpOffer(message: WebSocketMessage) {
-        sendMessage(WebSocketMessage("sdp", message.payload))
+    suspend fun receiveSdpOffer(message: WebSocketMessage, navigator_id: Int) {
+        sendMessage(WebSocketMessage("sdp", message.payload, navigator_id))
     }
 
-    suspend fun receiveIceCandidate(message: WebSocketMessage) {
-        sendMessage(WebSocketMessage("ice_candidate", message.payload))
+    suspend fun receiveIceCandidate(message: WebSocketMessage, navigator_id: Int) {
+        sendMessage(WebSocketMessage("ice_candidate", message.payload, navigator_id))
     }
 
     suspend fun notifyDriverReady() {
@@ -280,13 +280,13 @@ fun main(args: Array<String>) {
                                 val navConn = sess.navigators[msg.navigator_id]
                                 if (navConn == null)
                                     log.debug("[${sess.id}] ignoring sdp to nav-${msg.navigator_id}")
-                                navConn?.receiveSdpOffer(msg)
+                                navConn?.receiveSdpOffer(msg, msg.navigator_id)
                             }
                             "ice_candidate" -> {
                                 val navConn = sess.navigators[msg.navigator_id]
                                 if (navConn == null)
                                     log.debug("[${sess.id}] ignoring ice_candidate to nav-${msg.navigator_id}")
-                                navConn?.receiveIceCandidate(msg)
+                                navConn?.receiveIceCandidate(msg, msg.navigator_id)
                             }
                             "quit" -> {
                                 log.info("driver: quitting")
