@@ -7,6 +7,24 @@ import Chat from "./Chat";
 import Timer from "./Timer"
 require("webrtc-adapter");
 
+class PeerInfo {
+    constructor(public localId: number, public remoteId: number, public pc: RTCPeerConnection) {
+    }
+
+    addTracks(stream: MediaStream) {
+        this.pc.getSenders().forEach((sender) => this.pc.removeTrack(sender));
+        stream.getTracks().forEach((track) => this.pc.addTrack(track, stream));
+    }
+
+    getLocalId() {
+        return this.localId;
+    }
+
+    getRemoteId() {
+        return this.remoteId;
+    }
+}
+
 interface Props {
     history: any;
 }
@@ -22,16 +40,20 @@ interface State {
     color: string;
     videoPlaying: boolean;
     fullscreen: boolean;
+    peers: PeerInfo[];
 }
 
 export default class NavigatorApp extends React.Component<Props, State> {
     private stream?: MediaStream;
     private audioStream?: MediaStream;
+    private receivedAudioStream?: MediaStream = new MediaStream();
     private peer?: RTCPeerConnection;
     private dataChannel?: RTCDataChannel;
     private videoRef?: HTMLVideoElement;
     private canvasRef?: HTMLCanvasElement;
     private color?: string;
+    private audioRef?: HTMLAudioElement;
+    private localId?: number = -1;
     private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
         this.videoRef = videoRef;
         if (videoRef === null)
@@ -80,6 +102,16 @@ export default class NavigatorApp extends React.Component<Props, State> {
         }, false);
     };
 
+    private readonly setAudioRef = (audioRef: HTMLAudioElement) => {
+        this.audioRef = audioRef;
+        if (audioRef === null) {
+            return;
+        }
+        if (this.audioStream) {
+            audioRef.srcObject = this.audioStream;
+        }
+    }
+
     constructor(props: Props) {
         super(props);
 
@@ -99,6 +131,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
             color: "",
             videoPlaying: false,
             fullscreen: false,
+            peers: [],
         };
         this.getSessInfo();
         this.sendWebsocket();
@@ -124,7 +157,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
     private sendWebsocket() {
         const ws = this.state.ws;
         let peer: RTCPeerConnection;
-
+        let newPeers: PeerInfo[];
         ws.onopen = () => {
             console.log("WebSocket connected");
 
@@ -139,9 +172,154 @@ export default class NavigatorApp extends React.Component<Props, State> {
         ws.onmessage = async evt => {
             const message = JSON.parse(evt.data);
             switch (message.kind) {
+                // request sdp from other navigators
+                case "navigator_request_sdp":
+                    const localPeer = new PeerInfo(message.navigator_id, message.remoteId, new RTCPeerConnection(Config.RTCPeerConnectionConfiguration));
+                    newPeers = [...this.state.peers, localPeer];
+                    this.setState({
+                        peers: newPeers,
+                    });
+                    try {
+                        if (this.audioStream) {
+                            localPeer.pc.getSenders().forEach((sender) => {
+                                localPeer.pc.removeTrack(sender);
+                            });
+                            this.audioStream.getTracks().forEach((track) => {
+                                localPeer.pc.addTrack(track, this.audioStream!);
+                            })
+                        }
+                        const offer = await localPeer.pc.createOffer();
+                        await localPeer.pc.setLocalDescription(offer);
+
+
+                        ws.send(JSON.stringify({
+                            "kind": "navigator_sdp",
+                            "payload": JSON.stringify(localPeer.pc.localDescription),
+                            "navigator_id": message.navigator_id,
+                            "remoteId": message.remoteId,
+                        }));
+                    } catch (err) {
+                        console.error(err);
+                    }
+
+                    localPeer.pc.ontrack = evt => {
+                        if (this.receivedAudioStream && this.receivedAudioStream.getTracks().length > 0) {
+                            evt.streams[0].getTracks().forEach((track) => {
+                                this.receivedAudioStream!.addTrack(track);
+                            })
+                        } else {
+                            this.receivedAudioStream = evt.streams[0];
+                        }
+
+                        if (this.audioRef && this.receivedAudioStream) {
+                            this.audioRef.srcObject = this.receivedAudioStream
+                        }
+                    };
+
+                    localPeer.pc.onicecandidate = ev => {
+                        if (ev.candidate) {
+                            console.log(`[RTC] New ICE candidate`);
+                            console.log(ev.candidate);
+                            ws.send(JSON.stringify({
+                                kind: "ice_candidate",
+                                payload: JSON.stringify(ev.candidate),
+                                navigator_id: this.localId,
+                                remoteId: message.remoteId,
+                            }));
+                        } else {
+                            console.log(`[RTC] ICE candidates complete`);
+                        }
+                    };
+                    break;
+                case "navigator_sdp":  // send sdp to other navigators
+                    const remotePeer = new PeerInfo(message.navigator_id, message.remoteId, new RTCPeerConnection(Config.RTCPeerConnectionConfiguration));
+                    newPeers = [...this.state.peers, remotePeer];
+                    this.setState({
+                        peers: newPeers,
+                    });
+                    if(remotePeer.pc.signalingState === "stable" ) {
+                        remotePeer.pc.setRemoteDescription(JSON.parse(message.payload))
+                            .then(() => {
+                                if (this.audioStream) {
+                                    remotePeer.pc.getSenders().forEach((sender) => {
+                                        remotePeer.pc.removeTrack(sender);
+                                    });
+                                    this.audioStream.getTracks().forEach((track) => {
+                                        remotePeer.pc.addTrack(track, this.audioStream!);
+                                    })
+                                }
+                            }).then(() => remotePeer.pc.createAnswer())
+                            .then((answer) => remotePeer.pc.setLocalDescription(answer))
+                            .then(() => {
+                                ws.send(JSON.stringify({
+                                    "kind": "navigator_answer",
+                                    "payload": JSON.stringify(remotePeer.pc.localDescription),
+                                    "navigator_id": this.localId,
+                                    "remoteId": message.remoteId,
+                                }));
+                            }).catch(e => {
+                            console.log(e);
+                        })
+                    }
+
+                    remotePeer.pc.ontrack = evt => {
+                        if (this.receivedAudioStream && this.receivedAudioStream.getTracks().length > 0) {
+                            evt.streams[0].getTracks().forEach((track) => {
+                                this.receivedAudioStream!.addTrack(track);
+                            })
+                        } else {
+                            this.receivedAudioStream = evt.streams[0];
+                        }
+
+                        if (this.audioRef && this.receivedAudioStream) {
+                            this.audioRef.srcObject = this.receivedAudioStream
+                        }
+                    };
+
+                    remotePeer.pc.onicecandidate = ev => {
+                        if (ev.candidate) {
+                            console.log(`[RTC] New ICE candidate`);
+                            console.log(ev.candidate);
+                            ws.send(JSON.stringify({
+                                kind: "ice_candidate",
+                                payload: JSON.stringify(ev.candidate),
+                                navigator_id: this.localId,
+                                remoteId: message.remoteId,
+                            }));
+                        } else {
+                            console.log(`[RTC] ICE candidates complete`);
+                        }
+                    };
+                    break;
+                case "navigator_answer":  // send answer to other navigators
+                    const answerPeer = this.state.peers.find(peer => peer.remoteId === message.remoteId);
+                    if (!answerPeer) {
+                        console.log(`[WS] Unexpected 'sdp' event for id=${message.remoteId}`);
+                        console.log(message);
+                        return;
+                    }
+                    answerPeer.pc.setRemoteDescription(JSON.parse(message.payload))
+                        .catch(e => {
+                            console.log("[WS] peer.pc.setRemoteDescription failed for navigator " +
+                                `id=${message.remoteId}`);
+                            console.log(e);
+                        });
+                    break;
+                case "navigator_ice":  // add ice candidate from other navigator
+                    const navPeer = this.state.peers.find(peer => peer.remoteId === message.remoteId);
+                    if (!navPeer) {
+                        console.log(`[WS] Unexpected 'ice_candidate' event for id=${message.remoteId}`);
+                        console.log(message);
+                        return;
+                    }
+                    const candidate = JSON.parse(message.payload);
+                    navPeer.pc.addIceCandidate(candidate);
+                    break;
                 case "sdp":
                     console.log(message);
                     const sdp = message;
+                    this.localId = message.navigator_id;
+                    console.log("localIs: " + this.localId);
                     peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
 
                     peer.ontrack = evt => {
@@ -414,6 +592,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
                         mode={this.state.mode} state={this.state.state} />
                     <Chat ws={this.state.ws} state={this.state.state} name={this.state.name} color={this.state.color}/>
+                    <audio autoPlay={true} ref={this.setAudioRef}/>
                 </div>
             </div>
         );
