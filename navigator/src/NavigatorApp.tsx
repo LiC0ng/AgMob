@@ -203,6 +203,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     }
 
                     localPeer.pc.ontrack = evt => {
+                        console.log("local navigator on track")
                         if (this.receivedAudioStream && this.receivedAudioStream.getTracks().length > 0) {
                             evt.streams[0].getTracks().forEach((track) => {
                                 this.receivedAudioStream!.addTrack(track);
@@ -221,13 +222,27 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             console.log(`[RTC] New ICE candidate`);
                             console.log(ev.candidate);
                             ws.send(JSON.stringify({
-                                kind: "ice_candidate",
+                                kind: "navigator_ice",
                                 payload: JSON.stringify(ev.candidate),
                                 navigator_id: this.localId,
                                 remoteId: message.remoteId,
                             }));
                         } else {
                             console.log(`[RTC] ICE candidates complete`);
+                        }
+                    };
+
+                    localPeer.pc.onconnectionstatechange = (evt) => {
+                        switch (localPeer.pc.connectionState) {
+                            case "disconnected":
+                                console.log("peer disconnect");
+                                for (let i: number  = 0; i < this.state.peers.length; i++) {
+                                    if (this.state.peers[i].pc.connectionState === "failed" ||
+                                        this.state.peers[i].pc.connectionState === "disconnected") {
+                                        this.state.peers.splice(i, 1);
+                                    }
+                                }
+                                break;
                         }
                     };
                     break;
@@ -263,6 +278,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     }
 
                     remotePeer.pc.ontrack = evt => {
+                        console.log("remote navigator on track");
                         if (this.receivedAudioStream && this.receivedAudioStream.getTracks().length > 0) {
                             evt.streams[0].getTracks().forEach((track) => {
                                 this.receivedAudioStream!.addTrack(track);
@@ -275,19 +291,31 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             this.audioRef.srcObject = this.receivedAudioStream
                         }
                     };
-
                     remotePeer.pc.onicecandidate = ev => {
                         if (ev.candidate) {
                             console.log(`[RTC] New ICE candidate`);
                             console.log(ev.candidate);
                             ws.send(JSON.stringify({
-                                kind: "ice_candidate",
+                                kind: "navigator_ice",
                                 payload: JSON.stringify(ev.candidate),
                                 navigator_id: this.localId,
                                 remoteId: message.remoteId,
                             }));
                         } else {
                             console.log(`[RTC] ICE candidates complete`);
+                        }
+                    };
+                    remotePeer.pc.onconnectionstatechange = (evt) => {
+                        switch (remotePeer.pc.connectionState) {
+                            case "disconnected":
+                                console.log("peer disconnect");
+                                for (let i: number  = 0; i < this.state.peers.length; i++) {
+                                    if (this.state.peers[i].pc.connectionState === "failed" ||
+                                        this.state.peers[i].pc.connectionState === "disconnected") {
+                                        this.state.peers.splice(i, 1);
+                                    }
+                                }
+                                break;
                         }
                     };
                     break;
@@ -306,6 +334,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         });
                     break;
                 case "navigator_ice":  // add ice candidate from other navigator
+                    console.log("navigator_ice");
                     const navPeer = this.state.peers.find(peer => peer.remoteId === message.remoteId);
                     if (!navPeer) {
                         console.log(`[WS] Unexpected 'ice_candidate' event for id=${message.remoteId}`);
