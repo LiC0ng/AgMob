@@ -1,6 +1,6 @@
 import React from "react";
 import {Link} from "react-router-dom";
-import {Button, Col, Container, Row} from "react-bootstrap";
+import {Col, Row} from "react-bootstrap";
 import {PropsWithSession} from "./types";
 
 interface Props extends PropsWithSession { }
@@ -30,12 +30,6 @@ export default class Top extends React.Component<Props, State> {
                     </Col>
                 </Row>
 
-                <Row className={"justify-content-md-end fixed-bottom"} style={{ paddingBottom: 40, paddingRight: 15 }}>
-                    <Col md={2}>
-                        <Link className={"btn btn-outline-primary btn-lg btn-block"} to={"/end"} style={{ fontSize: 15 }}>{"Debug"}</Link>
-                    </Col>
-                </Row>
-
                 <Row className={"justify-content-md-end fixed-bottom"} style={{ paddingRight: 20 }}>
                     <Col md={"auto"}>
                         <p>version {require("../package.json").version}</p>
@@ -45,5 +39,3 @@ export default class Top extends React.Component<Props, State> {
         );
     }
 }
-
-
