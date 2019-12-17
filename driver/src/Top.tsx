@@ -1,6 +1,6 @@
 import React from "react";
 import {Link} from "react-router-dom";
-import {Col, Row} from "react-bootstrap";
+import {Col, Row, Container} from "react-bootstrap";
 import {PropsWithSession} from "./types";
 
 interface Props extends PropsWithSession { }
@@ -10,9 +10,9 @@ interface State { }
 export default class Top extends React.Component<Props, State> {
     public render() {
         return (
-            <div>
+            <Container>
                 <div className="text-center mb-4">
-                    <img src="logo.svg" width="120" />
+                    <img src="logo.svg" width="120" alt="AgMob logo" />
                     <h1>AgMob</h1>
                 </div>
                 <Row className={"justify-content-md-center"}>
@@ -34,7 +34,7 @@ export default class Top extends React.Component<Props, State> {
                         <p>version {require("../package.json").version}</p>
                     </Col>
                 </Row>
-            </div>
+            </Container>
         );
     }
 }

@@ -120,8 +120,10 @@ export default class Chat extends React.Component<IProps, IState> {
                 {/*    <Form.Control as="textarea" className="overflow-auto flex-grow-1"*/}
                 {/*        value={this.state.history} onChange={this.handleHistoryChange}/>*/}
                 {/*</Form.Group>*/}
-                <div id="chatHistory" onChange={this.handleHistoryChange} style={{height: 300, overflow: "auto"}}>
-                </div>
+                <div id="chatHistory"
+                    className="flex-grow-1 mb-1 overflow-auto"
+                    style={{height: 0}} // Needed to let flex-grow-1 and overflow-auto work together
+                    onChange={this.handleHistoryChange} />
                 <InputGroup>
                     <FormControl
                         placeholder="Input Message Here"

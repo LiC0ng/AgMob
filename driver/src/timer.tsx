@@ -1,5 +1,5 @@
 import React from "react";
-import {Button, Col, Container, Row} from "react-bootstrap";
+import {Button} from "react-bootstrap";
 import InputGroup from "react-bootstrap/InputGroup";
 import {Link} from "react-router-dom";
 import {SessionMode} from "./types";
@@ -67,38 +67,41 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
     public render() {
         // @ts-ignore
         return (
-            <div>
-                <h2>Create a new workspace</h2>
-                <form className="mt-3" onSubmit={this.clickSetHandle}>
-                    <h4>Mob Programming Style</h4>
+            <form className="container h-100 d-flex flex-column" onSubmit={this.clickSetHandle}>
+                <div className="flex-grow-1">
+                    <h2 className="mb-3">Create a new workspace</h2>
+                    <h4>Mob programming style</h4>
                     <label>Please select mode how you want to develop software through mob programming.</label>
                     <label style={{display: "block"}} className={"alert " + (this.state.mode === SessionMode.Strict ? "alert-primary" : "alert-secondary")}>
                         <div className="custom-control custom-radio">
                             <input type="radio" className="custom-control-input"
                                 id="strict-mode" name="mode" checked={this.state.mode === SessionMode.Strict}
                                 value={SessionMode.Strict} onChange={this.handleChangeMode.bind(this)} />
-                            <label className="custom-control-label" htmlFor="strict-mode">Strict Mode
+                            <label className="custom-control-label d-block" htmlFor="strict-mode">Strict mode
                                 <p>
                                     A driver session is interrupted automatically when
                                     the timer expires.
                                 </p>
-                                <h5>Driver Session Interval</h5>
-                                <InputGroup>
-                                    <InputGroup.Prepend>
-                                        <Button variant="primary" onClick={this.handleDecrementValue}
-                                                disabled={this.state.mode !== SessionMode.Strict}>-</Button>
-                                    </InputGroup.Prepend>
-                                    <input
-                                        type={"number"}
-                                        value={this.state.inputValue.toString()}
-                                        style={{textAlign: "end"}}
-                                        disabled={this.state.mode !== SessionMode.Strict}
-                                        onChange={this.handleGetInputValue.bind(this)}/>
-                                    <InputGroup.Append>
-                                        <Button variant="primary" onClick={this.handleIncrementValue}
-                                                disabled={this.state.mode !== SessionMode.Strict}>+</Button>
-                                    </InputGroup.Append>
-                                </InputGroup>
+                                <div className="form-group row align-items-baseline">
+                                    <label className="col-auto m-0" htmlFor="sessionInterval">Driver session interval:</label>
+                                    <InputGroup className="col">
+                                        <InputGroup.Prepend>
+                                            <Button variant="primary" onClick={this.handleDecrementValue}
+                                                    disabled={this.state.mode !== SessionMode.Strict}>-</Button>
+                                        </InputGroup.Prepend>
+                                        <input
+                                            type="number"
+                                            name="sessionInterval"
+                                            value={this.state.inputValue.toString()}
+                                            style={{textAlign: "end"}}
+                                            disabled={this.state.mode !== SessionMode.Strict}
+                                            onChange={this.handleGetInputValue.bind(this)}/>
+                                        <InputGroup.Append>
+                                            <Button variant="primary" onClick={this.handleIncrementValue}
+                                                    disabled={this.state.mode !== SessionMode.Strict}>+</Button>
+                                        </InputGroup.Append>
+                                    </InputGroup>
+                                </div>
                             </label>
                         </div>
                     </label>
@@ -107,7 +110,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
                             <input type="radio" className="custom-control-input"
                                 id="free-mode" name="mode" checked={this.state.mode === SessionMode.Free}
                                 value={SessionMode.Free} onChange={this.handleChangeMode.bind(this)} />
-                            <label className="custom-control-label" htmlFor="free-mode">Free Mode
+                            <label className="custom-control-label d-block" htmlFor="free-mode">Free mode
                                 <p>
                                     The mode has no limit time and you can switch roles freely.
                                     Measure time in some other way!
@@ -115,16 +118,12 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
                             </label>
                         </div>
                     </label>
-                    <Row className="justify-content-md-center fixed-bottom">
-                        <Col xs={"auto"} style={{padding: 30}}>
-                            <Link className="btn btn-primary btn-lg" to="/">Back</Link>
-                        </Col>
-                        <Col xs={"auto"} style={{padding: 30}}>
-                            <Button type="submit" className="btn btn-primary btn-lg">Create</Button>
-                        </Col>
-                    </Row>
-                </form>
-            </div>
+                </div>
+                <div className="d-flex my-4">
+                    <Link className="btn btn-primary btn-lg mr-4" to="/">Back</Link>
+                    <Button type="submit" className="btn btn-primary btn-lg mr-4">Create</Button>
+                </div>
+            </form>
         );
     }
 }

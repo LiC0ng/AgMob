@@ -1,8 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {Button, Col, Container, Row} from "react-bootstrap";
+import {Button} from "react-bootstrap";
 import {DriverSession} from "./types";
-import * as Config from "./config";
 
 interface State {
     inputSessionId: string;
@@ -44,38 +43,30 @@ export default class Join extends React.Component<any, State> {
 
     public render() {
         return (
-            <Container>
-                <form onSubmit={this.handleStart}>
-                    <Row className="justify-content-md-center">
-                        <Col md="auto">
-                            <h2>Join an existing workspace</h2>
-                        </Col>
-                    </Row>
-                    <Row className="justify-content-md-center">
-                        <Col md={"auto"}>
-                            <label htmlFor="sesseionIdInput">You can join the workspace as a driver by filling in the <strong>session ID</strong> in the next input form.</label>
-                        </Col>
-                        <div className="col-auto w-100">
-                            <input className={"form-control" + (this.state.error ? " is-invalid" : "")}
-                                type="text" autoFocus={true} id="sesseionIdInput"
-                                value={this.state.inputSessionId}
-                                onChange={this.handleInputSessionIdChange} />
-                            {this.state.error &&
-                            <div className="invalid-feedback">
-                                Session ID is not valid
-                            </div>}
-                        </div>
-                    </Row>
-                    <Row className="justify-content-md-center fixed-bottom">
-                        <Col xs={"auto"} style={{ padding: 30 }}>
-                            <Link className="btn btn-primary btn-lg" to="/">Back</Link>
-                        </Col>
-                        <Col xs={"auto"} style={{ padding: 30 }}>
-                            <Button className="btn-lg" type="submit" href="#">Join</Button>
-                        </Col>
-                    </Row>
-                </form>
-            </Container>
+            <form onSubmit={this.handleStart} className="container h-100 d-flex flex-column">
+                <div className="flex-grow-1">
+                    <h2 className="mb-3">
+                        Join an existing workspace
+                        <h4 className="d-inline text-muted ml-1">as the driver</h4>
+                    </h2>
+                    <label htmlFor="sesseionIdInput">
+                        You can join the workspace as a driver by filling in
+                        the <strong>session ID</strong> in the next input form.
+                    </label>
+                    <input className={"form-control" + (this.state.error ? " is-invalid" : "")}
+                        type="text" autoFocus={true} id="sesseionIdInput"
+                        value={this.state.inputSessionId}
+                        onChange={this.handleInputSessionIdChange} />
+                    {this.state.error &&
+                    <div className="invalid-feedback">
+                        Session ID is not valid
+                    </div>}
+                </div>
+                <div className="d-flex my-4">
+                    <Link className="btn btn-primary btn-lg mr-4" to="/">Back</Link>
+                    <Button className="btn-lg mr-4" type="submit" href="#">Join</Button>
+                </div>
+            </form>
         );
     }
 }
