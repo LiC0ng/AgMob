@@ -57,7 +57,12 @@ export default class StartShare extends React.Component<IProps, IState> {
     public constructor(props: IProps) {
         super(props);
 
-        const sess = props.currentSession!;
+        const sess = props.currentSession;
+        if (sess === undefined) {
+            alert("Current session does not exist. Page reloaded?");
+            window.location.href = "/";
+            return;
+        }
         this.state = {
             mode: sess.mode,
             timeRemainingInSeconds: sess.startTimeInMinutes * 60,
