@@ -33,7 +33,7 @@ export class DriverSession {
         const conn = await this.createWebSocket(obj.id);
         const time = startTimeInMinutes;
 
-        return new DriverSession(obj.id, conn, mode, time, "");
+        return new DriverSession(obj.id, conn, mode, time, obj.history);
     }
 
     public static async join(sessionId: string) {

@@ -250,7 +250,8 @@ export default class StartShare extends React.Component<IProps, IState> {
                                 </PopoverContent>
                             </Popover>
                         </Overlay>
-                        <Button className="ml-1" onClick={this.toggleShowShare}>
+                        <Button className="ml-1" onClick={this.toggleShowShare}
+                            title="Invite a team member">
                             <FontAwesomeIcon icon="share-alt" />
                         </Button>
                     </div>
