@@ -11,11 +11,10 @@ export default class Top extends React.Component<Props, State> {
     public render() {
         return (
             <div>
-                <Row className={"justify-content-md-center"}>
-                    <Col md={"auto"}>
-                        <h1>AgMob</h1>
-                    </Col>
-                </Row>
+                <div className="text-center mb-4">
+                    <img src="logo.svg" width="120" />
+                    <h1>AgMob</h1>
+                </div>
                 <Row className={"justify-content-md-center"}>
                     <Col xs={12}>
                         <Link className="btn btn-primary btn-lg btn-block" to="/new_workspace">
