@@ -57,7 +57,8 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         });
     };
 
-    public async clickSetHandle() {
+    public async clickSetHandle(e: any) {
+        e.preventDefault();
         const sess = await DriverSession.create(this.state.mode, this.state.inputValue);
         this.props.onUpdateSession(sess);
         this.props.history.push({pathname: "/start_page"});
@@ -68,7 +69,7 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
         return (
             <div>
                 <h2>Create a new workspace</h2>
-                <form className="mt-3">
+                <form className="mt-3" onSubmit={this.clickSetHandle}>
                     <h4>Mob Programming Style</h4>
                     <label>Please select mode how you want to develop software through mob programming.</label>
                     <label style={{display: "block"}} className={"alert " + (this.state.mode === SessionMode.Strict ? "alert-primary" : "alert-secondary")}>
@@ -114,16 +115,15 @@ export default class TimerCountdown extends React.Component<IProps, IState> {
                             </label>
                         </div>
                     </label>
+                    <Row className="justify-content-md-center fixed-bottom">
+                        <Col xs={"auto"} style={{padding: 30}}>
+                            <Link className="btn btn-primary btn-lg" to="/">Back</Link>
+                        </Col>
+                        <Col xs={"auto"} style={{padding: 30}}>
+                            <Button type="submit" className="btn btn-primary btn-lg">Create</Button>
+                        </Col>
+                    </Row>
                 </form>
-
-                <Row className="justify-content-md-center fixed-bottom">
-                    <Col xs={"auto"} style={{padding: 30}}>
-                        <Link className="btn btn-primary btn-lg" to="/">Back</Link>
-                    </Col>
-                    <Col xs={"auto"} style={{padding: 30}}>
-                        <Button className="btn btn-primary btn-lg" onClick={this.clickSetHandle}>Create</Button>
-                    </Col>
-                </Row>
             </div>
         );
     }
