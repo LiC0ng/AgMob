@@ -107,7 +107,7 @@ export class DriverSession {
         };
     }
 
-    sendMessage(obj: { kind: string, payload: string, navigator_id?: string }) {
+    sendMessage(obj: { kind: string, payload: string, navigator_id?: string, remoteId?: string }) {
         this.websocket.send(JSON.stringify(obj));
     }
 

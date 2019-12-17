@@ -267,6 +267,20 @@ export default class StartShare extends React.Component<IProps, IState> {
         if (obj.kind === "request_sdp") {
             const navigator_id = obj.navigator_id;
             console.log(`[WS] Received 'request_sdp' from ${navigator_id}`);
+
+            // if other navigators exist, tell new navigator to send sdp to other navigators
+            if (this.state.peers.length > 0) {
+                console.log("new navigator");
+                this.state.peers.forEach((peer) => {
+                    this.props.currentSession!.sendMessage({
+                        kind: "navigator_request_sdp",
+                        payload: "",
+                        navigator_id: peer.id.toString(),
+                        remoteId: navigator_id,
+                    });
+                });
+            }
+
             const peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
             const peerInfo = new PeerInfo(navigator_id, peer);
 
@@ -351,7 +365,42 @@ export default class StartShare extends React.Component<IProps, IState> {
                 peerInfo.addTracks(this.stream);
             const newPeers = [...this.state.peers, peerInfo];
             this.setState({peers: newPeers});
-        } else if (obj.kind === "sdp") {
+        } else if (obj.kind === "navigator_sdp") { // send navigator sdp to other navigators
+            this.state.peers.forEach((peer) => {
+                if (peer.id === obj.remoteId) {
+                    this.props.currentSession!.sendMessage({
+                        kind: "navigator_sdp",
+                        payload: obj.payload,
+                        navigator_id: obj.remoteId,
+                        remoteId: obj.navigator_id,
+                    });
+                }
+            });
+        } else if (obj.kind === "navigator_answer") { // send navigator answer to other navigator
+            this.state.peers.forEach((peer) => {
+                if (peer.id === obj.remoteId) {
+                    this.props.currentSession!.sendMessage({
+                        kind: "navigator_answer",
+                        payload: obj.payload,
+                        navigator_id: obj.remoteId,
+                        remoteId: obj.navigator_id,
+                    });
+                    return;
+                }
+            });
+        } else if (obj.kind === "navigator_ice") { // send navigator ice candidate to other navigators
+            this.state.peers.forEach((peer) => {
+                if (peer.id === obj.remoteId) {
+                    this.props.currentSession!.sendMessage({
+                        kind: "navigator_ice",
+                        payload: obj.payload,
+                        navigator_id: obj.remoteId,
+                        remoteId: obj.navigator_id,
+                    });
+                    return;
+                }
+            });
+        }  else if (obj.kind === "sdp") {
             const peer = this.state.peers.find(peer => peer.id === obj.navigator_id);
             if (!peer) {
                 console.log(`[WS] Unexpected 'sdp' event for id=${obj.navigator_id}`);
