@@ -41,7 +41,10 @@ class Session(var config: SessionConfiguration) {
     val id = UUID.randomUUID().toString()
 
     // The history of chat
-    var history: String = ""
+    var history: String =
+        "<div>AgMob:<br>Share <a href=\"https://elang.itsp.club/session/" +
+        id + "\" target=\"_blank\">https://elang.itsp.club/session/" +
+        id + "</a> with your team to start mobbing!</div>"
 
     @Transient
     var driver: DriverConnection? = null

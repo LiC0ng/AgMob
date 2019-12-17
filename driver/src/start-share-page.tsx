@@ -1,7 +1,7 @@
 import {disconnect} from "cluster";
 import React from "react";
-import {Form, InputGroup} from "react-bootstrap";
-import Button from "react-bootstrap/Button";
+import {Button, Form, InputGroup, Popover, PopoverTitle, PopoverContent, Overlay} from "react-bootstrap";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Chat from "./Chat";
 import * as Config from "./config";
 import {SessionMode, PropsWithSession, LaserPointerState} from "./types";
@@ -45,6 +45,8 @@ interface IState {
     nav_message: string;
     chatHistory: string;
     peers: PeerInfo[];
+    showShare: HTMLElement | undefined;
+    alwaysOnTop: boolean;
 }
 
 export default class StartShare extends React.Component<IProps, IState> {
@@ -72,6 +74,8 @@ export default class StartShare extends React.Component<IProps, IState> {
             nav_message: "",
             chatHistory: sess.chatHistory,
             peers: [],
+            showShare: undefined,
+            alwaysOnTop: true,
         };
         this.clickStopHandle = this.clickStopHandle.bind(this);
 
@@ -154,8 +158,10 @@ export default class StartShare extends React.Component<IProps, IState> {
     public handleFocus = (event: any) => event.target.select();
 
     public handleCheck = (event: any) => {
+        const next = !this.state.alwaysOnTop;
+        this.setState({alwaysOnTop: next});
         const remote = electron.remote;
-        remote.getCurrentWindow().setAlwaysOnTop(event.target.checked);
+        remote.getCurrentWindow().setAlwaysOnTop(next);
     };
 
     public setChatHistory = (chatHistory: string) => this.chatHistory = chatHistory;
@@ -207,6 +213,10 @@ export default class StartShare extends React.Component<IProps, IState> {
         this.setupSharedDisplay();
     };
 
+    toggleShowShare = (e: any) => {
+        this.setState({showShare: this.state.showShare ? undefined : e.target});
+    };
+
     public render() {
         const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
         const zeroPadding = function (num: number) {
@@ -214,22 +224,37 @@ export default class StartShare extends React.Component<IProps, IState> {
         };
         return (
             <div className="h-100 d-flex flex-column">
-                <div className="start">
+                <div className="start d-flex">
                     <h1 className="d-inline">
                         {this.state.mode === SessionMode.Strict
                             ? `${zeroPadding(Math.floor(this.state.timeRemainingInSeconds / 60))} : ${zeroPadding(this.state.timeRemainingInSeconds % 60)}`
                             : "Free mode"}
                     </h1>
-                    <Button style={{marginLeft: 30}} variant="primary"
-                        onClick={this.clickStopHandle}>Stop</Button>
-                    <Form.Group>
-                        <Form.Check type="checkbox" label="Show always on top" onChange={this.handleCheck} defaultChecked/>
-                    </Form.Group>
+                    <div id="share-controls" className="ml-auto">
+                        <Button className="ml-1" variant="primary"
+                            title="Stop and hand over the driver role"
+                            onClick={this.clickStopHandle}>
+                            <FontAwesomeIcon icon="stop-circle" />
+                        </Button>
+                        <Button className="ml-1" variant="primary"
+                            title="Show always on top"
+                            active={this.state.alwaysOnTop}
+                            onClick={this.handleCheck}>
+                            <FontAwesomeIcon icon="arrow-up" />
+                        </Button>
+                        <Overlay placement="bottom" show={!!this.state.showShare} target={this.state.showShare}>
+                            <Popover id="popover-basic">
+                                <PopoverTitle as="h3">Invite a navigator ({this.state.peers.length} connected)</PopoverTitle>
+                                <PopoverContent>
+                                    <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus} />
+                                </PopoverContent>
+                            </Popover>
+                        </Overlay>
+                        <Button className="ml-1" onClick={this.toggleShowShare}>
+                            <FontAwesomeIcon icon="share-alt" />
+                        </Button>
+                    </div>
                 </div>
-                <Form.Group>
-                    <Form.Label>Join Session ({this.state.peers.length} connected)</Form.Label>
-                    <Form.Control readOnly={true} value={navigatorUrl} onFocus={this.handleFocus}/>
-                </Form.Group>
                 <Chat nav_message={this.state.nav_message} setChatHistoryToParent={this.setChatHistory} chatHistory={this.state.chatHistory}/>
                 <audio autoPlay={true} ref={this.setAudioRef}/>
             </div>

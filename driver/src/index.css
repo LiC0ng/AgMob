@@ -26,3 +26,10 @@ code {
   height: 100%;
   padding: 15px;
 }
+
+#share-controls:before {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  height: 100%;
+}
