@@ -41,10 +41,7 @@ class Session(var config: SessionConfiguration) {
     val id = UUID.randomUUID().toString()
 
     // The history of chat
-    var history: String =
-        "<div>AgMob:<br>Share <a href=\"https://elang.itsp.club/session/" +
-        id + "\" target=\"_blank\">https://elang.itsp.club/session/" +
-        id + "</a> with your team to start mobbing!</div>"
+    var history: String = ""
 
     @Transient
     var driver: DriverConnection? = null
@@ -130,6 +127,18 @@ class DriverConnection(session: Session, wsSession: WebSocketServerSession) : Ba
         sendMessage(WebSocketMessage("request_sdp", message.payload, navConn.id))
     }
 
+    suspend fun receiveNavigatorSdp(navConn: NavigatorConnection, message: WebSocketMessage, remoteId: Int) {
+        sendMessage(WebSocketMessage("navigator_sdp", message.payload, navConn.id, remoteId))
+    }
+
+    suspend fun answerNavigatorSdp(navConn: NavigatorConnection, message: WebSocketMessage, remoteId: Int) {
+        sendMessage(WebSocketMessage("navigator_answer", message.payload, navConn.id, remoteId))
+    }
+
+    suspend fun navigatorIce(navConn: NavigatorConnection, message: WebSocketMessage, remoteId: Int) {
+        sendMessage(WebSocketMessage("navigator_ice", message.payload, navConn.id, remoteId))
+    }
+
     suspend fun receiveSdpAnswer(navConn: NavigatorConnection, message: WebSocketMessage) {
         sendMessage(WebSocketMessage("sdp", message.payload, navConn.id))
     }
@@ -137,6 +146,7 @@ class DriverConnection(session: Session, wsSession: WebSocketServerSession) : Ba
     suspend fun receiveIceCandidate(navConn: NavigatorConnection, message: WebSocketMessage) {
         sendMessage(WebSocketMessage("ice_candidate", message.payload, navConn.id))
     }
+
 
     suspend fun sendChatMessage(navConn: NavigatorConnection, message: WebSocketMessage) {
         sendMessage(WebSocketMessage("chat", message.payload, navConn.id))
@@ -148,6 +158,22 @@ class DriverConnection(session: Session, wsSession: WebSocketServerSession) : Ba
 }
 
 class NavigatorConnection(session: Session, wsSession: WebSocketServerSession) : BaseConnection(session, wsSession) {
+    suspend fun requestSdpOffer(message: WebSocketMessage, navigator_id: Int, remoteId: Int) {
+        sendMessage(WebSocketMessage("navigator_request_sdp", message.payload, navigator_id, remoteId))
+    }
+
+    suspend fun receiveNavigatorSdp(message: WebSocketMessage, navigator_id: Int, remoteId: Int) {
+        sendMessage(WebSocketMessage("navigator_sdp", message.payload, navigator_id, remoteId))
+    }
+
+    suspend fun answerNavigatorSdp(message: WebSocketMessage, navigator_id: Int, remoteId: Int) {
+        sendMessage(WebSocketMessage("navigator_answer", message.payload, navigator_id, remoteId))
+    }
+
+    suspend fun navigatorIce(message: WebSocketMessage, navigator_id: Int, remoteId: Int) {
+        sendMessage(WebSocketMessage("navigator_ice", message.payload, navigator_id, remoteId))
+    }
+
     suspend fun receiveSdpOffer(message: WebSocketMessage, navigator_id: Int) {
         sendMessage(WebSocketMessage("sdp", message.payload, navigator_id))
     }
@@ -167,7 +193,7 @@ class NavigatorConnection(session: Session, wsSession: WebSocketServerSession) :
 
 // FIXME: navigator_id smells bad
 @Serializable
-data class WebSocketMessage(val kind: String, val payload: String, val navigator_id: Int = -1) {
+data class WebSocketMessage(val kind: String, val payload: String, val navigator_id: Int = -1, val remoteId: Int = -1) {
     fun toJson(): String = Json.stringify(serializer(), this)
 
     companion object {
@@ -236,6 +262,28 @@ fun main(args: Array<String>) {
                                 log.debug("[${sess.id}] ignoring request_sdp from nav-${conn.id}")
                             driver?.requestSdpOffer(conn, msg)
                         }
+                        "navigator_sdp" -> {
+                            val driver = sess.driver
+                            val remoteId = msg.remoteId;
+                            if (driver == null)
+                                log.debug("[${sess.id}] ignoring sdp from nav-${conn.id}")
+                            driver?.receiveNavigatorSdp(conn, msg, remoteId)
+                        }
+                        "navigator_answer" -> {
+                            val driver = sess.driver
+                            val remoteId = msg.remoteId;
+                            if (driver == null)
+                                log.debug("[${sess.id}] ignoring sdp from nav-${conn.id}")
+                            driver?.answerNavigatorSdp(conn, msg, remoteId)
+                        }
+
+                        "navigator_ice" -> {
+                            val driver = sess.driver
+                            val remoteId = msg.remoteId;
+                            if (driver == null)
+                                log.debug("[${sess.id}] ignoring sdp from nav-${conn.id}")
+                            driver?.navigatorIce(conn, msg, remoteId)
+                        }
                         "sdp" -> {
                             val driver = sess.driver
                             if (driver == null)
@@ -279,16 +327,45 @@ fun main(args: Array<String>) {
                         }
                         val msg = WebSocketMessage.parseJson(frame.readText())
                         when (msg.kind) {
+                            "navigator_request_sdp" -> {
+                                val navConn = sess.navigators[msg.navigator_id]
+                                if (navConn == null)
+                                    log.debug("[${sess.id}] ignoring request sdp to nav-${msg.navigator_id}")
+                                navConn?.requestSdpOffer(msg, msg.navigator_id, msg.remoteId)
+                            }
+                            "navigator_sdp" -> {
+                                val navConn = sess.navigators[msg.navigator_id]
+                                if (navConn == null)
+                                    log.debug("[${sess.id}] ignoring request sdp to nav-${msg.navigator_id}")
+                                navConn?.receiveNavigatorSdp(msg, msg.navigator_id, msg.remoteId)
+                            }
+                            "navigator_answer" -> {
+                                val navConn = sess.navigators[msg.navigator_id]
+                                if (navConn == null)
+                                    log.debug("[${sess.id}] ignoring request sdp to nav-${msg.navigator_id}")
+                                navConn?.answerNavigatorSdp(msg, msg.navigator_id, msg.remoteId)
+                            }
+                            "navigator_ice" -> {
+                                val navConn = sess.navigators[msg.navigator_id]
+                                if (navConn == null)
+                                    log.debug("[${sess.id}] ignoring request sdp to nav-${msg.navigator_id}")
+                                navConn?.navigatorIce(msg, msg.navigator_id, msg.remoteId)
+                            }
                             "sdp" -> {
                                 val navConn = sess.navigators[msg.navigator_id]
                                 if (navConn == null)
                                     log.debug("[${sess.id}] ignoring sdp to nav-${msg.navigator_id}")
+                                log.debug("${msg.navigator_id}")
+                                log.debug(msg.payload)
+
                                 navConn?.receiveSdpOffer(msg, msg.navigator_id)
                             }
                             "ice_candidate" -> {
                                 val navConn = sess.navigators[msg.navigator_id]
                                 if (navConn == null)
                                     log.debug("[${sess.id}] ignoring ice_candidate to nav-${msg.navigator_id}")
+                                log.debug("${msg.navigator_id}")
+                                log.debug(msg.payload)
                                 navConn?.receiveIceCandidate(msg, msg.navigator_id)
                             }
                             "quit" -> {
