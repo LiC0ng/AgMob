@@ -54,6 +54,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
     private color?: string;
     private audioRef?: HTMLAudioElement;
     private localId?: number = -1;
+
     private readonly setVideoRef = (videoRef: HTMLVideoElement) => {
         this.videoRef = videoRef;
         if (videoRef === null)
@@ -265,20 +266,19 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     });
                     if(remotePeer.pc.signalingState === "stable" ) {
                         remotePeer.pc.setRemoteDescription(JSON.parse(message.payload))
-                            .then(() => navigator.mediaDevices.getUserMedia({
-                                audio: true,
-                            }).then((stream) => {
-                                this.audioStream = stream;
-                                remotePeer.pc.getTransceivers().forEach((transciver) => {
-                                    if(transciver.receiver.track.kind === "audio") {
-                                        let track = stream.getTracks()[0];
-                                        console.log(stream.getTracks().length)
-                                        track.enabled = true;
-                                        transciver.sender.replaceTrack(track);
-                                        transciver.direction = "sendrecv";
-                                    }
-                                });
-                            })).then(() => remotePeer.pc.createAnswer())
+                            .then(() => navigatorGetUserMedia()
+                                .then((stream) => {
+                                    this.audioStream = stream;
+                                    remotePeer.pc.getTransceivers().forEach((transciver) => {
+                                        if(transciver.receiver.track.kind === "audio") {
+                                            let track = stream.getTracks()[0];
+                                            console.log(stream.getTracks().length)
+                                            track.enabled = true;
+                                            transciver.sender.replaceTrack(track);
+                                            transciver.direction = "sendrecv";
+                                        }
+                                    });
+                                })).then(() => remotePeer.pc.createAnswer())
                             .then((answer) => remotePeer.pc.setLocalDescription(answer))
                             .then(() => {
                                 ws.send(JSON.stringify({
@@ -440,21 +440,20 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
                     if(peer.signalingState === "stable" ) {
                         peer.setRemoteDescription(JSON.parse(sdp.payload))
-                            .then(() => navigator.mediaDevices.getUserMedia({
-                                audio: true,
-                            }).then((stream) => {
-                                this.audioStream = stream;
-                                // peer.addTrack(stream.getTracks()[0], stream);
-                                peer.getTransceivers().forEach((transciver) => {
-                                    if(transciver.receiver.track.kind === "audio") {
-                                        let track = stream.getTracks()[0];
-                                        console.log(stream.getTracks().length)
-                                        track.enabled = true;
-                                        transciver.sender.replaceTrack(track);
-                                        transciver.direction = "sendrecv";
-                                    }
-                                });
-                            })).then(() => peer.createAnswer())
+                            .then(() => navigatorGetUserMedia()
+                                .then((stream) => {
+                                    this.audioStream = stream;
+                                    // peer.addTrack(stream.getTracks()[0], stream);
+                                    peer.getTransceivers().forEach((transciver) => {
+                                        if(transciver.receiver.track.kind === "audio") {
+                                            let track = stream.getTracks()[0];
+                                            console.log(stream.getTracks().length)
+                                            track.enabled = true;
+                                            transciver.sender.replaceTrack(track);
+                                            transciver.direction = "sendrecv";
+                                        }
+                                    });
+                                })).then(() => peer.createAnswer())
                             .then((answer) => peer.setLocalDescription(answer))
                             .then(() => {
                                 ws.send(JSON.stringify({
@@ -580,65 +579,86 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             <h1>Connecting to the server</h1>
                             <p>Please wait for a little while longer.</p>
                         </div>
-                    : this.state.state === NavigatorState.WaitingDriver ?
-                        <div className="text-center">
-                            <h1>Waiting for a new driver</h1>
-                            <p>Please wait for a little while longer.</p>
-                            <div className="mt-3">
-                                <h4>Or become a driver</h4>
-                                <a href={driverUrl}>{driverUrl}</a>
-                            </div>
-                        </div>
-                    : this.state.state === NavigatorState.Connected ?
-                        <div className="video-container">
-                            <video
-                                onCanPlay={this.setCanvasSize.bind(this)}
-                                ref={this.setVideoRef}/>
-                            <canvas
-                                ref={this.setCanvasRef}/>
-                            {!this.state.videoPlaying &&
-                                <div className="video-start-confirm-backdrop" />}
-                            {!this.state.videoPlaying &&
-                            <div className="video-start-confirm card">
-                                <div className="card-body">
-                                    <h3 className="card-title">Settings</h3>
-                                    <form onSubmit={this.startVideoPlaying}>
-                                        <div className="form-group">
-                                            <label htmlFor="navig-name">Display Name</label>
-                                            <input id="navig-name"
-                                                className="form-control" type="text"
-                                                placeholder="Input your name"
-                                                value={this.state.name} onChange={this.handleNameChange} />
-                                        </div>
-                                        <div className="form-group">
-                                            <label htmlFor="navig-fullscreen">Toggle Fullscreen</label>
-                                            <Button id="navig-fullscreen" className="d-block"
-                                                value="fullscreen" variant="outline-primary" title="Fullscreen"
-                                                active={this.state.fullscreen} onClick={this.handleChangeFullscreen}>
-                                                <span className="glyphicon glyphicon-fullscreen">🖵</span>
-                                            </Button>
-                                        </div>
-                                        <button className="form-control btn btn-primary" type="submit">
-                                            Close
-                                        </button>
-                                    </form>
+                        : this.state.state === NavigatorState.WaitingDriver ?
+                            <div className="text-center">
+                                <h1>Waiting for a new driver</h1>
+                                <p>Please wait for a little while longer.</p>
+                                <div className="mt-3">
+                                    <h4>Or become a driver</h4>
+                                    <a href={driverUrl}>{driverUrl}</a>
                                 </div>
-                            </div>}
-                        </div>
-                    : <span>UNREACHABLE</span>}
+                            </div>
+                            : this.state.state === NavigatorState.Connected ?
+                                <div className="video-container">
+                                    <video
+                                        onCanPlay={this.setCanvasSize.bind(this)}
+                                        ref={this.setVideoRef}/>
+                                    <canvas
+                                        ref={this.setCanvasRef}/>
+                                    {!this.state.videoPlaying &&
+                                    <div className="video-start-confirm-backdrop" />}
+                                    {!this.state.videoPlaying &&
+                                    <div className="video-start-confirm card">
+                                        <div className="card-body">
+                                            <h3 className="card-title">Settings</h3>
+                                            <form onSubmit={this.startVideoPlaying}>
+                                                <div className="form-group">
+                                                    <label htmlFor="navig-name">Display Name</label>
+                                                    <input id="navig-name"
+                                                           className="form-control" type="text"
+                                                           placeholder="Input your name"
+                                                           value={this.state.name} onChange={this.handleNameChange} />
+                                                </div>
+                                                <div className="form-group">
+                                                    <label htmlFor="navig-fullscreen">Toggle Fullscreen</label>
+                                                    <Button id="navig-fullscreen" className="d-block"
+                                                            value="fullscreen" variant="outline-primary" title="Fullscreen"
+                                                            active={this.state.fullscreen} onClick={this.handleChangeFullscreen}>
+                                                        <span className="glyphicon glyphicon-fullscreen">🖵</span>
+                                                    </Button>
+                                                </div>
+                                                <button className="form-control btn btn-primary" type="submit">
+                                                    Close
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>}
+                                </div>
+                                : <span>UNREACHABLE</span>}
                 </div>
                 <div className="row m-0 mt-3">
                     <Button variant="primary" title="Settings"
-                        disabled={this.state.state === NavigatorState.Disconnected}
-                        onClick={this.handleOpenSettings}>
+                            disabled={this.state.state === NavigatorState.Disconnected}
+                            onClick={this.handleOpenSettings}>
                         <FontAwesomeIcon icon="cogs" />
                     </Button>
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
-                        mode={this.state.mode} state={this.state.state} />
+                           mode={this.state.mode} state={this.state.state} />
                     <Chat ws={this.state.ws} state={this.state.state} name={this.state.name} color={this.state.color}/>
                     <audio autoPlay={true} ref={this.setAudioRef}/>
                 </div>
             </div>
         );
     }
+}
+
+function navigatorGetUserMedia():Promise<MediaStream> {
+    return new Promise(function (resolve, reject) {
+        const getUserMedia = window.navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({
+                audio: true,
+            }).then((stream) => {
+                resolve(stream);
+            });
+        } else if (getUserMedia) {
+            getUserMedia({
+                audio: true,
+            }, (stream) => {
+                resolve(stream);
+            }, () => {
+                reject();
+            })
+        }
+    });
 }
