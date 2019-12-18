@@ -107,8 +107,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
         if (audioRef === null) {
             return;
         }
-        if (this.audioStream) {
-            audioRef.srcObject = this.audioStream;
+        if (this.receivedAudioStream) {
+            audioRef.srcObject = this.receivedAudioStream;
         }
     }
 
@@ -205,17 +205,26 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     }
 
                     localPeer.pc.ontrack = evt => {
-                        console.log("local navigator on track")
+                        console.log("local navigator on track");
+                        let stream: MediaStream;
+                        if (evt.streams[0]) {
+                            console.log("stream");
+                            stream = evt.streams[0];
+                        } else {
+                            console.log("track");
+                            stream = new MediaStream([evt.track]);
+                        }
                         if (this.receivedAudioStream && this.receivedAudioStream.getTracks().length > 0) {
-                            evt.streams[0].getTracks().forEach((track) => {
+                            stream.getTracks().forEach((track) => {
                                 this.receivedAudioStream!.addTrack(track);
                             })
                         } else {
-                            this.receivedAudioStream = evt.streams[0];
+                            this.receivedAudioStream = stream;
                         }
 
-                        if (this.audioRef && this.receivedAudioStream) {
-                            this.audioRef.srcObject = this.receivedAudioStream
+                        if (this.audioRef) {
+                            console.log("audioRef");
+                            this.audioRef.srcObject = this.receivedAudioStream;
                         }
                     };
 
