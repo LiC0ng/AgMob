@@ -188,7 +188,9 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                 localPeer.pc.addTrack(track, this.audioStream!);
                             })
                         }
-                        const offer = await localPeer.pc.createOffer();
+                        const offer = await localPeer.pc.createOffer({
+                            offerToReceiveAudio: true,
+                        });
                         await localPeer.pc.setLocalDescription(offer);
 
 
@@ -254,16 +256,20 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     });
                     if(remotePeer.pc.signalingState === "stable" ) {
                         remotePeer.pc.setRemoteDescription(JSON.parse(message.payload))
-                            .then(() => {
-                                if (this.audioStream) {
-                                    remotePeer.pc.getSenders().forEach((sender) => {
-                                        remotePeer.pc.removeTrack(sender);
-                                    });
-                                    this.audioStream.getTracks().forEach((track) => {
-                                        remotePeer.pc.addTrack(track, this.audioStream!);
-                                    })
-                                }
-                            }).then(() => remotePeer.pc.createAnswer())
+                            .then(() => navigator.mediaDevices.getUserMedia({
+                                audio: true,
+                            }).then((stream) => {
+                                this.audioStream = stream;
+                                remotePeer.pc.getTransceivers().forEach((transciver) => {
+                                    if(transciver.receiver.track.kind === "audio") {
+                                        let track = stream.getTracks()[0];
+                                        console.log(stream.getTracks().length)
+                                        track.enabled = true;
+                                        transciver.sender.replaceTrack(track);
+                                        transciver.direction = "sendrecv";
+                                    }
+                                });
+                            })).then(() => remotePeer.pc.createAnswer())
                             .then((answer) => remotePeer.pc.setLocalDescription(answer))
                             .then(() => {
                                 ws.send(JSON.stringify({
