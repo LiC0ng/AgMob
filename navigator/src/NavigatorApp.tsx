@@ -645,20 +645,12 @@ export default class NavigatorApp extends React.Component<Props, State> {
 function navigatorGetUserMedia():Promise<MediaStream> {
     return new Promise(function (resolve, reject) {
         const getUserMedia = window.navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({
-                audio: true,
-            }).then((stream) => {
-                resolve(stream);
-            });
-        } else if (getUserMedia) {
-            getUserMedia({
-                audio: true,
-            }, (stream) => {
-                resolve(stream);
-            }, () => {
-                reject();
-            })
-        }
+        getUserMedia({
+            audio: true,
+        }, (stream) => {
+            resolve(stream);
+        }, () => {
+            reject();
+        })
     });
 }
