@@ -193,7 +193,7 @@ export default class StartShare extends React.Component<IProps, IState> {
         };
 
         console.log(os.type)
-        askForMediaAccess().then(() =>{
+        askForMediaAccess().then(() => {
             navigator.mediaDevices.getUserMedia({
                 video: screenSharingConstraints as any,
             }).then((stream) => {
@@ -264,6 +264,7 @@ export default class StartShare extends React.Component<IProps, IState> {
 
     onWebSocketMessage = (e: any) => {
         const obj = JSON.parse(e.data);
+        let count: number = 0;
         if (obj.kind === "request_sdp") {
             const navigator_id = obj.navigator_id;
             console.log(`[WS] Received 'request_sdp' from ${navigator_id}`);
@@ -328,10 +329,15 @@ export default class StartShare extends React.Component<IProps, IState> {
             };
 
             peer.onnegotiationneeded = async () => {
+                if (count === 0) {
+                    count += 1;
+                    return ;
+                }
+                if (count === 1) {
+                    count = 0;
+                }
                 try {
-                    const offer = await peer.createOffer({
-                        offerToReceiveAudio: true,
-                    });
+                    const offer = await peer.createOffer();
                     await peer.setLocalDescription(offer);
 
                     const dataChannel = peer.createDataChannel('pointer');

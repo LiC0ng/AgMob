@@ -471,37 +471,22 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         this.dataChannel = dataChannel;
                     };
 
-                    if(peer.signalingState === "stable" ) {
-                        peer.setRemoteDescription(JSON.parse(sdp.payload))
-                            .then(() => navigatorGetUserMedia()
-                                .then((stream) => {
-                                    this.audioStream = stream;
-                                    // peer.addTrack(stream.getTracks()[0], stream);
-                                    try {
-                                        peer.getTransceivers().forEach((transciver) => {
-                                            if(transciver.receiver.track.kind === "audio") {
-                                                let track = stream.getTracks()[0];
-                                                console.log(stream.getTracks().length)
-                                                track.enabled = true;
-                                                transciver.sender.replaceTrack(track);
-                                                transciver.direction = "sendrecv";
-                                            }
-                                        });
-                                    } catch (e) {
-                                        // @ts-ignore
-                                        peer.addStream(stream);
-                                    }
-                                })).then(() => peer.createAnswer())
-                            .then((answer) => peer.setLocalDescription(answer))
-                            .then(() => {
-                                ws.send(JSON.stringify({
-                                    "kind": "sdp",
-                                    "payload": JSON.stringify(peer.localDescription),
-                                }));
-                            }).catch(e => {
-                            console.log(e);
-                        })
-                    }
+                    peer.setRemoteDescription(JSON.parse(message.payload))
+                        .then(() => navigatorGetUserMedia()
+                            .then((stream) => {
+                                this.audioStream = stream;
+                                peer.addTrack(stream.getTracks()[0], stream);
+                            })).then(() => peer.createAnswer())
+                        .then((answer) => peer.setLocalDescription(answer))
+                        .then(() => {
+                            ws.send(JSON.stringify({
+                                "kind": "sdp",
+                                "payload": JSON.stringify(peer.localDescription),
+                            }));
+                        }).catch(e => {
+                        console.log(e);
+                    });
+
                     break;
                 case "ice_candidate":
                     if (message.payload !== "") {
