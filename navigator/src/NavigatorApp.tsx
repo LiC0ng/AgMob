@@ -197,9 +197,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                 localPeer.pc.addTrack(track, this.audioStream!);
                             })
                         }
-                        const offer = await localPeer.pc.createOffer({
-                            offerToReceiveAudio: true,
-                        });
+                        const offer = await localPeer.pc.createOffer();
                         await localPeer.pc.setLocalDescription(offer);
 
 
@@ -282,45 +280,44 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     this.setState({
                         peers: newPeers,
                     });
-                    if(remotePeer.pc.signalingState === "stable" ) {
-                        remotePeer.pc.setRemoteDescription(JSON.parse(message.payload))
-                            .then(() => navigatorGetUserMedia()
-                                .then((stream) => {
-                                    this.audioStream = stream;
-                                    remotePeer.pc.getTransceivers().forEach((transciver) => {
-                                        if(transciver.receiver.track.kind === "audio") {
-                                            let track = stream.getTracks()[0];
-                                            console.log(stream.getTracks().length)
-                                            track.enabled = true;
-                                            transciver.sender.replaceTrack(track);
-                                            transciver.direction = "sendrecv";
-                                        }
-                                    });
-                                })).then(() => remotePeer.pc.createAnswer())
-                            .then((answer) => remotePeer.pc.setLocalDescription(answer))
-                            .then(() => {
-                                ws.send(JSON.stringify({
-                                    "kind": "navigator_answer",
-                                    "payload": JSON.stringify(remotePeer.pc.localDescription),
-                                    "navigator_id": this.localId,
-                                    "remoteId": message.remoteId,
-                                }));
-                            }).catch(e => {
-                            console.log(e);
-                        })
-                    }
+                    remotePeer.pc.setRemoteDescription(JSON.parse(message.payload))
+                        .then(() => navigatorGetUserMedia()
+                            .then((stream) => {
+                                this.audioStream = stream;
+                                remotePeer.addTracks(stream);
+                            })).then(() => remotePeer.pc.createAnswer())
+                        .then((answer) => remotePeer.pc.setLocalDescription(answer))
+                        .then(() => {
+                            ws.send(JSON.stringify({
+                                "kind": "navigator_answer",
+                                "payload": JSON.stringify(remotePeer.pc.localDescription),
+                                "navigator_id": this.localId,
+                                "remoteId": message.remoteId,
+                            }));
+                        }).catch(e => {
+                        console.log(e);
+                    });
 
                     remotePeer.pc.ontrack = evt => {
                         console.log("remote navigator on track");
+                        let stream: MediaStream;
+                        if (evt.streams[0]) {
+                            console.log("stream");
+                            stream = evt.streams[0];
+                        } else {
+                            console.log("track");
+                            stream = new MediaStream([evt.track]);
+                        }
                         if (this.receivedAudioStream && this.receivedAudioStream.getTracks().length > 0) {
-                            evt.streams[0].getTracks().forEach((track) => {
+                            stream.getTracks().forEach((track) => {
                                 this.receivedAudioStream!.addTrack(track);
                             })
                         } else {
-                            this.receivedAudioStream = evt.streams[0];
+                            this.receivedAudioStream = stream;
                         }
 
-                        if (this.audioRef && this.receivedAudioStream) {
+                        if (this.audioRef) {
+                            console.log("audioRef");
                             try {
                                 this.audioRef.srcObject = this.receivedAudioStream;
                             } catch (e) {
