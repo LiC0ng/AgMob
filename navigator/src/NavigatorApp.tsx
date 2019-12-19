@@ -650,6 +650,7 @@ function navigatorGetUserMedia():Promise<MediaStream> {
         }, (stream) => {
             resolve(stream);
         }, () => {
+            alert("Unable to get permission of microphone, please make sure you have given the browser the permission to use microphone");
             reject();
         })
     });
