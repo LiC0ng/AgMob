@@ -60,7 +60,11 @@ export default class NavigatorApp extends React.Component<Props, State> {
         if (videoRef === null)
             return;
         if (this.stream) {
-            videoRef.srcObject = this.stream;
+            try {
+                videoRef.srcObject = this.stream;
+            } catch (e) {
+                videoRef.src = URL.createObjectURL(this.stream)
+            }
             this.setState({ videoPlaying: false });
         }
         videoRef.addEventListener("resize", this.setCanvasSize);
@@ -109,9 +113,13 @@ export default class NavigatorApp extends React.Component<Props, State> {
             return;
         }
         if (this.receivedAudioStream) {
-            audioRef.srcObject = this.receivedAudioStream;
+            try {
+                audioRef.srcObject = this.receivedAudioStream;
+            } catch (e) {
+                audioRef!.src = URL.createObjectURL(this.receivedAudioStream);
+            }
         }
-    }
+    };
 
     constructor(props: Props) {
         super(props);
@@ -225,7 +233,11 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
                         if (this.audioRef) {
                             console.log("audioRef");
-                            this.audioRef.srcObject = this.receivedAudioStream;
+                            try {
+                                this.audioRef.srcObject = this.receivedAudioStream;
+                            } catch (e) {
+                                this.audioRef!.src = URL.createObjectURL(this.receivedAudioStream);
+                            }
                         }
                     };
 
@@ -241,6 +253,12 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             }));
                         } else {
                             console.log(`[RTC] ICE candidates complete`);
+                            ws.send(JSON.stringify({
+                                kind: "navigator_ice",
+                                payload: "",
+                                navigator_id: this.localId,
+                                remoteId: message.remoteId,
+                            }));
                         }
                     };
 
@@ -303,7 +321,11 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         }
 
                         if (this.audioRef && this.receivedAudioStream) {
-                            this.audioRef.srcObject = this.receivedAudioStream
+                            try {
+                                this.audioRef.srcObject = this.receivedAudioStream;
+                            } catch (e) {
+                                this.audioRef!.src = URL.createObjectURL(this.receivedAudioStream);
+                            }
                         }
                     };
                     remotePeer.pc.onicecandidate = ev => {
@@ -318,6 +340,12 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             }));
                         } else {
                             console.log(`[RTC] ICE candidates complete`);
+                            ws.send(JSON.stringify({
+                                kind: "navigator_ice",
+                                payload: "",
+                                navigator_id: this.localId,
+                                remoteId: message.remoteId,
+                            }));
                         }
                     };
                     remotePeer.pc.onconnectionstatechange = (evt) => {
@@ -356,8 +384,12 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         console.log(message);
                         return;
                     }
-                    const candidate = JSON.parse(message.payload);
-                    navPeer.pc.addIceCandidate(candidate);
+                    if (message.payload !== "") {
+                        const candidate = JSON.parse(message.payload);
+                        navPeer.pc.addIceCandidate(candidate);
+                    } else {
+                        navPeer.pc.addIceCandidate();
+                    }
                     break;
                 case "sdp":
                     console.log(message);
@@ -371,7 +403,11 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         console.log(evt.track);
                         this.stream = evt.streams[0];
                         if (this.videoRef) {
-                            this.videoRef.srcObject = this.stream;
+                            try {
+                                this.videoRef.srcObject = this.stream;
+                            } catch (e) {
+                                this.videoRef!.src = URL.createObjectURL(this.stream);
+                            }
                             this.setState({ videoPlaying: false });
                         }
                     };
@@ -444,15 +480,20 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                 .then((stream) => {
                                     this.audioStream = stream;
                                     // peer.addTrack(stream.getTracks()[0], stream);
-                                    peer.getTransceivers().forEach((transciver) => {
-                                        if(transciver.receiver.track.kind === "audio") {
-                                            let track = stream.getTracks()[0];
-                                            console.log(stream.getTracks().length)
-                                            track.enabled = true;
-                                            transciver.sender.replaceTrack(track);
-                                            transciver.direction = "sendrecv";
-                                        }
-                                    });
+                                    try {
+                                        peer.getTransceivers().forEach((transciver) => {
+                                            if(transciver.receiver.track.kind === "audio") {
+                                                let track = stream.getTracks()[0];
+                                                console.log(stream.getTracks().length)
+                                                track.enabled = true;
+                                                transciver.sender.replaceTrack(track);
+                                                transciver.direction = "sendrecv";
+                                            }
+                                        });
+                                    } catch (e) {
+                                        // @ts-ignore
+                                        peer.addStream(stream);
+                                    }
                                 })).then(() => peer.createAnswer())
                             .then((answer) => peer.setLocalDescription(answer))
                             .then(() => {
@@ -466,7 +507,11 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     }
                     break;
                 case "ice_candidate":
-                    peer.addIceCandidate(JSON.parse(message.payload));
+                    if (message.payload !== "") {
+                        peer.addIceCandidate(JSON.parse(message.payload));
+                    } else {
+                        peer.addIceCandidate();
+                    }
                     break;
                 case "driver_ready":
                     let sendObject = {
@@ -645,13 +690,24 @@ export default class NavigatorApp extends React.Component<Props, State> {
 function navigatorGetUserMedia():Promise<MediaStream> {
     return new Promise(function (resolve, reject) {
         const getUserMedia = window.navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-        getUserMedia({
-            audio: true,
-        }, (stream) => {
-            resolve(stream);
-        }, () => {
-            alert("Unable to get permission of microphone, please make sure you have given the browser the permission to use microphone");
-            reject();
-        })
+        try {
+            getUserMedia({
+                audio: true,
+            }, (stream) => {
+                resolve(stream);
+            }, () => {
+                alert("Unable to get permission of microphone, please make sure you have given the browser the permission to use microphone");
+                reject();
+            })
+        } catch (e) {
+            navigator.mediaDevices.getUserMedia({
+                audio: true,
+            }).then((stream) => {
+                resolve(stream)
+            }).catch(() => {
+                alert("Unable to get permission of microphone, please make sure you have given the browser the permission to use microphone");
+                reject();
+            })
+        }
     });
 }

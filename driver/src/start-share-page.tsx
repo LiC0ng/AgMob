@@ -305,6 +305,11 @@ export default class StartShare extends React.Component<IProps, IState> {
                     });
                 } else {
                     console.log(`[RTC-${navigator_id}] ICE candidates complete`);
+                    this.props.currentSession!.sendMessage({
+                        kind: "ice_candidate",
+                        payload: "",
+                        navigator_id: navigator_id,
+                    });
                 }
             };
 
