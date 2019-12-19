@@ -236,6 +236,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             } catch (e) {
                                 this.audioRef!.src = URL.createObjectURL(this.receivedAudioStream);
                             }
+                            this.audioRef.play();
                         }
                     };
 
@@ -323,6 +324,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             } catch (e) {
                                 this.audioRef!.src = URL.createObjectURL(this.receivedAudioStream);
                             }
+                            this.audioRef.play();
                         }
                     };
                     remotePeer.pc.onicecandidate = ev => {
@@ -662,7 +664,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
                            mode={this.state.mode} state={this.state.state} />
                     <Chat ws={this.state.ws} state={this.state.state} name={this.state.name} color={this.state.color}/>
-                    <audio autoPlay={true} ref={this.setAudioRef}/>
+                    <audio ref={this.setAudioRef}/>
                 </div>
             </div>
         );
