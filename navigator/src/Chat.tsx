@@ -39,7 +39,7 @@ export default class Chat extends React.Component<IProps, IState> {
             name: name,
             message: this.state.message,
             date:  new Date().toString(),
-            coloe: this.props.color,
+            color: this.props.color,
         });
         const sendObject = {
             "kind": "chat",
