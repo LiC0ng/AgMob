@@ -105,6 +105,11 @@ export default class NavigatorApp extends React.Component<Props, State> {
                 this.updateCanvas(e.clientX, e.clientY);
             }
         }, false);
+        canvasRef.addEventListener("touchmove", (e: any) => {
+            const p = e.targetTouches[0];
+            sendPointer(p);
+            this.updateCanvas(p.clientX, p.clientY);
+        });
     };
 
     private readonly setAudioRef = (audioRef: HTMLAudioElement) => {
