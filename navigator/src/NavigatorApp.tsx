@@ -5,23 +5,11 @@ import * as Config from "./config";
 import {NavigatorState, SessionMode} from "./types";
 import Chat from "./Chat";
 import Timer from "./Timer"
+
 require("webrtc-adapter");
 
 class PeerInfo {
     constructor(public localId: number, public remoteId: number, public pc: RTCPeerConnection) {
-    }
-
-    addTracks(stream: MediaStream) {
-        this.pc.getSenders().forEach((sender) => this.pc.removeTrack(sender));
-        stream.getTracks().forEach((track) => this.pc.addTrack(track, stream));
-    }
-
-    getLocalId() {
-        return this.localId;
-    }
-
-    getRemoteId() {
-        return this.remoteId;
     }
 }
 
@@ -40,14 +28,13 @@ interface State {
     color: string;
     videoPlaying: boolean;
     fullscreen: boolean;
-    peers: PeerInfo[];
+    driverPeer: RTCPeerConnection | undefined;
+    navigatorPeers: PeerInfo[]
 }
 
 export default class NavigatorApp extends React.Component<Props, State> {
     private stream?: MediaStream;
-    private audioStream?: MediaStream;
-    private receivedAudioStream?: MediaStream = new MediaStream();
-    private peer?: RTCPeerConnection;
+    private receivedAudioStream: MediaStream = new MediaStream();
     private dataChannel?: RTCDataChannel;
     private videoRef?: HTMLVideoElement;
     private canvasRef?: HTMLCanvasElement;
@@ -65,7 +52,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
             } catch (e) {
                 videoRef.src = URL.createObjectURL(this.stream)
             }
-            this.setState({ videoPlaying: false });
+            this.setState({videoPlaying: false});
         }
         videoRef.addEventListener("resize", this.setCanvasSize);
     };
@@ -145,7 +132,8 @@ export default class NavigatorApp extends React.Component<Props, State> {
             color: "",
             videoPlaying: false,
             fullscreen: false,
-            peers: [],
+            driverPeer: undefined,
+            navigatorPeers: []
         };
         this.getSessInfo();
         this.sendWebsocket();
@@ -155,6 +143,69 @@ export default class NavigatorApp extends React.Component<Props, State> {
         setTimeout(() => {
             this.sendWebsocket();
         }, 2000);
+    }
+
+    public componentDidMount(): void {
+        // press F2 to speak
+        window.addEventListener("keydown", (e) => {
+            if (e && e.key === "F2" && this.state.driverPeer) {
+                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
+                this.state.driverPeer.getTransceivers().forEach((transceiver) => {
+                    if (transceiver.sender.track) {
+                        transceiver.sender.track.enabled = true;
+                    }
+                })
+            }
+            if (e && e.key === "F2" && this.state.navigatorPeers) {
+                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
+                for (let i: number = 0; i < this.state.navigatorPeers.length; i++) {
+                    this.state.navigatorPeers[i].pc.getTransceivers().forEach((transceiver) => {
+                        if (transceiver.sender.track) {
+                            transceiver.sender.track.enabled = true;
+                        }
+                    })
+                }
+            }
+        });
+        window.addEventListener("keyup", (e) => {
+            if (e && e.key === "F2" && this.state.driverPeer) {
+                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
+                this.state.driverPeer.getTransceivers().forEach((transceiver) => {
+                    if (transceiver.sender.track) {
+                        transceiver.sender.track.enabled = false;
+                    }
+                })
+            }
+            if (e && e.key === "F2" && this.state.navigatorPeers) {
+                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
+                for (let i: number = 0; i < this.state.navigatorPeers.length; i++) {
+                    this.state.navigatorPeers[i].pc.getTransceivers().forEach((transceiver) => {
+                        if (transceiver.sender.track) {
+                            transceiver.sender.track.enabled = false;
+                        }
+                    })
+                }
+            }
+        })
+    }
+
+    private closeNavigatorPeers () {
+        for (let i = 0; i < this.state.navigatorPeers.length; i++) {
+            this.state.navigatorPeers[i].pc.close();
+        }
+        this.setState({
+            navigatorPeers: [],
+        })
+    }
+
+    private deletePeerFromPeers() {
+        for (let i: number = 0; i < this.state.navigatorPeers.length; i++) {
+            if (this.state.navigatorPeers[i].pc.connectionState === "failed" ||
+                this.state.navigatorPeers[i].pc.connectionState === "disconnected") {
+                this.state.navigatorPeers[i].pc.close();
+                this.state.navigatorPeers.splice(i, 1);
+            }
+        }
     }
 
     private async getSessInfo() {
@@ -188,61 +239,50 @@ export default class NavigatorApp extends React.Component<Props, State> {
             switch (message.kind) {
                 // request sdp from other navigators
                 case "navigator_request_sdp":
+                    console.log("navigator_request_sdp");
                     const localPeer = new PeerInfo(message.navigator_id, message.remoteId, new RTCPeerConnection(Config.RTCPeerConnectionConfiguration));
-                    newPeers = [...this.state.peers, localPeer];
+                    newPeers = [...this.state.navigatorPeers, localPeer];
                     this.setState({
-                        peers: newPeers,
+                        navigatorPeers: newPeers,
                     });
                     try {
-                        if (this.audioStream) {
-                            localPeer.pc.getSenders().forEach((sender) => {
-                                localPeer.pc.removeTrack(sender);
+                        navigatorGetUserMedia().then((stream) => {
+                            const audioTrack = stream.getTracks()[0];
+                            audioTrack.enabled = false;
+                            localPeer.pc.addTrack(audioTrack);
+                            localPeer.pc.createOffer({
+                                offerToReceiveAudio: true,
+                            }).then((offer) => {
+                                localPeer.pc.setLocalDescription(offer)
+                                    .then(() => {
+                                        ws.send(JSON.stringify({
+                                            "kind": "navigator_sdp",
+                                            "payload": JSON.stringify(localPeer.pc.localDescription),
+                                            "navigator_id": message.navigator_id,
+                                            "remoteId": message.remoteId,
+                                        }));
+                                    });
                             });
-                            this.audioStream.getTracks().forEach((track) => {
-                                localPeer.pc.addTrack(track, this.audioStream!);
-                            })
-                        }
-                        const offer = await localPeer.pc.createOffer({
-                            offerToReceiveAudio: true,
-                        });
-                        await localPeer.pc.setLocalDescription(offer);
-
-
-                        ws.send(JSON.stringify({
-                            "kind": "navigator_sdp",
-                            "payload": JSON.stringify(localPeer.pc.localDescription),
-                            "navigator_id": message.navigator_id,
-                            "remoteId": message.remoteId,
-                        }));
+                        })
                     } catch (err) {
                         console.error(err);
                     }
 
                     localPeer.pc.ontrack = evt => {
                         console.log("local navigator on track");
-                        let stream: MediaStream;
-                        if (evt.streams[0]) {
-                            console.log("stream");
-                            stream = evt.streams[0];
-                        } else {
-                            console.log("track");
-                            stream = new MediaStream([evt.track]);
-                        }
-                        if (this.receivedAudioStream && this.receivedAudioStream.getTracks().length > 0) {
-                            stream.getTracks().forEach((track) => {
-                                this.receivedAudioStream!.addTrack(track);
-                            })
-                        } else {
-                            this.receivedAudioStream = stream;
-                        }
+                        this.receivedAudioStream.addTrack(evt.track);
 
                         if (this.audioRef) {
-                            console.log("audioRef");
                             try {
                                 this.audioRef.srcObject = this.receivedAudioStream;
                             } catch (e) {
                                 this.audioRef!.src = URL.createObjectURL(this.receivedAudioStream);
                             }
+                            this.audioRef.play().then(() => {
+                                console.log("start audio play");
+                            }, () => {
+                                console.log("can not play audio, please check permission");
+                            })
                         }
                     };
 
@@ -267,72 +307,74 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         }
                     };
 
-                    localPeer.pc.onconnectionstatechange = (evt) => {
+                    localPeer.pc.onconnectionstatechange = () => {
                         switch (localPeer.pc.connectionState) {
                             case "disconnected":
                                 console.log("peer disconnect");
-                                for (let i: number  = 0; i < this.state.peers.length; i++) {
-                                    if (this.state.peers[i].pc.connectionState === "failed" ||
-                                        this.state.peers[i].pc.connectionState === "disconnected") {
-                                        this.state.peers.splice(i, 1);
-                                    }
-                                }
+                                this.deletePeerFromPeers();
+                                break;
+                            case "failed":
+                                console.log("peer failed");
+                                this.deletePeerFromPeers();
                                 break;
                         }
                     };
                     break;
                 case "navigator_sdp":  // send sdp to other navigators
+                    console.log("navigator_sdp");
                     const remotePeer = new PeerInfo(message.navigator_id, message.remoteId, new RTCPeerConnection(Config.RTCPeerConnectionConfiguration));
-                    newPeers = [...this.state.peers, remotePeer];
+                    newPeers = [...this.state.navigatorPeers, remotePeer];
                     this.setState({
-                        peers: newPeers,
+                        navigatorPeers: newPeers,
                     });
-                    if(remotePeer.pc.signalingState === "stable" ) {
-                        remotePeer.pc.setRemoteDescription(JSON.parse(message.payload))
-                            .then(() => navigatorGetUserMedia()
-                                .then((stream) => {
-                                    this.audioStream = stream;
-                                    remotePeer.pc.getTransceivers().forEach((transciver) => {
-                                        if(transciver.receiver.track.kind === "audio") {
+                    remotePeer.pc.setRemoteDescription(JSON.parse(message.payload))
+                        .then(() => navigatorGetUserMedia()
+                            .then((stream) => {
+                                remotePeer.pc.getTransceivers().forEach((transciver) => {
+                                    try {
+                                        if (transciver.receiver.track.kind === "audio") {
                                             let track = stream.getTracks()[0];
-                                            console.log(stream.getTracks().length)
-                                            track.enabled = true;
+                                            console.log(stream.getTracks().length);
+                                            track.enabled = false;
                                             transciver.sender.replaceTrack(track);
                                             transciver.direction = "sendrecv";
                                         }
-                                    });
-                                })).then(() => remotePeer.pc.createAnswer())
+                                    } catch (e) {
+                                        // @ts-ignore
+                                        peer.addStream(stream);
+                                    }
+                                });
+                            }).then(() => remotePeer.pc.createAnswer())
                             .then((answer) => remotePeer.pc.setLocalDescription(answer))
                             .then(() => {
+                                console.log("send answer");
                                 ws.send(JSON.stringify({
                                     "kind": "navigator_answer",
                                     "payload": JSON.stringify(remotePeer.pc.localDescription),
                                     "navigator_id": this.localId,
                                     "remoteId": message.remoteId,
                                 }));
-                            }).catch(e => {
-                            console.log(e);
-                        })
-                    }
+                            }));
 
                     remotePeer.pc.ontrack = evt => {
                         console.log("remote navigator on track");
-                        if (this.receivedAudioStream && this.receivedAudioStream.getTracks().length > 0) {
-                            evt.streams[0].getTracks().forEach((track) => {
-                                this.receivedAudioStream!.addTrack(track);
-                            })
-                        } else {
-                            this.receivedAudioStream = evt.streams[0];
-                        }
+                        this.receivedAudioStream.addTrack(evt.track);
 
-                        if (this.audioRef && this.receivedAudioStream) {
+                        if (this.audioRef) {
                             try {
                                 this.audioRef.srcObject = this.receivedAudioStream;
                             } catch (e) {
                                 this.audioRef!.src = URL.createObjectURL(this.receivedAudioStream);
                             }
+                            this.audioRef.play().then(() => {
+                                console.log("start audio play");
+                            }, () => {
+                                console.log("can not play audio, please check permission");
+                            })
                         }
+                        console.log("length" + this.receivedAudioStream.getTracks().length);
                     };
+
                     remotePeer.pc.onicecandidate = ev => {
                         if (ev.candidate) {
                             console.log(`[RTC] New ICE candidate`);
@@ -353,22 +395,22 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             }));
                         }
                     };
-                    remotePeer.pc.onconnectionstatechange = (evt) => {
+                    remotePeer.pc.onconnectionstatechange = () => {
                         switch (remotePeer.pc.connectionState) {
                             case "disconnected":
                                 console.log("peer disconnect");
-                                for (let i: number  = 0; i < this.state.peers.length; i++) {
-                                    if (this.state.peers[i].pc.connectionState === "failed" ||
-                                        this.state.peers[i].pc.connectionState === "disconnected") {
-                                        this.state.peers.splice(i, 1);
-                                    }
-                                }
+                                this.deletePeerFromPeers();
+                                break;
+                            case "failed":
+                                console.log("peer failed");
+                                this.deletePeerFromPeers();
                                 break;
                         }
                     };
                     break;
                 case "navigator_answer":  // send answer to other navigators
-                    const answerPeer = this.state.peers.find(peer => peer.remoteId === message.remoteId);
+                    console.log("navigator_answer");
+                    const answerPeer = this.state.navigatorPeers.find(peer => peer.remoteId === message.remoteId);
                     if (!answerPeer) {
                         console.log(`[WS] Unexpected 'sdp' event for id=${message.remoteId}`);
                         console.log(message);
@@ -383,7 +425,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     break;
                 case "navigator_ice":  // add ice candidate from other navigator
                     console.log("navigator_ice");
-                    const navPeer = this.state.peers.find(peer => peer.remoteId === message.remoteId);
+                    const navPeer = this.state.navigatorPeers.find(peer => peer.remoteId === message.remoteId);
                     if (!navPeer) {
                         console.log(`[WS] Unexpected 'ice_candidate' event for id=${message.remoteId}`);
                         console.log(message);
@@ -402,6 +444,9 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     this.localId = message.navigator_id;
                     console.log("localIs: " + this.localId);
                     peer = new RTCPeerConnection(Config.RTCPeerConnectionConfiguration);
+                    this.setState({
+                        driverPeer: peer
+                    });
 
                     peer.ontrack = evt => {
                         console.log('-- peer.ontrack()');
@@ -413,7 +458,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                             } catch (e) {
                                 this.videoRef!.src = URL.createObjectURL(this.stream);
                             }
-                            this.setState({ videoPlaying: false });
+                            this.setState({videoPlaying: false});
                         }
                     };
 
@@ -479,37 +524,31 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         this.dataChannel = dataChannel;
                     };
 
-                    if(peer.signalingState === "stable" ) {
-                        peer.setRemoteDescription(JSON.parse(sdp.payload))
-                            .then(() => navigatorGetUserMedia()
-                                .then((stream) => {
-                                    this.audioStream = stream;
-                                    // peer.addTrack(stream.getTracks()[0], stream);
-                                    try {
-                                        peer.getTransceivers().forEach((transciver) => {
-                                            if(transciver.receiver.track.kind === "audio") {
-                                                let track = stream.getTracks()[0];
-                                                console.log(stream.getTracks().length)
-                                                track.enabled = true;
-                                                transciver.sender.replaceTrack(track);
-                                                transciver.direction = "sendrecv";
-                                            }
-                                        });
-                                    } catch (e) {
-                                        // @ts-ignore
-                                        peer.addStream(stream);
-                                    }
-                                })).then(() => peer.createAnswer())
+                    peer.setRemoteDescription(JSON.parse(sdp.payload))
+                        .then(() => navigatorGetUserMedia()
+                            .then((stream) => {
+                                // peer.addTrack(stream.getTracks()[0], stream);
+                                try {
+                                    peer.getTransceivers().forEach((transciver) => {
+                                        if (transciver.receiver.track.kind === "audio") {
+                                            let track = stream.getTracks()[0];
+                                            track.enabled = false;
+                                            transciver.sender.replaceTrack(track);
+                                            transciver.direction = "sendrecv";
+                                        }
+                                    });
+                                } catch (e) {
+                                    // @ts-ignore
+                                    peer.addStream(stream);
+                                }
+                            }).then(() => peer.createAnswer())
                             .then((answer) => peer.setLocalDescription(answer))
                             .then(() => {
                                 ws.send(JSON.stringify({
                                     "kind": "sdp",
                                     "payload": JSON.stringify(peer.localDescription),
                                 }));
-                            }).catch(e => {
-                            console.log(e);
-                        })
-                    }
+                            }));
                     break;
                 case "ice_candidate":
                     if (message.payload !== "") {
@@ -550,17 +589,18 @@ export default class NavigatorApp extends React.Component<Props, State> {
     handleDriverQuit = () => {
         this.setState({state: NavigatorState.WaitingDriver});
         this.getSessInfo();
+        this.closeNavigatorPeers();
     };
 
     private sendDataChannel(data: any) {
-        if(this.dataChannel !== undefined) {
+        if (this.dataChannel !== undefined) {
             const str = JSON.stringify(data);
             this.dataChannel.send(str);
         }
     }
 
     private setCanvasSize() {
-        if (this.canvasRef && this.videoRef){
+        if (this.canvasRef && this.videoRef) {
             this.canvasRef.width = this.videoRef.clientWidth;
             this.canvasRef.height = this.videoRef.clientHeight;
         }
@@ -578,7 +618,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
         if (!this.color)
             return;
         const rect = canvas.getBoundingClientRect();
-        const x = (mx- rect.left),
+        const x = (mx - rect.left),
             y = (my - rect.top);
         const r = parseInt(this.color.substr(1, 2), 16),
             g = parseInt(this.color.substr(3, 2), 16),
@@ -598,12 +638,12 @@ export default class NavigatorApp extends React.Component<Props, State> {
             document.exitFullscreen();
         else
             document.documentElement.requestFullscreen();
-        this.setState({ fullscreen: !curr });
+        this.setState({fullscreen: !curr});
     }
 
     handleOpenSettings = (e: any) => {
         e.preventDefault();
-        this.setState({ videoPlaying: false });
+        this.setState({videoPlaying: false});
     }
 
     handleNameChange = (e: any) => {
@@ -614,9 +654,21 @@ export default class NavigatorApp extends React.Component<Props, State> {
 
     startVideoPlaying = async (event: any) => {
         event.preventDefault();
-        this.setState({ videoPlaying: true });
+        this.setState({videoPlaying: true});
         if (this.videoRef)
             await this.videoRef.play();
+        if (this.audioRef) {
+            try {
+                this.audioRef.srcObject = this.receivedAudioStream;
+            } catch (e) {
+                this.audioRef!.src = URL.createObjectURL(this.receivedAudioStream);
+            }
+            this.audioRef.play().then(() => {
+                console.log("start audio play");
+            }, () => {
+                console.log("can not play audio, please check permission");
+            })
+        }
     };
 
     render() {
@@ -646,7 +698,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                     <canvas
                                         ref={this.setCanvasRef}/>
                                     {!this.state.videoPlaying &&
-                                    <div className="video-start-confirm-backdrop" />}
+                                    <div className="video-start-confirm-backdrop"/>}
                                     {!this.state.videoPlaying &&
                                     <div className="video-start-confirm card">
                                         <div className="card-body">
@@ -657,13 +709,15 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                                     <input id="navig-name"
                                                            className="form-control" type="text"
                                                            placeholder="Input your name"
-                                                           value={this.state.name} onChange={this.handleNameChange} />
+                                                           value={this.state.name} onChange={this.handleNameChange}/>
                                                 </div>
                                                 <div className="form-group">
                                                     <label htmlFor="navig-fullscreen">Toggle Fullscreen</label>
                                                     <Button id="navig-fullscreen" className="d-block"
-                                                            value="fullscreen" variant="outline-primary" title="Fullscreen"
-                                                            active={this.state.fullscreen} onClick={this.handleChangeFullscreen}>
+                                                            value="fullscreen" variant="outline-primary"
+                                                            title="Fullscreen"
+                                                            active={this.state.fullscreen}
+                                                            onClick={this.handleChangeFullscreen}>
                                                         <span className="glyphicon glyphicon-fullscreen">🖵</span>
                                                     </Button>
                                                 </div>
@@ -680,19 +734,19 @@ export default class NavigatorApp extends React.Component<Props, State> {
                     <Button variant="primary" title="Settings"
                             disabled={this.state.state === NavigatorState.Disconnected}
                             onClick={this.handleOpenSettings}>
-                        <FontAwesomeIcon icon="cogs" />
+                        <FontAwesomeIcon icon="cogs"/>
                     </Button>
                     <Timer begin={this.state.begin} startTimeInMinutes={this.state.interval}
-                           mode={this.state.mode} state={this.state.state} />
+                           mode={this.state.mode} state={this.state.state}/>
                     <Chat ws={this.state.ws} state={this.state.state} name={this.state.name} color={this.state.color}/>
-                    <audio autoPlay={true} ref={this.setAudioRef}/>
+                    <audio ref={this.setAudioRef}/>
                 </div>
             </div>
         );
     }
 }
 
-function navigatorGetUserMedia():Promise<MediaStream> {
+function navigatorGetUserMedia(): Promise<MediaStream> {
     return new Promise(function (resolve, reject) {
         const getUserMedia = window.navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
         try {
