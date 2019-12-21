@@ -23,7 +23,13 @@ class PeerInfo {
 
     addTracks(stream: MediaStream) {
         this.pc.getSenders().forEach((sender) => this.pc.removeTrack(sender));
-        stream.getTracks().forEach((track) => this.pc.addTrack(track, stream));
+        stream.getTracks().forEach((track) => {
+            if (track.kind === "audio") {
+                track.enabled = false;
+            }
+            this.pc.addTrack(track, stream);
+            console.log(this.pc.getTransceivers());
+        });
     }
 
     hangUp() {
@@ -51,7 +57,7 @@ interface IState {
 
 export default class StartShare extends React.Component<IProps, IState> {
     private stream?: MediaStream;
-    private audioStream?: MediaStream;
+    private receivedAudioStream: MediaStream = new MediaStream();
     private chatHistory: string = "";
     private preDisplayId: number = -1;
     private audioRef?: HTMLAudioElement;
@@ -109,6 +115,33 @@ export default class StartShare extends React.Component<IProps, IState> {
         this.setState({
             timerHandle: timerHandle,
             overlayHandle: overlayHandle,
+        });
+
+        window.addEventListener("keydown", (e) => {
+            if (e && e.key === "F2" && this.state.peers) {
+                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
+                for (let i: number  = 0; i < this.state.peers.length; i++) {
+                    this.state.peers[i].pc.getTransceivers().forEach((transceiver) => {
+                        if (transceiver.sender.track && transceiver.sender.track.kind === "audio") {
+                            transceiver.sender.track.enabled = true;
+                            console.log(transceiver.sender);
+                        }
+                    });
+                }
+            }
+        });
+        window.addEventListener("keyup" , (e) => {
+            if (e && e.key === "F2" && this.state.peers) {
+                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
+                for (let i: number  = 0; i < this.state.peers.length; i++) {
+                    this.state.peers[i].pc.getTransceivers().forEach((transceiver) => {
+                        if (transceiver.sender.track && transceiver.sender.track.kind === "audio") {
+                            transceiver.sender.track.enabled = false;
+                            console.log(transceiver.sender);
+                        }
+                    });
+                }
+            }
         });
     }
 
@@ -193,7 +226,7 @@ export default class StartShare extends React.Component<IProps, IState> {
         };
 
         console.log(os.type)
-        askForMediaAccess().then(() =>{
+        askForMediaAccess().then(() => {
             navigator.mediaDevices.getUserMedia({
                 video: screenSharingConstraints as any,
             }).then((stream) => {
@@ -287,10 +320,10 @@ export default class StartShare extends React.Component<IProps, IState> {
             peer.ontrack = (ev) => {
                 console.log("-- peer.ontrack()");
                 console.log(ev.track);
-                this.audioStream = new MediaStream([ev.track]);
-                console.log(this.audioStream.getAudioTracks().length);
+                this.receivedAudioStream.addTrack(ev.track);
+                console.log(this.receivedAudioStream.getAudioTracks().length);
                 if (this.audioRef) {
-                    this.audioRef.srcObject = this.audioStream;
+                    this.audioRef.srcObject = this.receivedAudioStream;
                 }
             };
 
@@ -320,6 +353,7 @@ export default class StartShare extends React.Component<IProps, IState> {
                         for (let i: number  = 0; i < this.state.peers.length; i++) {
                             if (this.state.peers[i].pc.connectionState === "failed" ||
                                 this.state.peers[i].pc.connectionState === "disconnected") {
+                                this.state.peers[i].pc.close();
                                 this.state.peers.splice(i, 1);
                             }
                         }
@@ -440,8 +474,8 @@ export default class StartShare extends React.Component<IProps, IState> {
         if (audioRef === null) {
             return;
         }
-        if (this.audioStream) {
-            audioRef.srcObject = this.audioStream;
+        if (this.receivedAudioStream) {
+            audioRef.srcObject = this.receivedAudioStream;
         }
     }
 }
