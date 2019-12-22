@@ -34,7 +34,6 @@ export default class Chat extends React.Component<IProps, IState> {
             return
         }
         const name = this.props.name || "";
-        const date = new Date();
         const payload = JSON.stringify({
             name: name,
             message: this.state.message,
@@ -74,7 +73,7 @@ export default class Chat extends React.Component<IProps, IState> {
                         onChange={this.handleMessageChange}
                     />
                     <InputGroup.Append>
-                        <Button variant="primary"
+                        <Button variant="primary" title="Click this button or Press [Ctrl] + [Enter] to Send text message"
                             disabled={this.props.state === NavigatorState.Disconnected}
                             onClick={this.clickSendHandle}>
                             &gt;

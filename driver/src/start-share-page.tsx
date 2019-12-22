@@ -23,7 +23,12 @@ class PeerInfo {
 
     addTracks(stream: MediaStream) {
         this.pc.getSenders().forEach((sender) => this.pc.removeTrack(sender));
-        stream.getTracks().forEach((track) => this.pc.addTrack(track, stream));
+        stream.getTracks().forEach((track) => {
+            if (track.kind === "audio") {
+                track.enabled = false;
+            }
+            this.pc.addTrack(track, stream);
+        });
     }
 
     hangUp() {
@@ -45,13 +50,14 @@ interface IState {
     nav_message: string;
     chatHistory: string;
     peers: PeerInfo[];
+    showTips: HTMLElement | undefined;
     showShare: HTMLElement | undefined;
     alwaysOnTop: boolean;
 }
 
 export default class StartShare extends React.Component<IProps, IState> {
     private stream?: MediaStream;
-    private audioStream?: MediaStream;
+    private receivedAudioStream: MediaStream = new MediaStream();
     private chatHistory: string = "";
     private preDisplayId: number = -1;
     private audioRef?: HTMLAudioElement;
@@ -74,6 +80,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             nav_message: "",
             chatHistory: sess.chatHistory,
             peers: [],
+            showTips: undefined,
             showShare: undefined,
             alwaysOnTop: true,
         };
@@ -110,6 +117,41 @@ export default class StartShare extends React.Component<IProps, IState> {
             timerHandle: timerHandle,
             overlayHandle: overlayHandle,
         });
+
+        window.addEventListener("keydown", (e) => {
+            if (e && e.key === "F2") {
+                this.startSpeak();
+            }
+        });
+        window.addEventListener("keyup" , (e) => {
+            if (e && e.key === "F2" && this.state.peers) {
+                this.stopSpeak();
+            }
+        });
+    }
+
+    public startSpeak() {
+        if (this.state.peers) {
+            for (let i: number  = 0; i < this.state.peers.length; i++) {
+                this.state.peers[i].pc.getTransceivers().forEach((transceiver) => {
+                    if (transceiver.sender.track && transceiver.sender.track.kind === "audio") {
+                        transceiver.sender.track.enabled = true;
+                    }
+                });
+            }
+        }
+    }
+
+    public stopSpeak() {
+        if (this.state.peers) {
+            for (let i: number  = 0; i < this.state.peers.length; i++) {
+                this.state.peers[i].pc.getTransceivers().forEach((transceiver) => {
+                    if (transceiver.sender.track && transceiver.sender.track.kind === "audio") {
+                        transceiver.sender.track.enabled = false;
+                    }
+                });
+            }
+        }
     }
 
     public componentWillUnmount() {
@@ -217,6 +259,20 @@ export default class StartShare extends React.Component<IProps, IState> {
         this.setState({showShare: this.state.showShare ? undefined : e.target});
     };
 
+    toggleShowTips = (e: any) => {
+        this.setState({showTips: this.state.showTips ? undefined : e.target});
+    };
+
+    handleButtonDown = (e: any) => {
+        e.preventDefault();
+        this.startSpeak();
+    };
+
+    handleButtonUp = (e: any) => {
+        e.preventDefault();
+        this.stopSpeak();
+    };
+
     public render() {
         const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
         const zeroPadding = function (num: number) {
@@ -242,6 +298,22 @@ export default class StartShare extends React.Component<IProps, IState> {
                             onClick={this.handleCheck}>
                             <FontAwesomeIcon icon="arrow-up" />
                         </Button>
+                        <Overlay placement="bottom" show={!!this.state.showTips} target={this.state.showTips}>
+                            <Popover id="popover-basic-1">
+                                <PopoverTitle as="h3">Tips</PopoverTitle>
+                                <PopoverContent>
+                                    <h5>Hot key</h5>
+                                    <p>1. Press [Ctrl] + [Enter] to send text message</p>
+                                    <p>2. Press [F2] to speak</p>
+                                    <h5>Questions</h5>
+                                    <p>If voice chat can't work well, please check the permission of microphone</p>
+                                </PopoverContent>
+                            </Popover>
+                        </Overlay>
+                        <Button className="ml-1" onClick={this.toggleShowTips}
+                                title="Tip&Question">
+                            <FontAwesomeIcon icon="question" />
+                        </Button>
                         <Overlay placement="bottom" show={!!this.state.showShare} target={this.state.showShare}>
                             <Popover id="popover-basic">
                                 <PopoverTitle as="h3">Invite a navigator ({this.state.peers.length} connected)</PopoverTitle>
@@ -256,7 +328,11 @@ export default class StartShare extends React.Component<IProps, IState> {
                         </Button>
                     </div>
                 </div>
-                <Chat nav_message={this.state.nav_message} setChatHistoryToParent={this.setChatHistory} chatHistory={this.state.chatHistory}/>
+                <Chat nav_message={this.state.nav_message}
+                      setChatHistoryToParent={this.setChatHistory}
+                      chatHistory={this.state.chatHistory}
+                      startSpeak={this.handleButtonDown}
+                      stopSpeak={this.handleButtonUp} />
                 <audio autoPlay={true} ref={this.setAudioRef}/>
             </div>
         );
@@ -288,10 +364,10 @@ export default class StartShare extends React.Component<IProps, IState> {
             peer.ontrack = (ev) => {
                 console.log("-- peer.ontrack()");
                 console.log(ev.track);
-                this.audioStream = new MediaStream([ev.track]);
-                console.log(this.audioStream.getAudioTracks().length);
+                this.receivedAudioStream.addTrack(ev.track);
+                console.log(this.receivedAudioStream.getAudioTracks().length);
                 if (this.audioRef) {
-                    this.audioRef.srcObject = this.audioStream;
+                    this.audioRef.srcObject = this.receivedAudioStream;
                 }
             };
 
@@ -321,6 +397,7 @@ export default class StartShare extends React.Component<IProps, IState> {
                         for (let i: number  = 0; i < this.state.peers.length; i++) {
                             if (this.state.peers[i].pc.connectionState === "failed" ||
                                 this.state.peers[i].pc.connectionState === "disconnected") {
+                                this.state.peers[i].pc.close();
                                 this.state.peers.splice(i, 1);
                             }
                         }
@@ -446,8 +523,8 @@ export default class StartShare extends React.Component<IProps, IState> {
         if (audioRef === null) {
             return;
         }
-        if (this.audioStream) {
-            audioRef.srcObject = this.audioStream;
+        if (this.receivedAudioStream) {
+            audioRef.srcObject = this.receivedAudioStream;
         }
     }
 }
