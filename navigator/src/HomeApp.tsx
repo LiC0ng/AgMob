@@ -64,10 +64,11 @@ export default class HomeApp extends React.Component<any, IState> {
             this.setState({
                 package_version: "v 1.0.0",
                 package_size: "62.58MB",
-                package_date: "2019.11.08",
+                package_date: "2019.12.20",
                 package_link: download_link_win,
-                package_new: "1.new function: fluorescent pen\n" +
-                    "2.fix: UI"
+                package_new: "1.new function: raser pen\n" +
+                    "2.new function: press key to speak\n" +
+                    "3.fix UI"
             })
         } else if (platformCode === 1) {
             this.setState({
