@@ -51,6 +51,7 @@ interface IState {
     nav_message: string;
     chatHistory: string;
     peers: PeerInfo[];
+    showTips: HTMLElement | undefined;
     showShare: HTMLElement | undefined;
     alwaysOnTop: boolean;
 }
@@ -80,6 +81,7 @@ export default class StartShare extends React.Component<IProps, IState> {
             nav_message: "",
             chatHistory: sess.chatHistory,
             peers: [],
+            showTips: undefined,
             showShare: undefined,
             alwaysOnTop: true,
         };
@@ -250,6 +252,10 @@ export default class StartShare extends React.Component<IProps, IState> {
         this.setState({showShare: this.state.showShare ? undefined : e.target});
     };
 
+    toggleShowTips = (e: any) => {
+        this.setState({showTips: this.state.showTips ? undefined : e.target});
+    };
+
     public render() {
         const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
         const zeroPadding = function (num: number) {
@@ -274,6 +280,22 @@ export default class StartShare extends React.Component<IProps, IState> {
                             active={this.state.alwaysOnTop}
                             onClick={this.handleCheck}>
                             <FontAwesomeIcon icon="arrow-up" />
+                        </Button>
+                        <Overlay placement="bottom" show={!!this.state.showTips} target={this.state.showTips}>
+                            <Popover id="popover-basic-1">
+                                <PopoverTitle as="h3">Tips</PopoverTitle>
+                                <PopoverContent>
+                                    <h5>Hot key</h5>
+                                    <p>1. Press [Ctrl] + [Enter] to send text message</p>
+                                    <p>2. Press [F2] to speak</p>
+                                    <h5>Questions</h5>
+                                    <p>If voice chat can't work well, please check the permission of microphone</p>
+                                </PopoverContent>
+                            </Popover>
+                        </Overlay>
+                        <Button className="ml-1" onClick={this.toggleShowTips}
+                                title="Tip&Question">
+                            <FontAwesomeIcon icon="question" />
                         </Button>
                         <Overlay placement="bottom" show={!!this.state.showShare} target={this.state.showShare}>
                             <Popover id="popover-basic">
