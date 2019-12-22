@@ -28,7 +28,6 @@ class PeerInfo {
                 track.enabled = false;
             }
             this.pc.addTrack(track, stream);
-            console.log(this.pc.getTransceivers());
         });
     }
 
@@ -120,31 +119,39 @@ export default class StartShare extends React.Component<IProps, IState> {
         });
 
         window.addEventListener("keydown", (e) => {
-            if (e && e.key === "F2" && this.state.peers) {
-                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
-                for (let i: number  = 0; i < this.state.peers.length; i++) {
-                    this.state.peers[i].pc.getTransceivers().forEach((transceiver) => {
-                        if (transceiver.sender.track && transceiver.sender.track.kind === "audio") {
-                            transceiver.sender.track.enabled = true;
-                            console.log(transceiver.sender);
-                        }
-                    });
-                }
+            if (e && e.key === "F2") {
+                this.startSpeak();
             }
         });
         window.addEventListener("keyup" , (e) => {
             if (e && e.key === "F2" && this.state.peers) {
-                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
-                for (let i: number  = 0; i < this.state.peers.length; i++) {
-                    this.state.peers[i].pc.getTransceivers().forEach((transceiver) => {
-                        if (transceiver.sender.track && transceiver.sender.track.kind === "audio") {
-                            transceiver.sender.track.enabled = false;
-                            console.log(transceiver.sender);
-                        }
-                    });
-                }
+                this.stopSpeak();
             }
         });
+    }
+
+    public startSpeak() {
+        if (this.state.peers) {
+            for (let i: number  = 0; i < this.state.peers.length; i++) {
+                this.state.peers[i].pc.getTransceivers().forEach((transceiver) => {
+                    if (transceiver.sender.track && transceiver.sender.track.kind === "audio") {
+                        transceiver.sender.track.enabled = true;
+                    }
+                });
+            }
+        }
+    }
+
+    public stopSpeak() {
+        if (this.state.peers) {
+            for (let i: number  = 0; i < this.state.peers.length; i++) {
+                this.state.peers[i].pc.getTransceivers().forEach((transceiver) => {
+                    if (transceiver.sender.track && transceiver.sender.track.kind === "audio") {
+                        transceiver.sender.track.enabled = false;
+                    }
+                });
+            }
+        }
     }
 
     public componentWillUnmount() {
@@ -256,6 +263,16 @@ export default class StartShare extends React.Component<IProps, IState> {
         this.setState({showTips: this.state.showTips ? undefined : e.target});
     };
 
+    handleButtonDown = (e: any) => {
+        e.preventDefault();
+        this.startSpeak();
+    };
+
+    handleButtonUp = (e: any) => {
+        e.preventDefault();
+        this.stopSpeak();
+    };
+
     public render() {
         const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
         const zeroPadding = function (num: number) {
@@ -311,7 +328,11 @@ export default class StartShare extends React.Component<IProps, IState> {
                         </Button>
                     </div>
                 </div>
-                <Chat nav_message={this.state.nav_message} setChatHistoryToParent={this.setChatHistory} chatHistory={this.state.chatHistory}/>
+                <Chat nav_message={this.state.nav_message}
+                      setChatHistoryToParent={this.setChatHistory}
+                      chatHistory={this.state.chatHistory}
+                      startSpeak={this.handleButtonDown}
+                      stopSpeak={this.handleButtonUp} />
                 <audio autoPlay={true} ref={this.setAudioRef}/>
             </div>
         );

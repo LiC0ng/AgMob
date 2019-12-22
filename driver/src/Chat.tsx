@@ -1,3 +1,4 @@
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {Button, Form, FormControl, InputGroup} from "react-bootstrap";
 
@@ -11,6 +12,8 @@ interface IProps {
     nav_message: string;
     setChatHistoryToParent: any;
     chatHistory: string;
+    startSpeak: any;
+    stopSpeak: any;
 }
 
 export default class Chat extends React.Component<IProps, IState> {
@@ -137,6 +140,13 @@ export default class Chat extends React.Component<IProps, IState> {
                         <Button variant="primary" onClick={this.clickSendHandle}>Send
                             Message</Button>
                     </InputGroup.Append>
+                    <div>&nbsp;</div>
+                    <Button variant="primary"
+                            title="Keep Clicking or Press F2 to Speak"
+                            onMouseDown={this.props.startSpeak}
+                            onMouseUp={this.props.stopSpeak}>
+                        <FontAwesomeIcon icon="microphone"/>
+                    </Button>
                 </InputGroup>
             </Form>
         );
