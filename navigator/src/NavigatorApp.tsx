@@ -70,14 +70,12 @@ export default class NavigatorApp extends React.Component<Props, State> {
         let mousePressed = false;
         canvasRef.addEventListener("mousedown", (e: any) => {
             mousePressed = true;
-            console.log("mousedown");
             sendPointer(e);
             this.updateCanvas(e.clientX, e.clientY);
         }, false);
         canvasRef.addEventListener("mouseup", () => {
             mousePressed = false;
             const canvas = this.canvasRef;
-            console.log("mouseup");
             if (!canvas)
                 return;
             const context = canvas.getContext("2d");
@@ -148,46 +146,64 @@ export default class NavigatorApp extends React.Component<Props, State> {
     public componentDidMount(): void {
         // press F2 to speak
         window.addEventListener("keydown", (e) => {
-            if (e && e.key === "F2" && this.state.driverPeer) {
-                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
-                this.state.driverPeer.getTransceivers().forEach((transceiver) => {
+            if (e && e.key === "F2") {
+                this.startSpeak();
+            }
+        });
+        window.addEventListener("keyup", (e) => {
+            if (e && e.key === "F2") {
+                this.stopSpeak();
+            }
+        })
+    }
+
+    private startSpeak() {
+        if (this.state.driverPeer) {
+            this.state.driverPeer.getTransceivers().forEach((transceiver) => {
+                if (transceiver.sender.track) {
+                    transceiver.sender.track.enabled = true;
+                }
+            })
+        }
+        if (this.state.navigatorPeers) {
+            for (let i: number = 0; i < this.state.navigatorPeers.length; i++) {
+                this.state.navigatorPeers[i].pc.getTransceivers().forEach((transceiver) => {
                     if (transceiver.sender.track) {
                         transceiver.sender.track.enabled = true;
                     }
                 })
             }
-            if (e && e.key === "F2" && this.state.navigatorPeers) {
-                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
-                for (let i: number = 0; i < this.state.navigatorPeers.length; i++) {
-                    this.state.navigatorPeers[i].pc.getTransceivers().forEach((transceiver) => {
-                        if (transceiver.sender.track) {
-                            transceiver.sender.track.enabled = true;
-                        }
-                    })
+        }
+    }
+
+    private stopSpeak() {
+        if (this.state.driverPeer) {
+            this.state.driverPeer.getTransceivers().forEach((transceiver) => {
+                if (transceiver.sender.track) {
+                    transceiver.sender.track.enabled = false;
                 }
-            }
-        });
-        window.addEventListener("keyup", (e) => {
-            if (e && e.key === "F2" && this.state.driverPeer) {
-                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
-                this.state.driverPeer.getTransceivers().forEach((transceiver) => {
+            })
+        }
+        if (this.state.navigatorPeers) {
+            for (let i: number = 0; i < this.state.navigatorPeers.length; i++) {
+                this.state.navigatorPeers[i].pc.getTransceivers().forEach((transceiver) => {
                     if (transceiver.sender.track) {
                         transceiver.sender.track.enabled = false;
                     }
                 })
             }
-            if (e && e.key === "F2" && this.state.navigatorPeers) {
-                // this.state.driverPeer.getTransceivers()[0].setDirection('recvonly')
-                for (let i: number = 0; i < this.state.navigatorPeers.length; i++) {
-                    this.state.navigatorPeers[i].pc.getTransceivers().forEach((transceiver) => {
-                        if (transceiver.sender.track) {
-                            transceiver.sender.track.enabled = false;
-                        }
-                    })
-                }
-            }
-        })
+        }
     }
+
+    handleButtonDown = (e: any) => {
+        e.preventDefault();
+        this.startSpeak();
+    };
+
+    handleButtonUp = (e: any) => {
+        e.preventDefault();
+        this.stopSpeak();
+    };
 
     private closeNavigatorPeers () {
         for (let i = 0; i < this.state.navigatorPeers.length; i++) {
@@ -740,6 +756,16 @@ export default class NavigatorApp extends React.Component<Props, State> {
                            mode={this.state.mode} state={this.state.state}/>
                     <Chat ws={this.state.ws} state={this.state.state} name={this.state.name} color={this.state.color}/>
                     <audio ref={this.setAudioRef}/>
+                    <div>&nbsp;</div>
+                    <Button variant="primary"
+                            title="Keep Clicking or Press F2 to Speak"
+                            disabled={this.state.state === NavigatorState.Disconnected}
+                            onMouseDown={this.handleButtonDown}
+                            onMouseUp={this.handleButtonUp}
+                            onTouchStart={this.handleButtonDown}
+                            onTouchEnd={this.handleButtonUp}>
+                        <FontAwesomeIcon icon="microphone"/>
+                    </Button>
                 </div>
             </div>
         );
