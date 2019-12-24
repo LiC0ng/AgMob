@@ -114,7 +114,6 @@ export class DriverSession {
     attach(e: (o: any) => void) {
         if (this.websocket.onmessage !== null)
             throw new Error("[WS] onmessage handler already exists");
-        console.log(`[WS] Attaching ${e}`)
         this.websocket.onmessage = e;
     }
 

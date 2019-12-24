@@ -47,7 +47,6 @@ export default class Join extends React.Component<any, State> {
                 <div className="flex-grow-1">
                     <h2 className="mb-3">
                         Join an existing workspace
-                        <h4 className="d-inline text-muted ml-1">as the driver</h4>
                     </h2>
                     <label htmlFor="sesseionIdInput">
                         You can join the workspace as a driver by filling in

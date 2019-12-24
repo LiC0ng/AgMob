@@ -725,7 +725,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                                                     <input id="navig-name"
                                                            className="form-control" type="text"
                                                            placeholder="Input your name"
-                                                           value={this.state.name} onChange={this.handleNameChange}/>
+                                                           value={this.state.name || ""} onChange={this.handleNameChange}/>
                                                 </div>
                                                 <div className="form-group">
                                                     <label htmlFor="navig-fullscreen">Toggle Fullscreen</label>
