@@ -63,7 +63,7 @@ export default class Join extends React.Component<any, State> {
                 </div>
                 <div className="d-flex my-4">
                     <Link className="btn btn-primary btn-lg mr-4" to="/">Back</Link>
-                    <Button className="btn-lg mr-4" type="submit" href="#">Join</Button>
+                    <Button className="btn-lg mr-4" type="submit" href="#" onClick={this.handleStart}>Join</Button>
                 </div>
             </form>
         );
