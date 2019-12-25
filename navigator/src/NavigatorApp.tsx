@@ -495,6 +495,7 @@ export default class NavigatorApp extends React.Component<Props, State> {
                         switch (peer.connectionState) {
                             case "connected":
                                 this.setState({state: NavigatorState.Connected});
+                                this.getSessInfo()
                                 // The connection has become fully connected
                                 break;
                             case "disconnected":
