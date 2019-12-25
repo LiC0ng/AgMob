@@ -123,7 +123,6 @@ export class DriverSession {
             console.log(e);
             throw new Error("[WS] Detaching unknown onmessage handler");
         }
-        console.log(`[WS] Detaching ${e}`)
         this.websocket.onmessage = null;
     }
 }
