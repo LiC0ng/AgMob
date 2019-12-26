@@ -274,7 +274,7 @@ export default class StartShare extends React.Component<IProps, IState> {
     };
 
     public render() {
-        const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/session/${this.state.sessionId}`;
+        const navigatorUrl = `${Config.WORKSPACE_BASE_ADDRESS}/agmob/session/${this.state.sessionId}`;
         const zeroPadding = function (num: number) {
           return ("0000000000" + num).slice(-2);
         };
@@ -408,6 +408,29 @@ export default class StartShare extends React.Component<IProps, IState> {
             peer.onnegotiationneeded = async () => {
                 if (count === 0) {
                     count += 1;
+                    try {
+                        const dataChannel = peer.createDataChannel('pointer');
+                        dataChannel.onopen = () => {
+                            if (dataChannel.readyState === 'open') {
+                                console.log("datachannel is ready");
+
+                                dataChannel.send(navigator_id);
+                                console.log("send via datachannel");
+                            }
+                        };
+                        dataChannel.onclose = () => {
+                            if (dataChannel.readyState === 'closed') {
+                                console.log("datachannel is closed");
+                            }
+                        };
+                        dataChannel.onmessage = (ev: any) => {
+                            const data = JSON.parse(ev.data);
+                            peerInfo.pointerX = data.x;
+                            peerInfo.pointerY = data.y;
+                        };
+                    } catch (err) {
+                        console.error(err);
+                    }
                     return ;
                 }
                 if (count === 1) {
@@ -416,26 +439,6 @@ export default class StartShare extends React.Component<IProps, IState> {
                 try {
                     const offer = await peer.createOffer();
                     await peer.setLocalDescription(offer);
-
-                    const dataChannel = peer.createDataChannel('pointer');
-                    dataChannel.onopen = () => {
-                        if (dataChannel.readyState === 'open') {
-                            console.log("datachannel is ready");
-
-                            dataChannel.send(navigator_id);
-                            console.log("send via datachannel");
-                        }
-                    };
-                    dataChannel.onclose = () => {
-                        if (dataChannel.readyState === 'closed') {
-                            console.log("datachannel is closed");
-                        }
-                    };
-                    dataChannel.onmessage = (ev: any) => {
-                        const data = JSON.parse(ev.data);
-                        peerInfo.pointerX = data.x;
-                        peerInfo.pointerY = data.y;
-                    };
 
                     // Send initial SDP
                     console.log(`[RTC-${navigator_id}] Sending initial SDP`);
