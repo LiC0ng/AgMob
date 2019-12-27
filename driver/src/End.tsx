@@ -21,7 +21,7 @@ export default class End extends React.Component<Props, State> {
         const sess = this.props.currentSession;
         const token = sess ? sess.sessionId : "DUMMY";
         const driverUrl = `agmob-driver://${token}`;
-        const navigatorUrl = Config.WORKSPACE_BASE_ADDRESS + "/session/" + token;
+        const navigatorUrl = Config.WORKSPACE_BASE_ADDRESS + "/agmob/session/" + token;
         return (
             <Container className="h-100 d-flex flex-column">
                 <div className="flex-grow-1">
