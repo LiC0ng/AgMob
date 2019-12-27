@@ -20,6 +20,6 @@ const App = () => (
 library.add(fas);
 
 ReactDOM.render(
-  <BrowserRouter><App /></BrowserRouter>,
+  <BrowserRouter basename="/agmob"><App /></BrowserRouter>,
   document.getElementById("root")
 );

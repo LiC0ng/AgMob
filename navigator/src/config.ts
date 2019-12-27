@@ -1,11 +1,11 @@
-export const WORKSPACE_BASE_ADDRESS = "https://elang.itsp.club";
-export const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://elang.itsp.club";
+export const WORKSPACE_BASE_ADDRESS = "https://www.licong.co";
+export const WORKSPACE_WEBSOCKET_BASE_ADDRESS = "wss://www.licong.co";
 
 export const RTCPeerConnectionConfiguration = {
     iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:160.16.213.209" },
-        { urls: "turn:160.16.213.209", credential: "ZPu5tyGmdsAEn6dlYJkNBse/x/UQnMj2", username: "agmob" },
+        { urls: "stun:35.200.110.90" },
+        { urls: "turn:35.200.110.90", credential: "licong", username: "licong" },
     ]
 };
 
