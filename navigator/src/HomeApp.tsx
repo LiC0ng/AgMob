@@ -2,7 +2,7 @@ import React from 'react';
 
 const download_link_win = "https://www.licong.co/agmob/download/agmob-driver Setup 1.0.0.exe";
 const download_link_lin = "https://www.licong.co/agmob/download/agmob-driver-1.0.0.AppImage";
-const download_link_mac = "https://www.licong.co/agmob/agmob-driver-1.0.0.dmg";
+const download_link_mac = "https://www.licong.co/agmob/download/agmob-driver-1.0.0.dmg";
 
 interface IState {
     platformCode: number;
@@ -228,7 +228,7 @@ export default class HomeApp extends React.Component<any, IState> {
                         </div>*/}
                         </div>
                         <div className="copyrighten">
-                            Made By Elang
+                            Made By Elang Group
                         </div>
                     </div>
                 </div>
